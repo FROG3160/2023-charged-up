@@ -32,43 +32,13 @@ Install FRC Game tools from the downloaded ISO image or download from here:
 
 ### Install robotpy
 
-- **IMPORTANT: Perform ALL operations in a python virtualenv**
-
-#### Create virtualenv (if not previously done)
-
-Recommend placing the virtualenv in the `mentorbot` repo folder under `.venv` (to keep everything together) however the virtualenv is local to your system and should not be uploaded (ignored in `.gitignore`)
-
-```bash
-cd <path-to-mentorbot-repo>
-py -3 -m venv ./.venv
-```
-
-#### Workflow
-
-1. **Activate virtualenv**
-   (Virtualenv activation may differ depending on your operating system and terminal)
-   - Git Bash (Windows)
-     ```bash
-     source <path-to-mentorbot-repo>/.venv/Scripts/activate
-     ```
-   - normal bash (linux, macOS)
-     ```bash
-     source <path-to-mentorbot-repo>/.venv/bin/activate
-     ```
-1. **Update pip and wheel. Old versions of pip can prevent binary wheels from being installed. Installing wheel makes other installs faster**
-   (must have internet connection)
-   ```bash
-   python -m pip install --upgrade pip wheel
-   ```
 1. **Install / update robotpy**
-   (must have internet connection)
    ```bash
    python -m pip install -r requirements.txt
    ```
    (examples: `robotpy`, `robotpy[ctre,navx]`, `robotpy[all]`) (see: [robotpy on pypi](https://pypi.org/project/robotpy/))
 
 1.  **Install black**
-
    ```
    python -m pip install -U black
    ```
