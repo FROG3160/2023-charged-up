@@ -29,6 +29,8 @@ class FROGGyro:
     @feedback()
     def getYaw(self):
         # returns gyro heading +180 to -180 degrees
+        # and inverts it to change from bearing to
+        # cartesian angles with CCW positive.
         return -self.gyro.getYaw()
 
     def setOffset(self, offset):
@@ -38,10 +40,16 @@ class FROGGyro:
     def getRotationDPS(self):
         return self.gyro.getRate()
 
+    def getRotation2d(self):
+        return Rotation2d.fromDegrees(self.getYaw())
+
     @feedback()
     def getOffsetYaw(self):
         chassisYaw = self.getYaw()
         fieldYaw = Rotation2d.fromDegrees(chassisYaw + self.starting_angle)
+        # Adding an angle to the current reading can cause the result
+        # to be outside -180 to +180 degrees, so we utilize the atan2
+        # function to give us the angle back inside the limits.
         return math.degrees(math.atan2(fieldYaw.sin(), fieldYaw.cos()))
 
     def resetGyro(self):
