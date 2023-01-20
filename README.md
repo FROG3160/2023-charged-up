@@ -42,3 +42,6 @@ Install FRC Game tools from the downloaded ISO image or download from here:
    ```
    python -m pip install -U black
    ```
+
+## Other Notes
+Field PNG file obtained from https://github.com/wpilibsuite/shuffleboard/blob/main/plugins/base/src/main/resources/edu/wpi/first/shuffleboard/plugin/base/widget/field/2023-field.png
