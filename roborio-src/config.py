@@ -1,3 +1,4 @@
+import math
 from wpimath.geometry import Translation2d
 from ctre import (
     TalonFXConfiguration,
@@ -14,6 +15,13 @@ WHEELBASE = 21.75 / 12
 # these are the values for the 2023 frame when it's built
 #TRACK_WIDTH = 20 / 12 # track width in feet
 #WHEELBASE = 20 / 12  # wheelbase in feet
+# SwerveDriveSpecialties modules have the following max speeds (in ft/sec):
+# L1 - 13.5, L2 - 16.3, L3 - 18
+MAX_FEET_PER_SEC = 10
+MAX_METERS_PER_SEC = MAX_FEET_PER_SEC * 0.3038
+
+MAX_CHASSIS_REV_SEC = 1
+MAX_CHASSIS_RADIANS_SEC = MAX_CHASSIS_REV_SEC * math.tau
 
 MODULE_DRIVE_GEARING = [(14.0 / 50.0), (28.0 / 16.0), (15.0 / 45.0)] #Mk4 L3
 MODULE_WHEEL_DIAMETER = 0.1000125  # 3 15/16 inches in meters
