@@ -2,7 +2,7 @@ import wpilib
 from navx import AHRS
 from magicbot import feedback, tunable
 from ctre import CANifier
-from components.common import Buffer
+from utils.utils import Buffer
 from rev import ColorSensorV3
 import math
 from wpimath.geometry import Rotation2d

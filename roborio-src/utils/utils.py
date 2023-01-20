@@ -1,8 +1,5 @@
 from collections import deque
 import math
-from wpimath.kinematics import SwerveModuleState
-from wpimath.geometry import Rotation2d
-
 
 class Vector2():
 
