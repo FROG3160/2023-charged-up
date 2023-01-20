@@ -16,7 +16,7 @@
             "name": "Robot Sim",
             "type": "python",
             "request": "launch",
-            "program": "roborio\\robot.py",
+            "program": "roborio-src\\robot.py",
             "args": ["sim"],
             "console": "integratedTerminal",
             "justMyCode": false
@@ -25,7 +25,7 @@
             "name": "Robot Deploy",
             "type": "python",
             "request": "launch",
-            "program": "roborio\\robot.py",
+            "program": "roborio-src\\robot.py",
             "args": ["deploy"],
             "console": "integratedTerminal"
         },
@@ -33,7 +33,7 @@
             "name": "Robot Create Physics",
             "type": "python",
             "request": "launch",
-            "program": "roborio\\robot.py",
+            "program": "roborio-src\\robot.py",
             "args": ["create-physics"],
             "console": "integratedTerminal"
         }

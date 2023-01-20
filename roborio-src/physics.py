@@ -18,6 +18,7 @@ from pyfrc.physics.core import PhysicsInterface
 from pyfrc.physics.drivetrains import four_motor_swerve_drivetrain, linear_deadzone
 
 
+
 # import typing
 
 # if typing.TYPE_CHECKING:
@@ -41,7 +42,7 @@ class PhysicsEngine:
 
 
     def update_sim(self, now, tm_diff):
-        chassis_speeds = self.robot.swerveChassis.speeds
-        pose = self.physics_controller.drive(chassis_speeds, tm_diff)
-
-        self.robot.gyro.setAngleAdjustment(-pose.rotation().degrees())
+        pose = self.physics_controller.drive(
+            self.robot.container.swerveChassis.chassisSpeeds, tm_diff
+        )
+        self.robot.container.swerveChassis.gyro.setAngleAdjustment(-pose.rotation().degrees())
