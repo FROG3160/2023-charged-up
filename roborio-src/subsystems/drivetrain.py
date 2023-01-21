@@ -21,8 +21,9 @@ from wpimath.kinematics import (
     SwerveDrive4Odometry,
     ChassisSpeeds,
     SwerveModuleState,
-    SwerveModulePosition
+    SwerveModulePosition,
 )
+from wpimath.estimator import SwerveDrive4PoseEstimator
 import math
 from magicbot import feedback, tunable
 from .sensors import FROGGyro
@@ -35,10 +36,9 @@ from subsystems.sensors import FROGGyro
 VELOCITY_MODE = ControlMode.Velocity
 POSITION_MODE = ControlMode.Position
 
+
 class GearStages:
-    def __init__(
-        self, gear_stages:list
-    ):
+    def __init__(self, gear_stages: list):
         """
         Constructs a DriveUnit object that stores data about the gear stages.
         Args:
@@ -56,9 +56,7 @@ class GearStages:
 
 
 class DriveUnit:
-    def __init__(
-        self, gear_stages: list, motor_rpm: int, diameter: float, cpr: int
-    ):
+    def __init__(self, gear_stages: list, motor_rpm: int, diameter: float, cpr: int):
         """Constructs a DriveUnit object that stores data about the drive, gear stages, and wheel.
         Args:
             gear_stages (list): list of gear stages expressed as tuples of two integers e.g. [(10, 32), (9, 24)]
@@ -96,14 +94,20 @@ class DriveUnit:
         return wheel_rotations_sec * self.circumference
 
     def positionToDistance(self, position: int) -> float:
-        motor_rotations = position /self.cpr
+        motor_rotations = position / self.cpr
         wheel_rotations = self.gearing.fromMotor(motor_rotations)
         return wheel_rotations * self.circumference
 
 
 class SwerveModule(SubsystemBase):
-
-    def __init__(self, drive_motor_id: int, steer_motor_id: int, steer_sensor_id: int, steer_sensor_offset: float, location: Translation2d):
+    def __init__(
+        self,
+        drive_motor_id: int,
+        steer_motor_id: int,
+        steer_sensor_id: int,
+        steer_sensor_offset: float,
+        location: Translation2d,
+    ):
         super().__init__()
         # set initial states for the component
         self.drive = WPI_TalonFX(drive_motor_id)
@@ -118,7 +122,7 @@ class SwerveModule(SubsystemBase):
             config.FALCON_TICKS_PER_ROTATION,
         )
         self.configModuleComponents()
-        
+
         # self.velocity = 0
         # self.angle = 0
         # self.enabled = False
@@ -126,7 +130,6 @@ class SwerveModule(SubsystemBase):
 
         # self.calculated_velocity = 0
         # configure all swerve module components
-
 
     # def disable(self):
     #     self.enabled = False
@@ -169,9 +172,7 @@ class SwerveModule(SubsystemBase):
         )
 
     def getCurrentSpeed(self) -> float:
-        return self.drive_unit.velocityToSpeed(
-            self.drive.getSelectedSensorVelocity()
-        )
+        return self.drive_unit.velocityToSpeed(self.drive.getSelectedSensorVelocity())
 
     # def getDrivePosition(self) -> float:
     #     return self.drive.getSelectedSensorPosition()
@@ -185,8 +186,7 @@ class SwerveModule(SubsystemBase):
 
     def getCurrentPosition(self):
         return SwerveModulePosition(
-            self.getCurrentDistance(),
-            self.getCurrentRotation()
+            self.getCurrentDistance(), self.getCurrentRotation()
         )
 
     # def getSteerPosition(self):
@@ -200,9 +200,7 @@ class SwerveModule(SubsystemBase):
         # No worky: self.encoder.configAllSettings(cfgSteerEncoder)
         # TODO: ^^ see if we can use the configAllSettings method again
         # TODO:  Review all other config settings for the devices
-        self.encoder.configAbsoluteSensorRange(
-            AbsoluteSensorRange.Signed_PlusMinus180
-        )
+        self.encoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180)
         self.encoder.configSensorDirection(False)
         # adjust 0 degree point with offset
         self.encoder.configMagnetOffset(self.steerOffset)
@@ -212,9 +210,7 @@ class SwerveModule(SubsystemBase):
         # set position to Absolute
 
         self.steer.configAllSettings(config.cfgSteerMotor)
-        self.steer.setStatusFramePeriod(
-            StatusFrameEnhanced.Status_1_General, 250
-        )
+        self.steer.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 250)
         # define the remote CANCoder as Remote Feedback 0
         self.steer.configRemoteFeedbackFilter(
             self.encoder.getDeviceNumber(), RemoteSensorSource.CANCoder, 0
@@ -231,12 +227,10 @@ class SwerveModule(SubsystemBase):
         self.steer.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0)
         self.steer.setSensorPhase(True)
         self.steer.setNeutralMode(NeutralMode.Brake)
-        
+
         # configure drive motor
         self.drive.configAllSettings(config.cfgDriveMotor)
-        self.drive.setStatusFramePeriod(
-            StatusFrameEnhanced.Status_1_General, 250
-        )
+        self.drive.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 250)
         self.drive.setInverted(TalonFXInvertType.Clockwise)
         self.drive.configClosedloopRamp(0.25)
 
@@ -247,19 +241,18 @@ class SwerveModule(SubsystemBase):
         self.requestedState = state
         self.enabled = True
 
-    # TODO: Figure out if this needs to be renamed.
-    #def execute(self):
+        # TODO: Figure out if this needs to be renamed.
+        # def execute(self):
         # execute is called each iteration
         # define what needs to happen if the
         # component is enabled/disabled
         # TODO: work out if the enabling/disabling is needed in command-based
         if self.enabled:
 
-            # 
+            #
             # using built-in optimize method instead of our custom one from last year
             self.requestedState = SwerveModuleState.optimize(
-                self.requestedState, 
-                self.getCurrentRotation()
+                self.requestedState, self.getCurrentRotation()
             )
             # current_steer_position = self.getSteerPosition()
             # steer_adjust_radians, speed_inversion = optimize_steer_angle(
@@ -267,7 +260,7 @@ class SwerveModule(SubsystemBase):
             # )
             self.steer.set(
                 POSITION_MODE,
-                self.requestedState.angle.radians() * config.CANCODER_TICKS_PER_RADIAN
+                self.requestedState.angle.radians() * config.CANCODER_TICKS_PER_RADIAN,
             )
             # self.steer.set(POSITION_MODE, self.getCommandedTicks())
             # self.steer.set(
@@ -281,28 +274,22 @@ class SwerveModule(SubsystemBase):
             # )
             self.drive.set(
                 VELOCITY_MODE,
-                self.drive_unit.speedToVelocity(self.requestedState.speed)
+                self.drive_unit.speedToVelocity(self.requestedState.speed),
             )
         else:
             self.drive.set(0)
 
-class SwerveChassis(SubsystemBase):
 
+class SwerveChassis(SubsystemBase):
     def __init__(self):
         super().__init__()
-        self.center = Translation2d(0,0)
-        self.swerveFrontLeft = SwerveModule(
-            **config.MODULE_FRONT_LEFT
-        )
-        self.swerveFrontRight = SwerveModule(
-            **config.MODULE_FRONT_RIGHT
-        )
-        self.swerveBackLeft = SwerveModule(
-            **config.MODULE_BACK_LEFT
-        )
-        self.swerveBackRight = SwerveModule(
-            **config.MODULE_BACK_RIGHT
-        )
+        self.starting_pose = Pose2d()
+        self.visionPose = None
+        self.center = Translation2d(0, 0)
+        self.swerveFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
+        self.swerveFrontRight = SwerveModule(**config.MODULE_FRONT_RIGHT)
+        self.swerveBackLeft = SwerveModule(**config.MODULE_BACK_LEFT)
+        self.swerveBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
 
         self.modules = (
             self.swerveFrontLeft,
@@ -324,26 +311,32 @@ class SwerveChassis(SubsystemBase):
         )
 
         self.gyro = FROGGyro()
-        #self.field = 
-        #self.logger =
-        # 
+        # self.field =
+        # self.logger =
+        #
         # initialize the drivetrain with zero movement
-        self.chassisSpeeds = ChassisSpeeds(0,0,0)
+        self.chassisSpeeds = ChassisSpeeds(0, 0, 0)
         # TODO: set values for pose depending on starting field position
         self.odometry = SwerveDrive4Odometry(
             self.kinematics,
             self.gyro.getRotation2d(),
-            tuple([
-                SwerveModulePosition(0, x.getCurrentRotation()) for x in self.modules
-            ]),
-            Pose2d()
+            tuple(
+                [SwerveModulePosition(0, x.getCurrentRotation()) for x in self.modules]
+            ),
+            self.starting_pose,
+        )
+        self.estimator = SwerveDrive4PoseEstimator(
+            self.kinematics,
+            self.gyro.getRotation2d(),
+            tuple(
+                [SwerveModulePosition(0, x.getCurrentRotation()) for x in self.modules]
+            ),
+            self.starting_pose,
         )
         self.field = Field2d()
 
     def applyModuleStates(self, chassisSpeeds, center):
-        states = self.kinematics.toSwerveModuleStates(
-            chassisSpeeds, center
-        )
+        states = self.kinematics.toSwerveModuleStates(chassisSpeeds, center)
         states = self.kinematics.desaturateWheelSpeeds(
             states, config.MAX_METERS_PER_SEC
         )
@@ -366,8 +359,15 @@ class SwerveChassis(SubsystemBase):
         self.applyModuleStates(self.chassisSpeeds, self.center)
 
     def periodic(self) -> None:
-        self.odometry.update(
+        self.odometryPose = self.odometry.update(
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             *self.getModulePositions(),
         )
+        self.estimatorPose = self.estimator.update(
+            Rotation2d.fromDegrees(self.gyro.getYaw()),
+            *self.getModulePositions(),
+        )
+        if self.visionPose:
+            self.estimator.addVisionMeasurement(self.visionPose)
+
         self.field.setRobotPose(self.odometry.getPose())
