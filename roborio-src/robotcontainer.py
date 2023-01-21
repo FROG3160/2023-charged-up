@@ -17,8 +17,8 @@ class RobotContainer:
         self.swerveChassis.setDefaultCommand(
             RunCommand(
                 lambda: self.swerveChassis.fieldOrientedDrive(
-                    self.driverController.getFieldLeft(),
                     self.driverController.getFieldForward(),
+                    self.driverController.getFieldLeft(),
                     self.driverController.getFieldRotation()
                 ),
                 self.swerveChassis
