@@ -335,7 +335,7 @@ class SwerveChassis(SubsystemBase):
         )
         self.field = Field2d()
 
-    def applyModuleStates(self, chassisSpeeds, center):
+    def applyModuleStates(self, chassisSpeeds: ChassisSpeeds, center: Translation2d):
         states = self.kinematics.toSwerveModuleStates(chassisSpeeds, center)
         states = self.kinematics.desaturateWheelSpeeds(
             states, config.MAX_METERS_PER_SEC
@@ -365,7 +365,7 @@ class SwerveChassis(SubsystemBase):
         )
         self.estimatorPose = self.estimator.update(
             Rotation2d.fromDegrees(self.gyro.getYaw()),
-            *self.getModulePositions(),
+            tuple(self.getModulePositions()),
         )
         if self.visionPose:
             self.estimator.addVisionMeasurement(self.visionPose)
