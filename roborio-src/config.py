@@ -5,9 +5,8 @@ from ctre import (
     SensorInitializationStrategy,
     BaseTalonPIDSetConfiguration,
     FeedbackDevice,
-    RemoteSensorSource,
     CANCoderConfiguration,
-    AbsoluteSensorRange
+    AbsoluteSensorRange,
 )
 
 TRACK_WIDTH = 27.75 / 12
@@ -68,7 +67,9 @@ MODULE_BACK_RIGHT = {
     )
 }
 
-
+#
+# **Swerve Module Drive Motor Config
+#
 cfgDriveMotor = TalonFXConfiguration()
 cfgDriveMotor.initializationStrategy = SensorInitializationStrategy.BootToZero
 cfgDriveMotor.primaryPID = BaseTalonPIDSetConfiguration(
@@ -79,8 +80,10 @@ cfgDriveMotor.slot0.kI = 0.0
 cfgDriveMotor.slot0.kD = 0.0
 cfgDriveMotor.slot0.kF = 0.04664  # 0.058
 
+#
+# **Swerve Module Steer Motor Config
+# 
 cfgSteerMotor = TalonFXConfiguration()
-cfgSteerMotor.remoteFilter0.remoteSensorSource = RemoteSensorSource.CANCoder
 cfgSteerMotor.primaryPID = BaseTalonPIDSetConfiguration(
     FeedbackDevice.RemoteSensor0
 )
@@ -92,6 +95,9 @@ cfgSteerMotor.slot0.kF = 0.0
   about .44 degrees allowed error. """
 cfgSteerMotor.slot0.allowableClosedloopError = 5
 
+#
+# **Swerve Module CanCoder Config
+#
 cfgSteerEncoder = CANCoderConfiguration()
 cfgSteerEncoder.sensorDirection = False  # CCW spin of magnet is positive
 cfgSteerEncoder.initializationStrategy = (
@@ -99,6 +105,9 @@ cfgSteerEncoder.initializationStrategy = (
 )
 cfgSteerEncoder.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180
 
+#
+# Sweve Drive Constants
+#
 FIELD_ORIENTED = 0
 ROBOT_ORIENTED = 1
 
