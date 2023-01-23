@@ -15,6 +15,7 @@ from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.controller import PIDController, ProfiledPIDControllerRadians
 from wpimath.trajectory import TrapezoidProfileRadians
 from wpilib import Field2d
+from wpilib.shuffleboard import Shuffleboard
 from wpimath.geometry import Translation2d, Rotation2d, Pose2d
 from wpimath.kinematics import (
     SwerveDrive4Kinematics,
@@ -35,6 +36,55 @@ from subsystems.sensors import FROGGyro
 # Motor Control modes
 VELOCITY_MODE = ControlMode.Velocity
 POSITION_MODE = ControlMode.Position
+
+
+def constrain_radians(rads):
+    '''Returns radians between -2*pi and 2*pi'''
+    return math.atan2(math.sin(rads), math.cos(rads))
+
+
+class FROGSwerveModuleState(SwerveModuleState):
+    def optimize(self, current_rotation: Rotation2d):
+        # def optimize_steer_angle(new_state: SwerveModuleState, current_radians):
+        """This function takes the desired module state and the current
+        angle of the wheel and calculates a new position that keeps the
+        amount of rotation needed to under 90 degrees in either direction.
+        Args:
+            new_state (SwerveModuleState): the module state
+            current_radians (float): current angle in radians.
+                This value does not have to be between -pi and pi.
+        Returns:
+            SwerveModuleState
+
+        """
+        invert_speed = 1
+
+        # all angles are in radians
+        desired_angle = self.angle.radians()
+
+        # we are taking the radians which may be < -pi or > pi and constraining
+        # it to the range of -pi to pi for our calculations
+        # current_angle = math.atan2(
+        #     math.sin(current_rotation), math.cos(current_rotation)
+        # )
+        current_angle = constrain_radians(current_rotation.radians())
+
+        n_offset = desired_angle - current_angle
+
+        # if our offset is greater than 90 degrees, we need to flip 180 and reverse
+        # speed.
+        while abs(n_offset) > math.pi / 2:
+            if n_offset < -math.pi / 2:
+                n_offset += math.pi
+                invert_speed *= -1
+            elif n_offset > math.pi / 2:
+                n_offset -= math.pi
+                invert_speed *= -1
+        new_angle = constrain_radians(current_angle + n_offset)
+
+        if abs(n_offset) > math.pi / 2:
+            print(">>>>>>>>>>>>>>>>>ERROR<<<<<<<<<<<<<<<<<<<<")
+        return FROGSwerveModuleState(self.speed * invert_speed, Rotation2d(new_angle))
 
 
 class GearStages:
@@ -189,8 +239,8 @@ class SwerveModule(SubsystemBase):
             self.getCurrentDistance(), self.getCurrentRotation()
         )
 
-    # def getSteerPosition(self):
-    #     return self.steer.getSelectedSensorPosition(0)
+    def getSteerPosition(self):
+        return self.steer.getSelectedSensorPosition(0)
 
     # def resetRemoteEncoder(self):
     #     self.encoder.setPositionToAbsolute()
@@ -211,21 +261,20 @@ class SwerveModule(SubsystemBase):
 
         self.steer.configAllSettings(config.cfgSteerMotor)
         self.steer.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 250)
+        self.steer.setInverted(TalonFXInvertType.CounterClockwise)  # was Clockwise
         # define the remote CANCoder as Remote Feedback 0
         self.steer.configRemoteFeedbackFilter(
             self.encoder.getDeviceNumber(), RemoteSensorSource.CANCoder, 0
         )
-        self.steer.setInverted(TalonFXInvertType.Clockwise)
         # configure Falcon to use Remote Feedback 0
-        # self.steer.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0)
+        self.steer.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0)
         self.steer.configIntegratedSensorInitializationStrategy(
             SensorInitializationStrategy.BootToAbsolutePosition
         )
         self.steer.configIntegratedSensorAbsoluteRange(
             AbsoluteSensorRange.Signed_PlusMinus180
         )
-        self.steer.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0)
-        self.steer.setSensorPhase(True)
+        self.steer.setSensorPhase(False)
         self.steer.setNeutralMode(NeutralMode.Brake)
 
         # configure drive motor
@@ -237,8 +286,8 @@ class SwerveModule(SubsystemBase):
         # self.current_states = None
         # self.current_speeds = None
 
-    def setState(self, state):
-        self.requestedState = state
+    def setState(self, state: SwerveModuleState):
+        self.requestedState = FROGSwerveModuleState(state.speed, state.angle)
         self.enabled = True
 
         # TODO: Figure out if this needs to be renamed.
@@ -251,9 +300,7 @@ class SwerveModule(SubsystemBase):
 
             #
             # using built-in optimize method instead of our custom one from last year
-            self.requestedState = SwerveModuleState.optimize(
-                self.requestedState, self.getCurrentRotation()
-            )
+            self.requestedState.optimize(self.getCurrentRotation())
             # current_steer_position = self.getSteerPosition()
             # steer_adjust_radians, speed_inversion = optimize_steer_angle(
             #     self.state, current_steer_position / kCANCoderTicksPerRadian
