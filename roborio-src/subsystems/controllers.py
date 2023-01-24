@@ -2,6 +2,7 @@ import wpilib
 from wpilib import Joystick, XboxController
 from wpilib.interfaces import GenericHID
 from utils.utils import remap
+import wpimath
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
@@ -14,7 +15,7 @@ class FROGStick(Joystick):
         FROGStick: Custom Joystick class
     """
 
-    DEADBAND = 0.15
+    DEADBAND = 0.025
     SPEED_DIVISOR = 1
     ROTATION_DIVISOR = 1.6
     ROTATION_MIN = 0
@@ -54,7 +55,8 @@ class FROGStick(Joystick):
         # inverts the joystick's Y axis so pushing
         # forward is positive and pulling back is
         # negative
-        return -self.getY()
+        
+        return wpimath.applyDeadband(-self.getY(), self.DEADBAND)
 
     def getFieldLeft(self):
         """Get's the joystick's X axis and
@@ -67,7 +69,7 @@ class FROGStick(Joystick):
         """
         # inverts the joystick's X axis so pushing
         # left is positive and pushing right is negative
-        return -self.getX()
+        return wpimath.applyDeadband(-self.getX(), self.DEADBAND)
 
     def getFieldRotation(self):
         """Get's the joystick's Twist axis and
@@ -79,7 +81,7 @@ class FROGStick(Joystick):
         """
         # inverts the joystick's twist axis so CCW
         # is positive and CW is negative
-        return -self.getTwist()
+        return wpimath.applyDeadband(-self.getTwist(), self.DEADBAND)
 
     def get_speed(self):
         # Dampens the -1 to 1 values of the joystick to provide a smoothed acceleration
