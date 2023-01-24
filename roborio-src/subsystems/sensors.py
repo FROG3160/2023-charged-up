@@ -1,6 +1,5 @@
 import wpilib
 from navx import AHRS
-from magicbot import feedback, tunable
 from ctre import CANifier
 from utils.utils import Buffer
 from rev import ColorSensorV3
@@ -16,7 +15,7 @@ SENSORUNITS_IN_METERS = 0.001
 
 class FROGGyro:
 
-    starting_angle = tunable(0.0)
+    starting_angle = 0.0
 
     def __init__(self):
         # TODO Make sure if we need this.
@@ -26,7 +25,6 @@ class FROGGyro:
         # self.gyro.reset()
         # self.gyro.setAngleAdjustment(-self.field_heading)
 
-    @feedback()
     def getYaw(self):
         # returns gyro heading +180 to -180 degrees
         # and inverts it to change from bearing to
@@ -36,14 +34,12 @@ class FROGGyro:
     def setOffset(self, offset):
         self.offset = offset
 
-    @feedback()
     def getRotationDPS(self):
         return self.gyro.getRate()
 
     def getRotation2d(self):
         return Rotation2d.fromDegrees(self.getYaw())
 
-    @feedback()
     def getOffsetYaw(self):
         chassisYaw = self.getYaw()
         fieldYaw = Rotation2d.fromDegrees(chassisYaw + self.starting_angle)
@@ -60,11 +56,9 @@ class FROGGyro:
     def execute(self):
         pass
 
-    @feedback
     def getAngle(self):
         return self.gyro.getAngle()
 
-    @feedback
     def getAngleConstrained(self):
         angle = self.getAngle()
         return math.degrees(math.atan2(math.sin(angle), math.cos(angle)))
@@ -72,11 +66,9 @@ class FROGGyro:
     def setAngleAdjustment(self, angle):
         self.gyro.setAngleAdjustment(angle)
 
-    @feedback()
     def getRadiansCCW(self):
         return math.radians(self.gyro.getYaw())
 
-    @feedback()
     def getAngleAdjustment(self):
         return self.gyro.getAngleAdjustment()
 
@@ -101,28 +93,23 @@ class FROGdar:
     def isValidData(self):
         return self.rangeBuffer._isValidData() and self.targetRange is not None
 
-    @feedback(key="sensor_raw")
     def getSensorData(self):
         errorcode, (val1, val2) = self.canifier.getPWMInput(
             CANifier.PWMChannel.PWMChannel0
         )
         return val1
 
-    @feedback(key="sensor_buffered")
     def getBufferedSensorData(self):
         return self.targetRange
 
-    @feedback(key="range_inches")
     def getDistance(self):
         if self.isValidData():
             return self.getBufferedSensorData() * SENSORUNITS_IN_INCHES
 
-    @feedback(key="range_feet")
     def getDistanceFeet(self):
         if self.isValidData():
             return self.getBufferedSensorData() * SENSORUNITS_IN_FEET
 
-    @feedback(key="range_meters")
     def getDistanceMeters(self):
         if self.isValidData():
             return self.getBufferedSensorData() * SENSORUNITS_IN_METERS
@@ -151,15 +138,12 @@ class FROGColor:
     def disable(self):
         self.enabled = False
 
-    @feedback(key="Red")
     def getRed(self):
         return self.colorSensor.getColor().red
 
-    @feedback(key="Blue")
     def getBlue(self):
         return self.colorSensor.getColor().blue
 
-    @feedback(key="Proximity")
     def getProximity(self):
         return self.colorSensor.getProximity()
 
@@ -181,7 +165,6 @@ class FROGsonic:
     def __call__(self):
         self.getInches()
 
-    @feedback()
     def getInches(self):
         self.USVolt = self.cargoUltrasonic.getVoltage()
         return (self.USVolt * self.mm / (self.mv / 1000)) * 0.039
