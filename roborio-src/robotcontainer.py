@@ -1,6 +1,7 @@
 from subsystems.drivetrain import SwerveChassis
 from subsystems.controllers import FROGStick
 from commands2 import RunCommand
+from commands2.button import JoystickButton
 
 
 class RobotContainer:
@@ -25,7 +26,13 @@ class RobotContainer:
             )
 
         )
+        self.zeroGyro = JoystickButton(self.driverController, 3);
         self.configureButtonBindings()
 
     def configureButtonBindings(self):
-        pass
+        self.zeroGyro.onTrue(
+                RunCommand(
+                    lambda: self.swerveChassis.gyro.resetGyro(),
+                    self.swerveChassis
+                )
+            )   
