@@ -26,6 +26,7 @@ MODULE_DRIVE_GEARING = [(14.0 / 50.0), (28.0 / 16.0), (15.0 / 45.0)] #Mk4 L3
 MODULE_WHEEL_DIAMETER = 0.1000125  # 3 15/16 inches in meters
 
 MODULE_FRONT_LEFT = {
+    'name': "FrontLeft",
     'drive_motor_id': 11,
     'steer_motor_id': 21,
     'steer_sensor_id': 31,
@@ -37,6 +38,7 @@ MODULE_FRONT_LEFT = {
 }
 
 MODULE_FRONT_RIGHT = {
+    'name': "FrontRight",
     'drive_motor_id': 12,
     'steer_motor_id': 22,
     'steer_sensor_id': 32,
@@ -47,6 +49,7 @@ MODULE_FRONT_RIGHT = {
     )
 }
 MODULE_BACK_LEFT = {
+    'name': "BackLeft",
     'drive_motor_id': 13,
     'steer_motor_id': 23,
     'steer_sensor_id': 33,
@@ -57,6 +60,7 @@ MODULE_BACK_LEFT = {
     )
 }
 MODULE_BACK_RIGHT = {
+    'name': "BackRight",
     'drive_motor_id': 14,
     'steer_motor_id': 24,
     'steer_sensor_id': 34,
