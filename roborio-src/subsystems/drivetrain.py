@@ -1,3 +1,4 @@
+from wpiutil import SendableBuilder
 from commands2 import SubsystemBase
 from ctre import (
     FeedbackDevice,
@@ -14,7 +15,7 @@ from ctre import (
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.controller import PIDController, ProfiledPIDControllerRadians
 from wpimath.trajectory import TrapezoidProfileRadians
-from wpilib import Field2d
+from wpilib import Field2d, SmartDashboard
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.geometry import Translation2d, Rotation2d, Pose2d
 from wpimath.kinematics import (
@@ -152,6 +153,7 @@ class DriveUnit:
 class SwerveModule(SubsystemBase):
     def __init__(
         self,
+        name: str,
         drive_motor_id: int,
         steer_motor_id: int,
         steer_sensor_id: int,
@@ -160,6 +162,7 @@ class SwerveModule(SubsystemBase):
     ):
         super().__init__()
         # set initial states for the component
+        self.name = name
         self.drive = WPI_TalonFX(drive_motor_id)
         self.steer = WPI_TalonFX(steer_motor_id)
         self.encoder = WPI_CANCoder(steer_sensor_id)
@@ -326,6 +329,14 @@ class SwerveModule(SubsystemBase):
         else:
             self.drive.set(0)
 
+    # def initSendable(self, builder) -> None:
+
+    #     super().initSendable(builder)
+
+    def periodic(self) -> None:
+        SmartDashboard.putNumber("{}_steerAngle".format(self.name), self.getCurrentRotation().degrees())
+        SmartDashboard.putNumber("{}_driveSpeed".format(self.name), self.getCurrentSpeed())
+
 
 class SwerveChassis(SubsystemBase):
     def __init__(self):
@@ -418,3 +429,6 @@ class SwerveChassis(SubsystemBase):
             self.estimator.addVisionMeasurement(self.visionPose)
 
         self.field.setRobotPose(self.odometry.getPose())
+
+        SmartDashboard.putString("Estimator", self.estimatorPose.__str__())
+        SmartDashboard.putNumber('Gyro', self.gyro.getAngle())
