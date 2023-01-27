@@ -437,7 +437,7 @@ class SwerveChassis(SubsystemBase):
 
         self.field.setRobotPose(self.odometry.getPose())
 
-        SmartDashboard.putString("Estimator_X", self.estimatorPose.X())
-        SmartDashboard.putString("Estimator_Y", self.estimatorPose.Y())
-        SmartDashboard.putString("Estimator_T", self.estimatorPose.rotation().degrees())
+        SmartDashboard.putNumber("Estimator_X", self.estimatorPose.X())
+        SmartDashboard.putNumber("Estimator_Y", self.estimatorPose.Y())
+        SmartDashboard.putNumber("Estimator_T", self.estimatorPose.rotation().degrees())
         SmartDashboard.putNumber("Gyro", self.gyro.getAngle())
