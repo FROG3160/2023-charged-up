@@ -40,7 +40,7 @@ POSITION_MODE = ControlMode.Position
 
 
 def constrain_radians(rads):
-    '''Returns radians between -2*pi and 2*pi'''
+    """Returns radians between -2*pi and 2*pi"""
     return math.atan2(math.sin(rads), math.cos(rads))
 
 
@@ -86,7 +86,7 @@ class FROGSwerveModuleState(SwerveModuleState):
         if abs(n_offset) > math.pi / 2:
             print(">>>>>>>>>>>>>>>>>ERROR<<<<<<<<<<<<<<<<<<<<")
         self.speed *= invert_speed
-        self.angle = Rotation2d(new_angle)  
+        self.angle = Rotation2d(new_angle)
         # return FROGSwerveModuleState(self.speed * invert_speed, Rotation2d(new_angle))
 
 
@@ -336,8 +336,12 @@ class SwerveModule(SubsystemBase):
     #     super().initSendable(builder)
 
     def periodic(self) -> None:
-        SmartDashboard.putNumber("{}_steerAngle".format(self.name), self.getCurrentRotation().degrees())
-        SmartDashboard.putNumber("{}_driveSpeed".format(self.name), self.getCurrentSpeed())
+        SmartDashboard.putNumber(
+            "{}_steerAngle".format(self.name), self.getCurrentRotation().degrees()
+        )
+        SmartDashboard.putNumber(
+            "{}_driveSpeed".format(self.name), self.getCurrentSpeed()
+        )
 
 
 class SwerveChassis(SubsystemBase):
@@ -433,5 +437,7 @@ class SwerveChassis(SubsystemBase):
 
         self.field.setRobotPose(self.odometry.getPose())
 
-        SmartDashboard.putString("Estimator", self.estimatorPose.__str__())
-        SmartDashboard.putNumber('Gyro', self.gyro.getAngle())
+        SmartDashboard.putString("Estimator_X", self.estimatorPose.X())
+        SmartDashboard.putString("Estimator_Y", self.estimatorPose.Y())
+        SmartDashboard.putString("Estimator_T", self.estimatorPose.rotation().degrees())
+        SmartDashboard.putNumber("Gyro", self.gyro.getAngle())
