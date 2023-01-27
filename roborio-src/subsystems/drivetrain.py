@@ -85,7 +85,9 @@ class FROGSwerveModuleState(SwerveModuleState):
 
         if abs(n_offset) > math.pi / 2:
             print(">>>>>>>>>>>>>>>>>ERROR<<<<<<<<<<<<<<<<<<<<")
-        return FROGSwerveModuleState(self.speed * invert_speed, Rotation2d(new_angle))
+        self.speed *= invert_speed
+        self.angle = Rotation2d(new_angle)  
+        # return FROGSwerveModuleState(self.speed * invert_speed, Rotation2d(new_angle))
 
 
 class GearStages:
@@ -425,6 +427,7 @@ class SwerveChassis(SubsystemBase):
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             tuple(self.getModulePositions()),
         )
+        # TODO: Need timestamp for the vision measurement
         if self.visionPose:
             self.estimator.addVisionMeasurement(self.visionPose)
 
