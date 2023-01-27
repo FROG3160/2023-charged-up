@@ -9,8 +9,8 @@ from ctre import (
     AbsoluteSensorRange,
 )
 
-TRACK_WIDTH = 27.75 / 12
-WHEELBASE = 21.75 / 12
+TRACK_WIDTH = 20 / 12
+WHEELBASE = 20 / 12
 # these are the values for the 2023 frame when it's built
 #TRACK_WIDTH = 20 / 12 # track width in feet
 #WHEELBASE = 20 / 12  # wheelbase in feet
