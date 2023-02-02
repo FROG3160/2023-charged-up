@@ -12,7 +12,6 @@ class RobotContainer:
         # self.driverController = FROGStick(0, 0, 1, 3, 2)
         # config for Logitech Extreme 3D
         self.driverController = FROGStick(0, 0, 1, 2, 3)
-        self.driverController.trigger()
 
         # Robot Subsystems
         self.swerveChassis = SwerveChassis()
