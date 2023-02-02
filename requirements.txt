@@ -5,18 +5,21 @@ wheel
 
 # RobotPy packages installed
 
-pyfrc==2023.0.0
-pynetconsole==2.0.4
-pyntcore==2023.1.1.0
-robotpy==2023.1.1
-robotpy-ctre==2023.0.0
-robotpy-hal==2023.1.1.0
-robotpy-halsim-gui==2023.1.1.0
-robotpy-installer==2023.0.1
-robotpy-navx==2023.0.1
-robotpy-rev==2023.1.2
-robotpy-wpilib-utilities==2023.0.0
-robotpy-wpimath==2023.1.1.0
-robotpy-wpinet==2023.1.1.0
-robotpy-wpiutil==2023.1.1.0
-wpilib==2023.1.1.0
+pyfrc
+pynetconsole
+pyntcore
+robotpy
+robotpy-apriltag
+robotpy-commands-v2
+robotpy-ctre
+robotpy-hal
+robotpy-halsim-gui
+robotpy-installer
+robotpy-navx
+robotpy-photonvision
+robotpy-rev
+robotpy-wpilib-utilities
+robotpy-wpimath
+robotpy-wpinet
+robotpy-wpiutil
+wpilib
