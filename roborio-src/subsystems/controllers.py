@@ -3,12 +3,29 @@ from wpilib import Joystick, XboxController
 from wpilib.interfaces import GenericHID
 from utils.utils import remap
 import wpimath
+from commands2.button import CommandJoystick
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
 
+     # config for saitek joystick
+        # self.driverController = FROGStick(0, 0, 1, 3, 2)
+        # config for Logitech Extreme 3D
+        #self.driverController = FROGStick(0, 0, 1, 2, 3)
+SAITEK_AXIS_CONFIG = {
+    'xAxis': 0,
+    'yAxis': 1,
+    'rAxis': 3,
+    'tAxis': 2
+}
+LOGITECH_EXTREME_AXIS_CONFIG = {
+    'xAxis': 0,
+    'yAxis': 1,
+    'rAxis': 2,
+    'tAxis': 3
+}
 
-class FROGStick(Joystick):
+class FROGStick(CommandJoystick):
     """Extended class of wpilib.Joystick
 
     Returns:
@@ -23,7 +40,7 @@ class FROGStick(Joystick):
     DEBOUNCE_PERIOD = 0.5
 
     def __init__(
-        self, port: int, xAxis: int = 1, yAxis: int = 2, rAxis=3, tAxis=4
+        self, port: int, xAxis: int = 1, yAxis: int = 2, rAxis: int = 3, tAxis: int = 4
     ) -> None:
         """Constructor for FROGStick
 
@@ -55,7 +72,7 @@ class FROGStick(Joystick):
         # inverts the joystick's Y axis so pushing
         # forward is positive and pulling back is
         # negative
-        
+
         return wpimath.applyDeadband(-self.getY(), self.DEADBAND)
 
     def getFieldLeft(self):
@@ -134,4 +151,3 @@ class FROGStick(Joystick):
                 self.button_latest[num] = now
                 val = True
         return val
-

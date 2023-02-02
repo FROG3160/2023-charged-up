@@ -1,5 +1,5 @@
 from subsystems.drivetrain import SwerveChassis
-from subsystems.controllers import FROGStick
+from subsystems.controllers import FROGStick, LOGITECH_EXTREME_AXIS_CONFIG
 from commands2.button import JoystickButton
 
 from commands.swerve_commands import cmdFieldOrientedDrive, cmdZeroGyro
@@ -8,10 +8,7 @@ from commands.swerve_commands import cmdFieldOrientedDrive, cmdZeroGyro
 class RobotContainer:
     def __init__(self):
 
-        # config for saitek joystick
-        # self.driverController = FROGStick(0, 0, 1, 3, 2)
-        # config for Logitech Extreme 3D
-        self.driverController = FROGStick(0, 0, 1, 2, 3)
+        self.driverController = FROGStick(port = 0, **LOGITECH_EXTREME_AXIS_CONFIG)
 
         # Robot Subsystems
         self.swerveChassis = SwerveChassis()
