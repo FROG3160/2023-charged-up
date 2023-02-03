@@ -220,6 +220,9 @@ def toleranceFromRange(range):
         return range * -0.0018 + 2.6812
         #return range * -0.0091 + 4.9058
 
+def metersToInches(meters: float) -> float:
+    return meters * 39.3700787402
+
 if __name__ == "__main__":
     wheel = DriveUnit(
         [(14.0 / 50.0), (27.0 / 17.0), (15.0 / 45.0)], 6380, 0.10033, 2048
