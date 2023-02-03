@@ -1,33 +1,33 @@
-from wpiutil import SendableBuilder
+import math
+
+import config
 from commands2 import SubsystemBase
 from ctre import (
+    AbsoluteSensorRange,
+    ControlMode,
     FeedbackDevice,
     NeutralMode,
     RemoteSensorSource,
-    WPI_TalonFX,
-    WPI_CANCoder,
-    TalonFXInvertType,
-    ControlMode,
     SensorInitializationStrategy,
-    AbsoluteSensorRange,
     StatusFrameEnhanced,
+    TalonFXInvertType,
+    WPI_CANCoder,
+    WPI_TalonFX,
 )
-from wpimath.estimator import SwerveDrive4PoseEstimator
-from wpimath.controller import PIDController, ProfiledPIDControllerRadians
-from wpimath.trajectory import TrapezoidProfileRadians
+from subsystems.sensors import FROGGyro
+from subsystems.vision import FROGPhotonVision
+from utils.utils import DriveUnit
 from wpilib import Field2d, SmartDashboard
-from wpilib.shuffleboard import Shuffleboard
-from wpimath.geometry import Translation2d, Rotation2d, Pose2d
+from wpimath.estimator import SwerveDrive4PoseEstimator
+from wpimath.geometry import Pose2d, Rotation2d, Translation2d
 from wpimath.kinematics import (
+    ChassisSpeeds,
     SwerveDrive4Kinematics,
     SwerveDrive4Odometry,
-    ChassisSpeeds,
-    SwerveModuleState,
     SwerveModulePosition,
+    SwerveModuleState,
 )
-from wpimath.estimator import SwerveDrive4PoseEstimator
-import math
-from magicbot import feedback, tunable
+
 from .sensors import FROGGyro
 from utils.utils import DriveUnit, Rescale, metersToInches
 from logging import Logger
@@ -302,7 +302,6 @@ class SwerveModule(SubsystemBase):
         # component is enabled/disabled
         # TODO: work out if the enabling/disabling is needed in command-based
         if self.enabled:
-
             #
             # using built-in optimize method instead of our custom one from last year
             self.requestedState.optimize(self.getCurrentRotation())
@@ -348,7 +347,7 @@ class SwerveChassis(SubsystemBase):
     def __init__(self):
         super().__init__()
         self.starting_pose = Pose2d()
-        self.visionPose = None
+        self.visionPoseEstimator = FROGPhotonVision()
         self.center = Translation2d(0, 0)
         self.swerveFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
         self.swerveFrontRight = SwerveModule(**config.MODULE_FRONT_RIGHT)
@@ -423,6 +422,9 @@ class SwerveChassis(SubsystemBase):
         self.applyModuleStates(self.chassisSpeeds, self.center)
 
     def periodic(self) -> None:
+        visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
+        if visionPose:
+            self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
         self.odometryPose = self.odometry.update(
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             *self.getModulePositions(),
@@ -431,9 +433,6 @@ class SwerveChassis(SubsystemBase):
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             tuple(self.getModulePositions()),
         )
-        # TODO: Need timestamp for the vision measurement
-        if self.visionPose:
-            self.estimator.addVisionMeasurement(self.visionPose)
 
         self.field.setRobotPose(self.odometry.getPose())
 
