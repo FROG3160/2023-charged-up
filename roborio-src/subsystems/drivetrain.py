@@ -29,7 +29,7 @@ from wpimath.estimator import SwerveDrive4PoseEstimator
 import math
 from magicbot import feedback, tunable
 from .sensors import FROGGyro
-from utils.utils import DriveUnit, Rescale
+from utils.utils import DriveUnit, Rescale, metersToInches
 from logging import Logger
 import config
 from subsystems.sensors import FROGGyro
@@ -437,7 +437,7 @@ class SwerveChassis(SubsystemBase):
 
         self.field.setRobotPose(self.odometry.getPose())
 
-        SmartDashboard.putNumber("Estimator_X", self.estimatorPose.X())
-        SmartDashboard.putNumber("Estimator_Y", self.estimatorPose.Y())
-        SmartDashboard.putNumber("Estimator_T", self.estimatorPose.rotation().degrees())
-        SmartDashboard.putNumber("Gyro", self.gyro.getAngle())
+        SmartDashboard.putNumber("Estimator_X_Inches", metersToInches(self.estimatorPose.X()))
+        SmartDashboard.putNumber("Estimator_Y_Inches", metersToInches(self.estimatorPose.Y()))
+        SmartDashboard.putNumber("Estimator_T_Degrees", self.estimatorPose.rotation().degrees())
+        SmartDashboard.putNumber("Gyro_Angle_CCW", self.gyro.getYaw())
