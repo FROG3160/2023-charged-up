@@ -3,7 +3,7 @@ from wpilib import Joystick, XboxController
 from wpilib.interfaces import GenericHID
 from utils.utils import remap
 import wpimath
-from commands2.button import CommandJoystick
+from commands2.button import CommandJoystick, CommandXboxController
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
@@ -151,3 +151,25 @@ class FROGStick(CommandJoystick):
                 self.button_latest[num] = now
                 val = True
         return val
+
+class FROGXbox(CommandXboxController):
+    
+    DEADBAND = 0.15
+    ROTATION_DIVISOR = 1
+    
+    def __init__(self, channel):
+
+        super().__init__(channel)
+        self.button_latest = {}
+
+    def get_rotation(self):
+        return wpimath.applyDeadband(-self.getRightX(), self.DEADBAND)
+
+    def getFieldForward(self):
+        return wpimath.applyDeadband(-self.getLeftY(), self.DEADBAND)
+
+    def getFieldLeft(self):
+        return wpimath.applyDeadband(-self.getLeftX(), self.DEADBAND)
+
+    def getThrottle(self):
+        return wpimath.applyDeadband(self.getRightTriggerAxis(), self.DEADBAND)
