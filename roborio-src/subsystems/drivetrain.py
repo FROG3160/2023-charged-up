@@ -29,8 +29,9 @@ from wpimath.kinematics import (
 )
 
 from .sensors import FROGGyro
-from utils.utils import DriveUnit, Rescale, metersToInches
-from logging import Logger
+from utils.utils import DriveUnit, Rescale 
+from wpimath.units import metersToInches
+from logging import Loggerunits
 import config
 from subsystems.sensors import FROGGyro
 
