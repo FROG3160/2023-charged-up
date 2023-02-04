@@ -110,8 +110,9 @@ class FROGStick(CommandJoystick):
 
     def get_throttle(self):
         val = super().getThrottle()
-        return val
-
+        throttle = (val + 1) / 2
+        return throttle
+        
     def get_rotation(self):
         return (
             self.getTwist() / self.ROTATION_DIVISOR
