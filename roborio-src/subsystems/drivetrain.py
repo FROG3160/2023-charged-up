@@ -412,9 +412,9 @@ class SwerveChassis(SubsystemBase):
     def getModulePositions(self):
         return [module.getCurrentPosition() for module in self.modules]
 
-    def fieldOrientedDrive(self, vX, vY, vT):
-        xSpeed = vX * config.MAX_METERS_PER_SEC
-        ySpeed = vY * config.MAX_METERS_PER_SEC
+    def fieldOrientedDrive(self, vX, vY, vT, throttle = 1):
+        xSpeed = vX * config.MAX_METERS_PER_SEC * throttle
+        ySpeed = vY * config.MAX_METERS_PER_SEC * throttle
         rotSpeed = vT * config.MAX_CHASSIS_RADIANS_SEC
         self.chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
             xSpeed, ySpeed, rotSpeed, self.gyro.getRotation2d()

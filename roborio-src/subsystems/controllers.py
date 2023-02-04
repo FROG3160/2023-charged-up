@@ -4,6 +4,7 @@ from wpilib.interfaces import GenericHID
 from utils.utils import remap
 import wpimath
 from commands2.button import CommandJoystick
+import config
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
