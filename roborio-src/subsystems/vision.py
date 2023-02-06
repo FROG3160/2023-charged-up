@@ -14,10 +14,8 @@ apriltagsFilename = r"apriltags_layout.json"
 apriltagsLayoutPath = os.path.join(os.path.dirname(__file__), r"..", apriltagsFilename)
 
 
-def arrayToTransform3d(poseArray) -> Transform3d:
-    if not len(poseArray) == 6:
-        poseArray = [-99, -99, -99, 0, 0, 0]
-    return Transform3d(
+def arrayToPose3d(poseArray) -> Pose3d:
+    return Pose3d(
         Translation3d(poseArray[0], poseArray[1], poseArray[2]),
         Rotation3d(poseArray[3], poseArray[4], poseArray[5]),
     )
@@ -74,25 +72,26 @@ class FROGLimeLightVision(SubsystemBase):
         self.limelightTable = NetworkTableInstance.getDefault().getTable(
             key="limelight"
         )
-        self.botPose = self.limelightTable.getFloatArrayTopic("botpose").subscribe([])
+        self.botPose = self.limelightTable.getFloatArrayTopic("botpose").subscribe([-99, -99, -99, 0, 0, 0])
+        #self.botPose = self.limelightTable.getDoubleArrayTopic("botpose").subscribe([])
         self.botPoseBlue = self.limelightTable.getFloatArrayTopic(
             "botpose_wpiblue"
-        ).subscribe([])
+        ).subscribe([-99, -99, -99, 0, 0, 0])
         self.botPoseRed = self.limelightTable.getFloatArrayTopic(
             "botpose_wpired"
-        ).subscribe([])
+        ).subscribe([-99, -99, -99, 0, 0, 0])
 
-    def getBotPose(self) -> Transform3d:
-        return arrayToTransform3d(self.botPose.get())
+    def getBotPose(self) -> Pose3d:
+        return arrayToPose3d(self.botPose.get())
 
-    def getBotPoseBlue(self) -> Transform3d:
-        return arrayToTransform3d(self.botPoseBlue.get())
+    def getBotPoseBlue(self) -> Pose3d:
+        return arrayToPose3d(self.botPoseBlue.get())
 
-    def getBotPoseRed(self) -> Transform3d:
-        return arrayToTransform3d(self.botPoseRed.get())
+    def getBotPoseRed(self) -> Pose3d:
+        return arrayToPose3d(self.botPoseRed.get())
 
     def getTID(self) -> float:
-        return self.limelightTable.getNumber("tid", 0.0)
+        return self.limelightTable.getNumber("tid", -1.0)
 
     def periodic(self) -> None:
         SmartDashboard.putNumber("BotPose TagID", self.getTID())
