@@ -16,7 +16,6 @@ class RobotContainer:
         self.swerveChassis.setDefaultCommand(
             cmdFieldOrientedDrive(self.driverController, self.swerveChassis)
         )
-        self.vision = FROGPhotonVision()
 
         self.btnZeroGyro = JoystickButton(self.driverController, 3)
         self.configureButtonBindings()

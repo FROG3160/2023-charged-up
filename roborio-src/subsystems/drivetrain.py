@@ -15,7 +15,7 @@ from ctre import (
     WPI_TalonFX,
 )
 from subsystems.sensors import FROGGyro
-from subsystems.vision import FROGPhotonVision
+from subsystems.vision import FROGPhotonVision, FROGLimeLightVision
 from utils.utils import DriveUnit
 from wpilib import Field2d, SmartDashboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
@@ -347,8 +347,10 @@ class SwerveModule(SubsystemBase):
 class SwerveChassis(SubsystemBase):
     def __init__(self):
         super().__init__()
+        # TODO: Adjust for field placement
         self.starting_pose = Pose2d()
         self.visionPoseEstimator = FROGPhotonVision()
+        self.limelightPoseEstimator = FROGLimeLightVision()
         self.center = Translation2d(0, 0)
         self.swerveFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
         self.swerveFrontRight = SwerveModule(**config.MODULE_FRONT_RIGHT)
@@ -397,6 +399,8 @@ class SwerveChassis(SubsystemBase):
             ),
             self.starting_pose,
         )
+        # TODO: Adjust the stdDevs
+        self.estimator.setVisionMeasurementStdDevs((0.1, 0.1, 0.1))
         self.field = Field2d()
 
     def applyModuleStates(self, chassisSpeeds: ChassisSpeeds, center: Translation2d):
@@ -423,21 +427,27 @@ class SwerveChassis(SubsystemBase):
         self.applyModuleStates(self.chassisSpeeds, self.center)
 
     def periodic(self) -> None:
-        visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
-        if visionPose:
-            self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
-        self.odometryPose = self.odometry.update(
-            Rotation2d.fromDegrees(self.gyro.getYaw()),
-            *self.getModulePositions(),
-        )
         self.estimatorPose = self.estimator.update(
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             tuple(self.getModulePositions()),
         )
+        #visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
+        visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
+        if visionPose:
+            if abs(visionPose.x - self.estimatorPose.x) < 1 and abs(visionPose.y - self.estimatorPose.y) < 1:
+                self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
+        
+        self.odometryPose = self.odometry.update(
+            Rotation2d.fromDegrees(self.gyro.getYaw()),
+            *self.getModulePositions(),
+        )
 
-        self.field.setRobotPose(self.odometry.getPose())
+        self.field.setRobotPose(self.odometryPose)
 
         SmartDashboard.putNumber("Estimator_X_Inches", metersToInches(self.estimatorPose.X()))
         SmartDashboard.putNumber("Estimator_Y_Inches", metersToInches(self.estimatorPose.Y()))
         SmartDashboard.putNumber("Estimator_T_Degrees", self.estimatorPose.rotation().degrees())
         SmartDashboard.putNumber("Gyro_Angle_CCW", self.gyro.getYaw())
+        SmartDashboard.putNumber("Odometry_X_Inches", metersToInches(self.odometryPose.X()))
+        SmartDashboard.putNumber("Odometry_Y_Inches", metersToInches(self.odometryPose.Y()))
+        SmartDashboard.putNumber("Odometry_T_Degrees", self.odometryPose.rotation().degrees())
