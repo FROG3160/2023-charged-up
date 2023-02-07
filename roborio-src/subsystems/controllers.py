@@ -162,7 +162,7 @@ class FROGXbox(CommandXboxController):
         super().__init__(channel)
         self.button_latest = {}
 
-    def get_rotation(self):
+    def getFieldRotation(self):
         return wpimath.applyDeadband(-self.getRightX(), self.DEADBAND)
 
     def getFieldForward(self):
@@ -171,5 +171,5 @@ class FROGXbox(CommandXboxController):
     def getFieldLeft(self):
         return wpimath.applyDeadband(-self.getLeftX(), self.DEADBAND)
 
-    def getThrottle(self):
+    def getFieldThrottle(self):
         return wpimath.applyDeadband(self.getRightTriggerAxis(), self.DEADBAND)
