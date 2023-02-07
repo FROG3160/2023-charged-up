@@ -430,11 +430,12 @@ class SwerveChassis(SubsystemBase):
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             tuple(self.getModulePositions()),
         )
-        visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
+        #visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
+        visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
         if visionPose:
             if abs(visionPose.x - self.estimatorPose.x) < 1 and abs(visionPose.y - self.estimatorPose.y) < 1:
                 self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
-
+        
         self.odometryPose = self.odometry.update(
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             *self.getModulePositions(),
