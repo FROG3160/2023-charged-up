@@ -3,26 +3,26 @@ from commands2 import SubsystemBase
 from ctre import WPI_TalonFX
 
 
-class arm(SubsystemBase):
+class Arm(SubsystemBase):
     
 
     def __init__(
         self,
-        armMotorID = int,
+        motorID = int,
     ):
         super().__init__()
-        self.FROGArm = WPI_TalonFX(armMotorID)
+        self.motor = WPI_TalonFX(motorID)
 
     def getEncoderPosition(self) -> float:
-        return self.FROGArm.getSelectedSensorPosition()
+        return self.motor.getSelectedSensorPosition()
 
 
     def run(self, speed: float):
     # TODO: Determine the actual position the arm is moving in based on 
     # running the motor forward and backward.
-        self.FROGArm.set(speed)
+        self.motor.set(speed)
 
     def stop(self):
-        self.FROGArm.set(0)
+        self.motor.set(0)
 
     
