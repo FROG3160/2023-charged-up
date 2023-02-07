@@ -80,6 +80,17 @@ class FROGLimeLightVision(SubsystemBase):
         self.botPoseRed = self.limelightTable.getFloatArrayTopic(
             "botpose_wpired"
         ).subscribe([-99, -99, -99, 0, 0, 0])
+        self.driverstation = wpilib.DriverStation
+        self.allianceColor = self.driverstation.getAlliance()
+        self.timer = wpilib.Timer()
+
+    def getBotPoseAlliance(self) -> typing.Tuple[Pose3d, float]:
+        if self.allianceColor == self.driverstation.Alliance.kRed:
+            return (self.getBotPoseRed(), self.timer.getFPGATimestamp())
+        elif self.allianceColor == self.driverstation.Alliance.kBlue:
+            return (self.getBotPoseBlue(), self.timer.getFPGATimestamp())
+        else:
+            return None
 
     def getBotPose(self) -> Pose3d:
         return arrayToPose3d(self.botPose.get())
