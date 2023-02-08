@@ -3,7 +3,7 @@ from subsystems.controllers import FROGStick, LOGITECH_EXTREME_AXIS_CONFIG
 from subsystems.vision import FROGPhotonVision
 from commands2.button import JoystickButton
 
-from commands.swerve_commands import cmdFieldOrientedDrive, cmdZeroGyro
+from commands.swerve_commands import cmdFieldOrientedDrive, cmdFieldOrientedThrottledDrive, cmdZeroGyro
 
 
 class RobotContainer:
@@ -14,7 +14,7 @@ class RobotContainer:
         # Robot Subsystems
         self.swerveChassis = SwerveChassis()
         self.swerveChassis.setDefaultCommand(
-            cmdFieldOrientedDrive(self.driverController, self.swerveChassis)
+            cmdFieldOrientedThrottledDrive(self.driverController, self.swerveChassis)
         )
 
         self.btnZeroGyro = JoystickButton(self.driverController, 3)

@@ -111,7 +111,7 @@ class FROGStick(CommandJoystick):
         )
         return speed
 
-    def get_throttle(self):
+    def getFieldThrottle(self):
         val = super().getThrottle()
         throttle = (val + 1) / 2
         return throttle

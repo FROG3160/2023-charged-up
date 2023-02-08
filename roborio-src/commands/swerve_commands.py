@@ -14,6 +14,18 @@ class cmdFieldOrientedDrive(RunCommand):
             [drive],
         )
 
+class cmdFieldOrientedThrottledDrive(RunCommand):
+    def __init__(self, controller: FROGStick, drive: SwerveChassis) -> None:
+        """Moves the robot using field oriented drive"""
+        super().__init__(
+            lambda: drive.fieldOrientedDrive(
+                controller.getFieldForward(),
+                controller.getFieldLeft(),
+                controller.getFieldRotation(),
+                controller.getFieldThrottle()
+            ),  
+            [drive],
+        )
 
 class cmdZeroGyro(InstantCommand):
     def __init__(self, drive: SwerveChassis) -> None:
