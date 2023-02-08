@@ -3,7 +3,10 @@ from wpilib import Joystick, XboxController
 from wpilib.interfaces import GenericHID
 from utils.utils import remap
 import wpimath
+
+import config
 from commands2.button import CommandJoystick, CommandXboxController
+
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
@@ -110,8 +113,9 @@ class FROGStick(CommandJoystick):
 
     def get_throttle(self):
         val = super().getThrottle()
-        return val
-
+        throttle = (val + 1) / 2
+        return throttle
+        
     def get_rotation(self):
         return (
             self.getTwist() / self.ROTATION_DIVISOR
