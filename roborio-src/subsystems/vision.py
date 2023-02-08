@@ -8,11 +8,10 @@ from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Transl
 from wpilib import SmartDashboard
 from ntcore import NetworkTableInstance, NetworkTable
 from wpimath.units import metersToInches, inchesToMeters, radiansToDegrees
+from field import FROGFieldLayout
 
-apriltagsFilename = r"apriltags_layout.json"
-# get the dir of THIS file (vision.py), go up one level (..), and use the specified filename
-apriltagsLayoutPath = os.path.join(os.path.dirname(__file__), r"..", apriltagsFilename)
-
+RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
+BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
 
 def arrayToPose3d(poseArray) -> Pose3d:
     return Pose3d(
@@ -20,15 +19,15 @@ def arrayToPose3d(poseArray) -> Pose3d:
         Rotation3d(poseArray[3], poseArray[4], poseArray[5]),
     )
 
-
 class FROGPhotonVision(SubsystemBase):
     def __init__(self):
         super().__init__()
+        # TODO: add second camera
         self.camera = PhotonCamera("IMX219")
-        self.fieldLayout = AprilTagFieldLayout(apriltagsLayoutPath)
+        self.fieldLayout = FROGFieldLayout()
         self.poseEstimator = RobotPoseEstimator(
             self.fieldLayout,
-            PoseStrategy.AVERAGE_BEST_TARGETS,
+            PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
             [
                 (
                     self.camera,
@@ -69,6 +68,7 @@ class FROGPhotonVision(SubsystemBase):
 class FROGLimeLightVision(SubsystemBase):
     def __init__(self):
         super().__init__()
+        self.fieldLayout = FROGFieldLayout()
         self.limelightTable = NetworkTableInstance.getDefault().getTable(
             key="limelight"
         )
@@ -80,14 +80,13 @@ class FROGLimeLightVision(SubsystemBase):
         self.botPoseRed = self.limelightTable.getFloatArrayTopic(
             "botpose_wpired"
         ).subscribe([-99, -99, -99, 0, 0, 0])
-        self.driverstation = wpilib.DriverStation
-        self.allianceColor = self.driverstation.getAlliance()
+        # create the timer that we can use to the the FPGA timestamp
         self.timer = wpilib.Timer()
 
     def getBotPoseAlliance(self) -> typing.Tuple[Pose3d, float]:
-        if self.allianceColor == self.driverstation.Alliance.kRed:
+        if self.fieldLayout.alliance == RED_ALLIANCE:
             return (self.getBotPoseRed(), self.timer.getFPGATimestamp())
-        elif self.allianceColor == self.driverstation.Alliance.kBlue:
+        elif self.fieldLayout.alliance == BLUE_ALLIANCE:
             return (self.getBotPoseBlue(), self.timer.getFPGATimestamp())
         else:
             return None
@@ -121,3 +120,6 @@ class FROGLimeLightVision(SubsystemBase):
         SmartDashboard.putNumber("RedBotPose_X", metersToInches(botpose.x))
         SmartDashboard.putNumber("RedBotPose_Y", metersToInches(botpose.y))
         SmartDashboard.putNumber("RedBotPose_Z", metersToInches(botpose.z))
+
+if __name__ == '__main__':
+    pass
