@@ -348,7 +348,7 @@ class SwerveChassis(SubsystemBase):
     def __init__(self):
         super().__init__()
         # TODO: Adjust for field placement
-        self.starting_pose = Pose2d()
+        self.starting_pose = Pose2d(8.2296, 4.1148, math.pi)
         self.visionPoseEstimator = FROGPhotonVision()
         self.limelightPoseEstimator = FROGLimeLightVision()
         self.center = Translation2d(0, 0)
@@ -403,11 +403,7 @@ class SwerveChassis(SubsystemBase):
         self.estimator.setVisionMeasurementStdDevs((0.1, 0.1, 0.1))
         self.field = Field2d()
 
-    def applyModuleStates(self, chassisSpeeds: ChassisSpeeds, center: Translation2d):
-        states = self.kinematics.toSwerveModuleStates(chassisSpeeds, center)
-        states = self.kinematics.desaturateWheelSpeeds(
-            states, config.MAX_METERS_PER_SEC
-        )
+    def applyModuleStates(self, states):
         for module, state in zip(self.modules, states):
             module.setState(state)
 
@@ -424,7 +420,11 @@ class SwerveChassis(SubsystemBase):
         self.chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
             xSpeed, ySpeed, rotSpeed, self.gyro.getRotation2d()
         )
-        self.applyModuleStates(self.chassisSpeeds, self.center)
+        states = self.kinematics.toSwerveModuleStates(self.chassisSpeeds, self.center)
+        states = self.kinematics.desaturateWheelSpeeds(
+            states, config.MAX_METERS_PER_SEC
+        )
+        self.applyModuleStates(states)
 
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(
