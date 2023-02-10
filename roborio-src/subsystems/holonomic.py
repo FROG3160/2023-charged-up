@@ -2,7 +2,7 @@ from wpimath.trajectory import TrajectoryGenerator, TrajectoryConfig, TrapezoidP
 from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
 from wpimath.units import feetToMeters
 from wpimath.controller import PIDController, ProfiledPIDControllerRadians, HolonomicDriveController
-from subsystems.drivetrain import SwerveChassis
+from drivetrain import SwerveChassis
 import math
 from wpilib import Timer
 from typing import List
