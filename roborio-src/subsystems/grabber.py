@@ -1,4 +1,4 @@
-from wpilib import Solenoid
+from wpilib import Solenoid, PneumaticsModuleType
 from ctre import WPI_TalonSRX
 from commands2 import SubsystemBase
 
@@ -12,10 +12,10 @@ class FROGGrabber(SubsystemBase):
             motorRightID (int): Motor ID for the Right Motor
             solenoidID (int): Solenoid ID for the grabber pneumatics.
         """
-        super().__init__(self)
+        super().__init__()
         self.motorL = WPI_TalonSRX(motorLeftID)
         self.motorR = WPI_TalonSRX(motorRightID)
-        self.pneumatics = Solenoid(solenoidID)
+        self.pneumatics = Solenoid(PneumaticsModuleType.CTREPCM, solenoidID)
         # motors and stuff
 
     def open(self):
