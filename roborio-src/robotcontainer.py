@@ -45,7 +45,7 @@ class RobotContainer:
                 lambda: self.grabber.wheelsOn(
                     self.operatorController.getLeftTriggerAxis()
                     ),
-                    [self.arm]
+                    [self.grabber]
             )
         )
 
@@ -53,11 +53,12 @@ class RobotContainer:
         self.btnZeroGyro = JoystickButton(self.driverController, 3)
         self.btnDriveAuto = JoystickButton(self.driverController, 2)
 
-        trajectoryConfig.setKinematics(self.kinematics)
+        trajectoryConfig.setKinematics(self.swerveChassis.kinematics)
+        self.currentPose = self.swerveChassis.estimator.getEstimatedPosition()
         self.trajectory = TrajectoryGenerator.generateTrajectory(
-			self.swerveChassis.estimatorPose, # Starting position
+			self.currentPose, # Starting position
 			[], # Pass through these points
-			self.swerveChassis.estimatorPose + Transform2d(feetToMeters(6), feetToMeters(3)),
+			self.currentPose + Transform2d(feetToMeters(6), feetToMeters(3), 0),
              # Ending position
 			trajectoryConfig
         )
