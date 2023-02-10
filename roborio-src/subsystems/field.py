@@ -46,6 +46,8 @@ class FROGFieldLayout(AprilTagFieldLayout):
         #set layout to be specific to the alliance end
         self.setAlliance()
     
+    def getTagtoRobotTransform(self, fieldPose: Pose3d, tagID:int) -> Transform3d:
+        return fieldPose - self.getTagPose(tagID)
     # get position
     def getTagRelativePosition(self, tagID: int, position: int) -> Pose3d:
         return self.getTagPose(tagID) + botPositionsFromTag[position-1]
