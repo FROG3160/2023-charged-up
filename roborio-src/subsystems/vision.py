@@ -20,10 +20,9 @@ def arrayToPose3d(poseArray) -> Pose3d:
     )
 
 class FROGPhotonVision(SubsystemBase):
-    def __init__(self):
+    def __init__(self,cameraName: str, cameraTransform3d: Transform3d):
         super().__init__()
-        # TODO: add second camera
-        self.camera = PhotonCamera("IMX219")
+        self.camera = PhotonCamera(cameraName = cameraName)
         self.fieldLayout = FROGFieldLayout()
         self.poseEstimator = RobotPoseEstimator(
             self.fieldLayout,
@@ -31,29 +30,27 @@ class FROGPhotonVision(SubsystemBase):
             [
                 (
                     self.camera,
-                    Transform3d(
-                        Translation3d(inchesToMeters(13.75), 0, inchesToMeters(5.5)),
-                        Rotation3d(0, 0, 0),
-                    ),
+                    cameraTransform3d,
                 ),
             ],
         )
         self.currentPose = Pose3d()
         self.previousEstimatedRobotPose = None
-        self.time = None
 
     def getEstimatedRobotPose(self) -> typing.Tuple[Pose3d, float]:
         # if self.previousEstimatedRobotPose:
         #     self.poseEstimator.setReferencePose(self.previousEstimatedRobotPose)
         if not wpilib.RobotBase.isSimulation():
-            self.currentPose, self.time = self.poseEstimator.update()
+            self.currentPose, visionTime = self.poseEstimator.update()
             # if self.currentPose:
             #     self.previousEstimatedRobotPose = self.currentPose
-            return (self.currentPose, self.time)
+            return (self.currentPose, visionTime)
         else:
             return (None, None)
+    
 
     def periodic(self) -> None:
+        self.getEstimatedRobotPose()
         SmartDashboard.putNumber(
             "PhotonVision_X_Inches", metersToInches(self.currentPose.X())
         )
