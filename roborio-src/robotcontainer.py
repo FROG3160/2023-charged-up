@@ -62,7 +62,3 @@ class RobotContainer:
                 self.swerveChassis, self.swerveChassis.getSimpleTrajectory()
             )
         )
-
-        JoystickButton(self.driverController, self.driverController.Button.kLeftBumper).whileTrue(
-            self.swerveChassis.getSwerveCommand
-        )
