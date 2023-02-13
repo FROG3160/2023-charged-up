@@ -35,7 +35,7 @@ class cmdDriveTrajectory(Swerve4ControllerCommand):
         )
 
 class cmdFieldOrientedThrottledDrive(RunCommand):
-    def __init__(self, controller: FROGStick, drive: SwerveChassis) -> None:
+    def __init__(self, controller, drive: SwerveChassis) -> None:
         """Moves the robot using field oriented drive"""
         super().__init__(
             lambda: drive.fieldOrientedDrive(
