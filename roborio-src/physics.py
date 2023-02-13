@@ -43,6 +43,6 @@ class PhysicsEngine:
 
     def update_sim(self, now, tm_diff):
         pose = self.physics_controller.drive(
-            self.robot.container.swerveChassis.chassisSpeeds, tm_diff
+            self.robot.swerveChassis.chassisSpeeds, tm_diff
         )
-        self.robot.container.swerveChassis.gyro.setAngleAdjustment(-pose.rotation().degrees())
+        self.robot.swerveChassis.gyro.setAngleAdjustment(-pose.rotation().degrees())

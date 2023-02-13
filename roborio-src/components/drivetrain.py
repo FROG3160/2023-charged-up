@@ -19,8 +19,8 @@ from wpimath.trajectory import (
     TrajectoryConfig,
     TrapezoidProfileRadians,
 )
-from subsystems.sensors import FROGGyro
-from subsystems.vision import FROGPhotonVision, FROGLimeLightVision
+from components.sensors import FROGGyro
+from components.vision import FROGPhotonVision, FROGLimeLightVision
 from utils.utils import DriveUnit
 from wpilib import Field2d, SmartDashboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
@@ -46,8 +46,11 @@ from utils.utils import DriveUnit, Rescale
 from wpimath.units import metersToInches, inchesToMeters, feetToMeters
 from logging import Logger
 import config
-from subsystems.sensors import FROGGyro
-from wpimath.controller import PIDController, ProfiledPIDControllerRadians, HolonomicDriveController
+from wpimath.controller import (
+    PIDController,
+    ProfiledPIDControllerRadians,
+    HolonomicDriveController,
+)
 
 # Motor Control modes
 VELOCITY_MODE = ControlMode.Velocity
@@ -170,7 +173,7 @@ class DriveUnit:
         return wheel_rotations * self.circumference
 
 
-class SwerveModule(SubsystemBase):
+class SwerveModule:
     def __init__(
         self,
         name: str,
@@ -198,17 +201,13 @@ class SwerveModule(SubsystemBase):
 
         # self.velocity = 0
         # self.angle = 0
-        # self.enabled = False
-        # self.requestedState = SwerveModuleState(0, Rotation2d.fromDegrees(0)) #zeroing swerve state  TODO: set to actual angle?
+        self.enabled = False
 
-        # self.calculated_velocity = 0
-        # configure all swerve module components
+    def disable(self):
+        self.enabled = False
 
-    # def disable(self):
-    #     self.enabled = False
-
-    # def enable(self):
-    #     self.enabled = True
+    def enable(self):
+        self.enabled = True
 
     def getEncoderAbsolutePosition(self) -> float:
         """gets the absolute position from the CANCoder
@@ -311,36 +310,16 @@ class SwerveModule(SubsystemBase):
 
     def setState(self, state: SwerveModuleState):
         self.requestedState = FROGSwerveModuleState(state.speed, state.angle)
-        self.enabled = True
 
-        # TODO: Figure out if this needs to be renamed.
-        # def execute(self):
-        # execute is called each iteration
-        # define what needs to happen if the
-        # component is enabled/disabled
-        # TODO: work out if the enabling/disabling is needed in command-based
         if self.enabled:
             #
             # using built-in optimize method instead of our custom one from last year
             self.requestedState.optimize(self.getCurrentRotation())
-            # current_steer_position = self.getSteerPosition()
-            # steer_adjust_radians, speed_inversion = optimize_steer_angle(
-            #     self.state, current_steer_position / kCANCoderTicksPerRadian
-            # )
             self.steer.set(
                 POSITION_MODE,
                 self.requestedState.angle.radians() * config.CANCODER_TICKS_PER_RADIAN,
             )
-            # self.steer.set(POSITION_MODE, self.getCommandedTicks())
-            # self.steer.set(
-            #     POSITION_MODE,
-            #     current_steer_position
-            #     + (steer_adjust_radians * kCANCoderTicksPerRadian),
-            # )
-            # set velocity for Falcon to ticks/100ms
-            # self.calculated_velocity = self.drive_unit.speedToVelocity(
-            #     self.state.speed * speed_inversion
-            # )
+
             self.drive.set(
                 VELOCITY_MODE,
                 self.drive_unit.speedToVelocity(self.requestedState.speed),
@@ -361,11 +340,17 @@ class SwerveModule(SubsystemBase):
         )
 
 
-class SwerveChassis(SubsystemBase):
+class SwerveChassis:
+    moduleFrontLeft: SwerveModule
+    moduleFrontRight: SwerveModule
+    moduleBackLeft: SwerveModule
+    swerveBackRight: SwerveModule
+
     def __init__(self):
-        super().__init__()
+        self.enabled = False
+        self.autoDrive = False
         # TODO: Adjust for field placement
-        self.logger = Logger('SwerveChassis')
+        self.logger = Logger("SwerveChassis")
         self.starting_pose = Pose2d(8.2296, 4.1148, 0)
         self.visionPoseEstimator = FROGPhotonVision(
             "OV5647",
@@ -376,17 +361,24 @@ class SwerveChassis(SubsystemBase):
         )
         self.limelightPoseEstimator = FROGLimeLightVision()
         self.center = Translation2d(0, 0)
-        self.swerveFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
-        self.swerveFrontRight = SwerveModule(**config.MODULE_FRONT_RIGHT)
-        self.swerveBackLeft = SwerveModule(**config.MODULE_BACK_LEFT)
-        self.swerveBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
+
+
+    def setup(self):
 
         self.modules = (
-            self.swerveFrontLeft,
-            self.swerveFrontRight,
-            self.swerveBackLeft,
+            self.moduleFrontLeft,
+            self.moduleFrontRight,
+            self.moduleBackLeft,
             self.swerveBackRight,
         )
+
+        self.moduleStates = (
+            FROGSwerveModuleState(),
+            FROGSwerveModuleState(),
+            FROGSwerveModuleState(),
+            FROGSwerveModuleState(),
+        )
+        self.current_speeds = ChassisSpeeds(0, 0, 0)
 
         self.kinematics = SwerveDrive4Kinematics(
             # the splat operator (asterisk) below expands
@@ -433,9 +425,35 @@ class SwerveChassis(SubsystemBase):
         self.estimator.setVisionMeasurementStdDevs((0.1, 0.1, 0.1))
         self.field = Field2d()
 
-    def applyModuleStates(self, states):
-        for module, state in zip(self.modules, states):
-            module.setState(state)
+    def disable(self):
+        self.enabled = False
+        for module in self.modules:
+            module.disable()
+
+    def enable(self):
+        self.enabled = True
+        for module in self.modules:
+            module.enable()
+
+    def disableAuto(self):
+        self.autoDrive = False
+
+    def enableAuto(self):
+        self.autoDrive = True
+
+    def setModuleStates(self, states):
+        self.moduleStates = states
+
+    def execute(self):
+        if self.enabled:
+            if self.autoDrive:
+                #apply holonomic states
+                pass
+            else:
+                self.setStatesFromSpeeds()#apply chassis Speeds
+
+            for module, state in zip(self.modules, self.moduleStates):
+                module.setState(state)
 
     def getSimpleTrajectory(self):
         self.startTrajectoryPose = self.estimator.getEstimatedPosition()
@@ -445,35 +463,46 @@ class SwerveChassis(SubsystemBase):
         self.logger.info(
             "Auto Drive - Start Pose: %s\n End Pose:%s",
             self.startTrajectoryPose,
-            self.endTrajectoryPose
+            self.endTrajectoryPose,
         )
         return TrajectoryGenerator.generateTrajectory(
             self.startTrajectoryPose,  # Starting position
             [],  # Pass through these points
-            self.endTrajectoryPose,      # Ending position
+            self.endTrajectoryPose,  # Ending position
             self.trajectoryConfig,
         )
-            
-    def getSwerveCommand(self):
-        self.xController = PIDController(1, 0, 0)
-        self.yController = PIDController(1, 0, 0)
-        self.angleController = ProfiledPIDControllerRadians(1, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi))
-        self.angleController.enableContinuousInput(-1*math.pi, math.pi)
-        self.holonomicController = HolonomicDriveController(self.xController, self.yController, self.angleController)
-        return Swerve4ControllerCommand(
-            self.getSimpleTrajectory(),
-            self.estimator.getEstimatedPosition,  #CALLABLE getPose
-            self.kinematics,
-            self.holonomicController,
-            self.applyModuleStates,
-            [self]
-        )
+
+    # def getSwerveCommand(self):
+    #     self.xController = PIDController(1, 0, 0)
+    #     self.yController = PIDController(1, 0, 0)
+    #     self.angleController = ProfiledPIDControllerRadians(
+    #         1, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
+    #     )
+    #     self.angleController.enableContinuousInput(-1 * math.pi, math.pi)
+    #     self.holonomicController = HolonomicDriveController(
+    #         self.xController, self.yController, self.angleController
+    #     )
+    #     return Swerve4ControllerCommand(
+    #         self.getSimpleTrajectory(),
+    #         self.estimator.getEstimatedPosition,  # CALLABLE getPose
+    #         self.kinematics,
+    #         self.holonomicController,
+    #         self.setModuleStates,
+    #         [self],
+    #     )
 
     def getModuleStates(self):
         return [module.getCurrentState() for module in self.modules]
 
     def getModulePositions(self):
         return [module.getCurrentPosition() for module in self.modules]
+
+    def setStatesFromSpeeds(self):
+        states = self.kinematics.toSwerveModuleStates(self.chassisSpeeds, self.center)
+        states = self.kinematics.desaturateWheelSpeeds(
+            states, config.MAX_METERS_PER_SEC
+        )
+        self.moduleStates = states
 
     def fieldOrientedDrive(self, vX: float, vY: float, vT: float, throttle=1.0):
         xSpeed = vX * config.MAX_METERS_PER_SEC * throttle
@@ -482,11 +511,6 @@ class SwerveChassis(SubsystemBase):
         self.chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
             xSpeed, ySpeed, rotSpeed, self.gyro.getRotation2d()
         )
-        states = self.kinematics.toSwerveModuleStates(self.chassisSpeeds, self.center)
-        states = self.kinematics.desaturateWheelSpeeds(
-            states, config.MAX_METERS_PER_SEC
-        )
-        self.applyModuleStates(states)
 
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(
@@ -501,7 +525,6 @@ class SwerveChassis(SubsystemBase):
         #         and abs(visionPose.y - self.estimatorPose.y) < 1
         #     ):
         #         currentPose = self.estimator.getEstimatedPosition()
-
 
         #         self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
         #         adjustedPose = self.estimator.getEstimatedPosition()

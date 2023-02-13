@@ -19,9 +19,8 @@ def arrayToPose3d(poseArray) -> Pose3d:
         Rotation3d(poseArray[3], poseArray[4], poseArray[5]),
     )
 
-class FROGPhotonVision(SubsystemBase):
+class FROGPhotonVision:
     def __init__(self,cameraName: str, cameraTransform3d: Transform3d):
-        super().__init__()
         self.camera = PhotonCamera(cameraName = cameraName)
         self.fieldLayout = FROGFieldLayout()
         self.poseEstimator = RobotPoseEstimator(
@@ -62,9 +61,8 @@ class FROGPhotonVision(SubsystemBase):
         )
 
 
-class FROGLimeLightVision(SubsystemBase):
+class FROGLimeLightVision:
     def __init__(self):
-        super().__init__()
         self.fieldLayout = FROGFieldLayout()
         self.limelightTable = NetworkTableInstance.getDefault().getTable(
             key="limelight"

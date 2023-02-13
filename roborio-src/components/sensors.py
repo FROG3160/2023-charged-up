@@ -23,7 +23,8 @@ class FROGGyro:
         self.offset = 0
         # self.field_heading = 360-242
         # self.gyro.reset()
-        # self.gyro.setAngleAdjustment(-self.field_heading)
+        self.gyro.setAngleAdjustment(self.offset)
+        
 
     def getYaw(self):
         # returns gyro heading +180 to -180 degrees
@@ -38,7 +39,7 @@ class FROGGyro:
         return self.gyro.getRate()
 
     def getRotation2d(self):
-        return Rotation2d.fromDegrees(self.getYaw())
+        return Rotation2d.fromDegrees(self.getAngleCCW())
 
     def getOffsetYaw(self):
         chassisYaw = self.getYaw()
@@ -58,6 +59,9 @@ class FROGGyro:
 
     def getAngle(self):
         return self.gyro.getAngle()
+
+    def getAngleCCW(self):
+        return -self.gyro.getAngle()
 
     def getAngleConstrained(self):
         angle = self.getAngle()

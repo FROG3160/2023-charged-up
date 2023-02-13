@@ -28,7 +28,7 @@ LOGITECH_EXTREME_AXIS_CONFIG = {
     'tAxis': 3
 }
 
-class FROGStick(CommandJoystick):
+class FROGStickDriver(Joystick):
     """Extended class of wpilib.Joystick
 
     Returns:
@@ -156,7 +156,7 @@ class FROGStick(CommandJoystick):
                 val = True
         return val
 
-class FROGXbox(CommandXboxController):
+class FROGXboxDriver(XboxController):
     
     DEADBAND = 0.15
     ROTATION_DIVISOR = 1
@@ -177,3 +177,8 @@ class FROGXbox(CommandXboxController):
 
     def getFieldThrottle(self):
         return wpimath.applyDeadband(self.getRightTriggerAxis(), self.DEADBAND)
+
+
+class FROGXboxOperator(XboxController):
+    def __init__(self, channel):
+        super().__init__(channel)
