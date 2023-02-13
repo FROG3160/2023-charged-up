@@ -1,7 +1,7 @@
 import math
 
 import config
-from commands2 import SubsystemBase
+from commands2 import SubsystemBase, Swerve4ControllerCommand
 from ctre import (
     AbsoluteSensorRange,
     ControlMode,
@@ -14,12 +14,25 @@ from ctre import (
     WPI_CANCoder,
     WPI_TalonFX,
 )
+from wpimath.trajectory import (
+    TrajectoryGenerator,
+    TrajectoryConfig,
+    TrapezoidProfileRadians,
+)
 from subsystems.sensors import FROGGyro
 from subsystems.vision import FROGPhotonVision, FROGLimeLightVision
 from utils.utils import DriveUnit
 from wpilib import Field2d, SmartDashboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
-from wpimath.geometry import Pose2d, Rotation2d, Translation2d
+from wpimath.geometry import (
+    Pose2d,
+    Rotation2d,
+    Translation2d,
+    Transform3d,
+    Translation3d,
+    Rotation3d,
+    Transform2d,
+)
 from wpimath.kinematics import (
     ChassisSpeeds,
     SwerveDrive4Kinematics,
@@ -29,15 +42,19 @@ from wpimath.kinematics import (
 )
 
 from .sensors import FROGGyro
-from utils.utils import DriveUnit, Rescale 
-from wpimath.units import metersToInches
+from utils.utils import DriveUnit, Rescale
+from wpimath.units import metersToInches, inchesToMeters, feetToMeters
 from logging import Logger
 import config
 from subsystems.sensors import FROGGyro
+from wpimath.controller import PIDController, ProfiledPIDControllerRadians, HolonomicDriveController
 
 # Motor Control modes
 VELOCITY_MODE = ControlMode.Velocity
 POSITION_MODE = ControlMode.Position
+
+MAX_TRAJECTORY_SPEED = feetToMeters(5)
+MAX_TRAJECTORY_ACCEL = feetToMeters(5)
 
 
 def constrain_radians(rads):
@@ -348,8 +365,15 @@ class SwerveChassis(SubsystemBase):
     def __init__(self):
         super().__init__()
         # TODO: Adjust for field placement
-        self.starting_pose = Pose2d(8.2296, 4.1148, math.pi)
-        self.visionPoseEstimator = FROGPhotonVision()
+        self.logger = Logger('SwerveChassis')
+        self.starting_pose = Pose2d(8.2296, 4.1148, 0)
+        self.visionPoseEstimator = FROGPhotonVision(
+            "OV5647",
+            Transform3d(
+                Translation3d(inchesToMeters(13.75), 0, inchesToMeters(5.5)),
+                Rotation3d(0, 0, math.pi),
+            ),
+        )
         self.limelightPoseEstimator = FROGLimeLightVision()
         self.center = Translation2d(0, 0)
         self.swerveFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
@@ -376,7 +400,13 @@ class SwerveChassis(SubsystemBase):
             *[m.location for m in self.modules]
         )
 
+        self.trajectoryConfig = TrajectoryConfig(
+            MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL
+        )
+        self.trajectoryConfig.setKinematics(self.kinematics)
+
         self.gyro = FROGGyro()
+        self.gyro.resetGyro()
         # self.field =
         # self.logger =
         #
@@ -407,13 +437,45 @@ class SwerveChassis(SubsystemBase):
         for module, state in zip(self.modules, states):
             module.setState(state)
 
+    def getSimpleTrajectory(self):
+        self.startTrajectoryPose = self.estimator.getEstimatedPosition()
+        self.endTrajectoryPose = self.startTrajectoryPose + Transform2d(
+            feetToMeters(6), feetToMeters(3), 0
+        )
+        self.logger.info(
+            "Auto Drive - Start Pose: %s\n End Pose:%s",
+            self.startTrajectoryPose,
+            self.endTrajectoryPose
+        )
+        return TrajectoryGenerator.generateTrajectory(
+            self.startTrajectoryPose,  # Starting position
+            [],  # Pass through these points
+            self.endTrajectoryPose,      # Ending position
+            self.trajectoryConfig,
+        )
+            
+    def getSwerveCommand(self):
+        self.xController = PIDController(1, 0, 0)
+        self.yController = PIDController(1, 0, 0)
+        self.angleController = ProfiledPIDControllerRadians(1, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi))
+        self.angleController.enableContinuousInput(-1*math.pi, math.pi)
+        self.holonomicController = HolonomicDriveController(self.xController, self.yController, self.angleController)
+        return Swerve4ControllerCommand(
+            self.getSimpleTrajectory(),
+            self.estimator.getEstimatedPosition,  #CALLABLE getPose
+            self.kinematics,
+            self.holonomicController,
+            self.applyModuleStates,
+            [self]
+        )
+
     def getModuleStates(self):
         return [module.getCurrentState() for module in self.modules]
 
     def getModulePositions(self):
         return [module.getCurrentPosition() for module in self.modules]
 
-    def fieldOrientedDrive(self, vX: float, vY: float, vT:float, throttle = 1.0):
+    def fieldOrientedDrive(self, vX: float, vY: float, vT: float, throttle=1.0):
         xSpeed = vX * config.MAX_METERS_PER_SEC * throttle
         ySpeed = vY * config.MAX_METERS_PER_SEC * throttle
         rotSpeed = vT * config.MAX_CHASSIS_RADIANS_SEC * throttle
@@ -431,12 +493,23 @@ class SwerveChassis(SubsystemBase):
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             tuple(self.getModulePositions()),
         )
-        #visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
-        visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
-        if visionPose:
-            if abs(visionPose.x - self.estimatorPose.x) < 1 and abs(visionPose.y - self.estimatorPose.y) < 1:
-                self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
-        
+        # visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
+        # visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
+        # if visionPose:
+        #     if (
+        #         abs(visionPose.x - self.estimatorPose.x) < 1
+        #         and abs(visionPose.y - self.estimatorPose.y) < 1
+        #     ):
+        #         currentPose = self.estimator.getEstimatedPosition()
+
+
+        #         self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
+        #         adjustedPose = self.estimator.getEstimatedPosition()
+        #         self.logger.info(
+        #             "Vision Update -- initial Pose: %s\n  vision Pose: %s\n final Pose: %s",
+        #             currentPose, visionPose, adjustedPose
+        #         )
+
         self.odometryPose = self.odometry.update(
             Rotation2d.fromDegrees(self.gyro.getYaw()),
             *self.getModulePositions(),
@@ -444,10 +517,22 @@ class SwerveChassis(SubsystemBase):
 
         self.field.setRobotPose(self.odometryPose)
 
-        SmartDashboard.putNumber("Estimator_X_Inches", metersToInches(self.estimatorPose.X()))
-        SmartDashboard.putNumber("Estimator_Y_Inches", metersToInches(self.estimatorPose.Y()))
-        SmartDashboard.putNumber("Estimator_T_Degrees", self.estimatorPose.rotation().degrees())
+        SmartDashboard.putNumber(
+            "Estimator_X_Inches", metersToInches(self.estimatorPose.X())
+        )
+        SmartDashboard.putNumber(
+            "Estimator_Y_Inches", metersToInches(self.estimatorPose.Y())
+        )
+        SmartDashboard.putNumber(
+            "Estimator_T_Degrees", self.estimatorPose.rotation().degrees()
+        )
         SmartDashboard.putNumber("Gyro_Angle_CCW", self.gyro.getYaw())
-        SmartDashboard.putNumber("Odometry_X_Inches", metersToInches(self.odometryPose.X()))
-        SmartDashboard.putNumber("Odometry_Y_Inches", metersToInches(self.odometryPose.Y()))
-        SmartDashboard.putNumber("Odometry_T_Degrees", self.odometryPose.rotation().degrees())
+        SmartDashboard.putNumber(
+            "Odometry_X_Inches", metersToInches(self.odometryPose.X())
+        )
+        SmartDashboard.putNumber(
+            "Odometry_Y_Inches", metersToInches(self.odometryPose.Y())
+        )
+        SmartDashboard.putNumber(
+            "Odometry_T_Degrees", self.odometryPose.rotation().degrees()
+        )

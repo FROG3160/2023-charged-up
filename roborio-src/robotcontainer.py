@@ -1,6 +1,6 @@
-from wpimath.trajectory import TrajectoryGenerator, TrajectoryConfig, TrapezoidProfileRadians
+
 from subsystems.drivetrain import SwerveChassis
-from subsystems.controllers import FROGStick, LOGITECH_EXTREME_AXIS_CONFIG
+from subsystems.controllers import FROGStick, LOGITECH_EXTREME_AXIS_CONFIG, FROGXbox
 from subsystems.vision import FROGPhotonVision
 from subsystems.arm import Arm
 from subsystems.grabber import FROGGrabber
@@ -11,17 +11,15 @@ from wpimath.geometry import Transform2d
 
 from commands.swerve_commands import cmdFieldOrientedDrive, cmdFieldOrientedThrottledDrive, cmdZeroGyro, cmdDriveTrajectory
 
-MAX_TRAJECTORY_SPEED = feetToMeters(5)
-MAX_TRAJECTORY_ACCEL = feetToMeters(5)
 
-trajectoryConfig = TrajectoryConfig(MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL)
 
 
 class RobotContainer:
     def __init__(self):
 
-        self.driverController = FROGStick(port = 0, **LOGITECH_EXTREME_AXIS_CONFIG)
-        self.operatorController = CommandXboxController(2)
+        # self.driverController = FROGStick(port = 0, **LOGITECH_EXTREME_AXIS_CONFIG)
+        self.driverController = FROGXbox(0)
+        self.operatorController = CommandXboxController(1)
 
         # Robot Subsystems
         self.swerveChassis = SwerveChassis()
@@ -50,18 +48,8 @@ class RobotContainer:
         )
 
 
-        self.btnZeroGyro = JoystickButton(self.driverController, 3)
-        self.btnDriveAuto = JoystickButton(self.driverController, 2)
-
-        trajectoryConfig.setKinematics(self.swerveChassis.kinematics)
-        self.currentPose = self.swerveChassis.estimator.getEstimatedPosition()
-        self.trajectory = TrajectoryGenerator.generateTrajectory(
-			self.currentPose, # Starting position
-			[], # Pass through these points
-			self.currentPose + Transform2d(feetToMeters(6), feetToMeters(3), 0),
-             # Ending position
-			trajectoryConfig
-        )
+        self.btnZeroGyro = JoystickButton(self.driverController, self.driverController.Button.kStart)
+        self.btnDriveAuto = JoystickButton(self.driverController, self.driverController.Button.kRightBumper)
 
         self.configureButtonBindings()
 
@@ -71,6 +59,10 @@ class RobotContainer:
         )
         self.btnDriveAuto.whileTrue(
             cmdDriveTrajectory(
-                self.swerveChassis, self.trajectory
+                self.swerveChassis, self.swerveChassis.getSimpleTrajectory()
             )
+        )
+
+        JoystickButton(self.driverController, self.driverController.Button.kLeftBumper).whileTrue(
+            self.swerveChassis.getSwerveCommand
         )
