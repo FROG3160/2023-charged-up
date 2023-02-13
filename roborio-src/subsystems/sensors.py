@@ -66,6 +66,7 @@ class FROGGyro:
     def setAngleAdjustment(self, angle):
         self.gyro.setAngleAdjustment(angle)
 
+    # TODO: Confirm this is incorrect.  getYaw returns CW positive?
     def getRadiansCCW(self):
         return math.radians(self.gyro.getYaw())
 
