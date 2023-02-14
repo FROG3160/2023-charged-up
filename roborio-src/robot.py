@@ -6,6 +6,9 @@ from components.controllers import FROGStickDriver, FROGXboxDriver, FROGXboxOper
 from components.field import FROGFieldLayout
 from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
 from wpimath.units import feetToMeters
+
+RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
+BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
 class FROGbot(MagicRobot):
 
     # def robotInit(self):
@@ -34,17 +37,21 @@ class FROGbot(MagicRobot):
         self.operatorController = FROGXboxOperator(1)
 
         self.fieldLayout = FROGFieldLayout()
-        
+        if self.isSimulation():
+            self.fieldLayout.setAlliance(BLUE_ALLIANCE)
+            self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 1).toPose2d().transformBy(
+                Transform2d(Translation2d(0,0),Rotation2d.fromDegrees(180))
+            )
 
 
         # declare buttons
         self.btnEnableAutoDrive = self.driverController.getRightBumper
     
-    # def robotInit(self) -> None:
-    #     self.swerveChassis.setPosition(self.fieldLayout.getTagRelativePosition(7, 1))
+    def robotInit(self) -> None:
+        super().robotInit()
+        self.swerveChassis.setPosition(self.startingPose2d)
   
     def autonomousInit(self):
-        self.swerveChassis.setPosition(self.fieldLayout.getTagRelativePosition(7, 1))
         pass
 
     def teleopInit(self):
@@ -55,12 +62,10 @@ class FROGbot(MagicRobot):
         if self.btnEnableAutoDrive():
             #self.swerveChassis.enableAuto()
             if not self.holonomicController.trajectoryLoaded:
-
                 startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
                 endTrajectoryPose = startTrajectoryPose + Transform2d(
                     feetToMeters(6), feetToMeters(3), 0
                 )
-                print(startTrajectoryPose,endTrajectoryPose)
                 self.holonomicController.initTrajectory(
                     startTrajectoryPose, # Starting position
 			        [], # Pass through these points
