@@ -55,12 +55,12 @@ class FROGFieldLayout(AprilTagFieldLayout):
     def getGridRelativePosition(self, gridNum: int, position: int) -> Pose3d:
         return self.getTagRelativePosition( self.tagList[gridNum-1], position )
     # set alliance/change origin
-    def setAlliance(self):
-        if getAlliance() == RED_ALLIANCE:
+    def setAlliance(self, alliance = getAlliance()):
+        if alliance == RED_ALLIANCE:
             self.setOrigin(self.OriginPosition.kRedAllianceWallRightSide)
             self.tagList = redTagList
             self.alliance = RED_ALLIANCE
-        elif getAlliance() == BLUE_ALLIANCE:
+        elif alliance == BLUE_ALLIANCE:
             self.setOrigin(self.OriginPosition.kBlueAllianceWallRightSide)
             self.tagList = blueTagList
             self.alliance = BLUE_ALLIANCE
