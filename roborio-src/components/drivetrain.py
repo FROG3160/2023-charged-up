@@ -348,10 +348,9 @@ class SwerveChassis:
 
     def __init__(self):
         self.enabled = False
-        self.autoDrive = False
         # TODO: Adjust for field placement
         self.logger = Logger("SwerveChassis")
-        self.starting_pose = Pose2d(8.2296, 4.1148, 0)
+        self.starting_pose = Pose2d(0, 0, 0)
         self.visionPoseEstimator = FROGPhotonVision(
             "OV5647",
             Transform3d(
@@ -444,16 +443,30 @@ class SwerveChassis:
     def setModuleStates(self, states):
         self.moduleStates = states
 
+    def setPosition(self, pose: Pose2d):
+        self.starting_pose = pose
+        self.estimator.resetPosition(
+            self.gyro.getRotation2d(),
+            tuple(self.getModulePositions()),
+            self.starting_pose,
+        )
+        self.odometry.resetPosition(
+            self.gyro.getRotation2d(),
+            self.starting_pose,
+            *self.getModulePositions()
+        )
+
     def execute(self):
         if self.enabled:
-            if self.autoDrive:
-                #apply holonomic states
-                pass
-            else:
-                self.setStatesFromSpeeds()#apply chassis Speeds
+            # if self.autoDrive:
+            #     #apply holonomic states
+            #     pass
+            # else:
+            self.setStatesFromSpeeds()#apply chassis Speeds
 
             for module, state in zip(self.modules, self.moduleStates):
                 module.setState(state)
+        self.periodic()
 
     def getSimpleTrajectory(self):
         self.startTrajectoryPose = self.estimator.getEstimatedPosition()
@@ -512,9 +525,12 @@ class SwerveChassis:
             xSpeed, ySpeed, rotSpeed, self.gyro.getRotation2d()
         )
 
+    def autoDrive(self, chassisSpeeds: ChassisSpeeds) -> None:
+        self.chassisSpeeds = chassisSpeeds
+
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(
-            Rotation2d.fromDegrees(self.gyro.getYaw()),
+            Rotation2d.fromDegrees(self.gyro.getAngleCCW()),
             tuple(self.getModulePositions()),
         )
         # visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()

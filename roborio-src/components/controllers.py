@@ -1,12 +1,17 @@
-import wpilib
-from wpilib import Joystick, XboxController
+from wpilib import Joystick, XboxController,Timer
 from wpilib.interfaces import GenericHID
+from wpimath.controller import PIDController, ProfiledPIDControllerRadians, HolonomicDriveController
 from utils.utils import remap
 import wpimath
-
+from wpimath.units import feetToMeters
+from wpimath.trajectory import TrajectoryGenerator, TrajectoryConfig, TrapezoidProfileRadians
+from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
+import math
 import config
 from commands2.button import CommandJoystick, CommandXboxController
 
+MAX_TRAJECTORY_SPEED = feetToMeters(5)
+MAX_TRAJECTORY_ACCEL = feetToMeters(5)
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
@@ -61,7 +66,7 @@ class FROGStickDriver(Joystick):
         self.setXChannel(xAxis)
         self.setYChannel(yAxis)
         self.button_latest = {}
-        self.timer = wpilib.Timer
+        self.timer = Timer
 
     def getFieldForward(self):
         """Get's the joystick's Y axis and
@@ -182,3 +187,48 @@ class FROGXboxDriver(XboxController):
 class FROGXboxOperator(XboxController):
     def __init__(self, channel):
         super().__init__(channel)
+
+
+
+
+
+class FROGHolonomic(HolonomicDriveController):
+    def __init__(self, kinematics):
+        # the holonomic controller
+        self.kinematics = kinematics
+        self.xController = PIDController(1, 0, 0)
+        self.yController = PIDController(1, 0, 0)
+        self.angleController = ProfiledPIDControllerRadians(
+            1, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
+        )
+        self.angleController.enableContinuousInput(-1*math.pi, math.pi)
+        super().__init__(self.xController, self.yController, self.angleController)
+        self.timer = Timer()
+        self.trajectoryLoaded = False
+
+
+
+    def initTrajectory(self, startPose: Pose2d, wayPoints: list[Translation2d], endPose: Pose2d ):
+        # the trajectory setup
+        trajectoryConfig = TrajectoryConfig(MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL)
+        trajectoryConfig.setKinematics(self.kinematics)
+        self.trajectory = TrajectoryGenerator.generateTrajectory(
+			startPose, # Starting position
+			wayPoints, # Pass through these points
+			endPose, # Ending position
+			trajectoryConfig
+        )
+        self.firstCall = True
+        self.trajectoryLoaded = True
+
+			# Pose2d(0, 0, Rotation2d.fromDegrees(0)), # Starting position
+			# [Translation2d(1,1), Translation2d(2,-1)], # Pass through these points
+			# Pose2d(3, 0, Rotation2d.fromDegrees(0)), # Ending position
+
+    def getChassisSpeeds(self, chassisPose: Pose2d, finalRotation2d: Rotation2d):
+        if self.firstCall:
+            self.timer.start()
+            self.firstCall = False
+        # get the pose of the trajectory at the current time
+        goalPose = self.trajectory.sample(self.timer.get())
+        return self.calculate(chassisPose, goalPose, finalRotation2d)
