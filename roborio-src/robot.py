@@ -11,21 +11,10 @@ RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
 BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
 class FROGbot(MagicRobot):
 
-    # def robotInit(self):
-    #     """
-    #         This method is run when the robot is first started up and should be used for any
-    #     initialization code.
-    #     """
-    #     self.container = RobotContainer()
-
     # Any magicbot component needs to be listed here
     # in order for their "execute" method to be run
     # every loop
     swerveChassis: SwerveChassis
-
-
-
-
 
     def createObjects(self) -> None:
         self.moduleFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)

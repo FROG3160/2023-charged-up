@@ -11,9 +11,7 @@ from ctre import (
 
 TRACK_WIDTH = 20 / 12
 WHEELBASE = 20 / 12
-# these are the values for the 2023 frame when it's built
-#TRACK_WIDTH = 20 / 12 # track width in feet
-#WHEELBASE = 20 / 12  # wheelbase in feet
+
 # SwerveDriveSpecialties modules have the following max speeds (in ft/sec):
 # L1 - 13.5, L2 - 16.3, L3 - 18
 MAX_FEET_PER_SEC = 10
