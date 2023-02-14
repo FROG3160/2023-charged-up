@@ -8,7 +8,7 @@ from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Transl
 from wpilib import SmartDashboard
 from ntcore import NetworkTableInstance, NetworkTable
 from wpimath.units import metersToInches, inchesToMeters, radiansToDegrees
-from subsystems.field import FROGFieldLayout
+from components.field import FROGFieldLayout
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
 BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
