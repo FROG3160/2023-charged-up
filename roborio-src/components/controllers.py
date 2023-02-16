@@ -4,17 +4,25 @@ from wpimath.controller import PIDController, ProfiledPIDControllerRadians, Holo
 from utils.utils import remap
 import wpimath
 from wpimath.units import feetToMeters
-from wpimath.trajectory import TrajectoryGenerator, TrajectoryConfig, TrapezoidProfileRadians
+from wpimath.trajectory import TrajectoryGenerator, TrajectoryConfig, TrapezoidProfileRadians, TrajectoryUtil
 from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
 import math
 import config
+import os
 from commands2.button import CommandJoystick, CommandXboxController
+from pathplannerlib import PathPlanner,PathConstraints,PathPoint
+
 
 MAX_TRAJECTORY_SPEED = feetToMeters(5)
 MAX_TRAJECTORY_ACCEL = feetToMeters(5)
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
+
+pathFilename = r"mid-grid_charging-right"
+# get the dir of THIS file (vision.py), go up one level (..), and use the specified filename
+pathPlannerPath = os.path.join(os.path.dirname(__file__), r"..", r"paths", pathFilename)
+pathWeaverPath = os.path.join(os.path.dirname(__file__), r"..", r"PathWeaver", 'output', 'Mid2-Left.wpilib.json')
 
      # config for saitek joystick
         # self.driverController = FROGStick(0, 0, 1, 3, 2)
@@ -199,7 +207,7 @@ class FROGHolonomic(HolonomicDriveController):
         self.xController = PIDController(1, 0, 0)
         self.yController = PIDController(1, 0, 0)
         self.angleController = ProfiledPIDControllerRadians(
-            1, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
+            2, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
         )
         self.angleController.enableContinuousInput(-1*math.pi, math.pi)
         super().__init__(self.xController, self.yController, self.angleController)
@@ -210,16 +218,37 @@ class FROGHolonomic(HolonomicDriveController):
 
     def initTrajectory(self, startPose: Pose2d, wayPoints: list[Translation2d], endPose: Pose2d ):
         # the trajectory setup
-        trajectoryConfig = TrajectoryConfig(MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL)
-        trajectoryConfig.setKinematics(self.kinematics)
-        self.trajectory = TrajectoryGenerator.generateTrajectory(
-			startPose, # Starting position
-			wayPoints, # Pass through these points
-			endPose, # Ending position
-			trajectoryConfig
-        )
+        # trajectoryConfig = TrajectoryConfig(MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL)
+        # trajectoryConfig.setKinematics(self.kinematics)
+        # self.trajectory = TrajectoryGenerator.generateTrajectory(
+		# 	startPose, # Starting position
+		# 	wayPoints, # Pass through these points
+		# 	endPose, # Ending position
+		# 	trajectoryConfig
+        # )
         self.firstCall = True
         self.trajectoryLoaded = True
+        self.loadPathPlanner()
+        #self.loadPathWeaver()
+
+    def initPPTrajectory(self):
+        self.trajectory = PathPlanner.generatePath(
+            PathConstraints(4, 3),
+            [ 
+                PathPoint(Translation2d(2.6, 4.6), Rotation2d.fromDegrees(90), Rotation2d.fromDegrees(0)), # position, heading(direction of travel), holonomic rotation
+                PathPoint(Translation2d(9, 7), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(-90)) # position, heading(direction of travel), holonomic rotation
+            ]
+        );
+
+    def loadPathPlanner(self):
+        self.trajectory = PathPlanner.loadPath(
+            pathPlannerPath,
+            PathConstraints(6,4),
+            False
+        )
+
+    def loadPathWeaver(self):
+        self.trajectory = TrajectoryUtil.fromPathweaverJson(pathWeaverPath)
 
 			# Pose2d(0, 0, Rotation2d.fromDegrees(0)), # Starting position
 			# [Translation2d(1,1), Translation2d(2,-1)], # Pass through these points
@@ -230,5 +259,5 @@ class FROGHolonomic(HolonomicDriveController):
             self.timer.start()
             self.firstCall = False
         # get the pose of the trajectory at the current time
-        goalPose = self.trajectory.sample(self.timer.get())
-        return self.calculate(chassisPose, goalPose, finalRotation2d)
+        goalPose = self.trajectory.sample(self.timer.get()).asWPILibState()
+        return self.calculate(chassisPose, goalPose, goalPose.pose.rotation())
