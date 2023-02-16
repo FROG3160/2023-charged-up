@@ -16,6 +16,11 @@ class FROGbot(MagicRobot):
     # every loop
     swerveChassis: SwerveChassis
 
+    # tunable puts these values on NetworkTables for use with SmartDashboard
+    gridNumber = tunable(default=1)
+    gridPosition = tunable(default=1)
+    gridLevel = tunable(default=3)
+
     def createObjects(self) -> None:
         self.moduleFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
         self.moduleFrontRight = SwerveModule(**config.MODULE_FRONT_RIGHT)
@@ -35,6 +40,8 @@ class FROGbot(MagicRobot):
 
         # declare buttons
         self.btnEnableAutoDrive = self.driverController.getRightBumper
+        self.btnChangePosition = self.driverController.getPOV
+
     
     def robotInit(self) -> None:
         super().robotInit()
@@ -48,6 +55,10 @@ class FROGbot(MagicRobot):
         self.swerveChassis.enable()
 
     def teleopPeriodic(self):
+        changePosition = self.btnChangePosition()
+        if changePosition > -1:
+            print(changePosition)
+
         if self.btnEnableAutoDrive():
             #self.swerveChassis.enableAuto()
             if not self.holonomicController.trajectoryLoaded:
