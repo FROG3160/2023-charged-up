@@ -10,7 +10,6 @@ pynetconsole
 pyntcore
 robotpy
 robotpy-apriltag
-robotpy-commands-v2
 robotpy-ctre
 robotpy-hal
 robotpy-halsim-gui
