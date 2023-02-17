@@ -1,7 +1,9 @@
-from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Translation3d
-from wpimath.units import inchesToMeters
+import os
+
+import wpilib
 from robotpy_apriltag import AprilTagFieldLayout
-import os, wpilib
+from wpimath.geometry import Pose3d, Rotation3d, Transform3d, Translation3d
+from wpimath.units import inchesToMeters
 
 apriltagsFilename = r"apriltags_layout.json"
 # get the dir of THIS file (vision.py), go up one level (..), and use the specified filename
@@ -16,17 +18,12 @@ BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
 
 botPositionsFromTag = (
     Transform3d(
-        Translation3d(X_CHANGE, -Y_CHANGE, -Z_CHANGE),
-        Rotation3d(0, 0, 3.141593)
+        Translation3d(X_CHANGE, -Y_CHANGE, -Z_CHANGE), Rotation3d(0, 0, 3.141593)
     ),
+    Transform3d(Translation3d(X_CHANGE, 0, -Z_CHANGE), Rotation3d(0, 0, 3.141593)),
     Transform3d(
-        Translation3d(X_CHANGE, 0, -Z_CHANGE),
-        Rotation3d(0, 0, 3.141593)
+        Translation3d(X_CHANGE, Y_CHANGE, -Z_CHANGE), Rotation3d(0, 0, 3.141593)
     ),
-    Transform3d(
-        Translation3d(X_CHANGE, Y_CHANGE, -Z_CHANGE),
-        Rotation3d(0, 0, 3.141593)
-    )
 )
 
 
@@ -35,27 +32,29 @@ botPositionsFromTag = (
 blueTagList = (8, 7, 6)
 redTagList = (3, 2, 1)
 
+
 def getAlliance():
     return wpilib.DriverStation.getAlliance()
-
 
 
 class FROGFieldLayout(AprilTagFieldLayout):
     def __init__(self):
         super().__init__(apriltagsLayoutPath)
-        #set layout to be specific to the alliance end
+        # set layout to be specific to the alliance end
         self.setAlliance()
-    
-    def getTagtoRobotTransform(self, fieldPose: Pose3d, tagID:int) -> Transform3d:
+
+    def getTagtoRobotTransform(self, fieldPose: Pose3d, tagID: int) -> Transform3d:
         return fieldPose - self.getTagPose(tagID)
+
     # get position
     def getTagRelativePosition(self, tagID: int, position: int) -> Pose3d:
-        return self.getTagPose(tagID) + botPositionsFromTag[position-1]
+        return self.getTagPose(tagID) + botPositionsFromTag[position - 1]
 
     def getGridRelativePosition(self, gridNum: int, position: int) -> Pose3d:
-        return self.getTagRelativePosition( self.tagList[gridNum-1], position )
+        return self.getTagRelativePosition(self.tagList[gridNum - 1], position)
+
     # set alliance/change origin
-    def setAlliance(self, alliance = getAlliance()):
+    def setAlliance(self, alliance=getAlliance()):
         if alliance == RED_ALLIANCE:
             self.setOrigin(self.OriginPosition.kRedAllianceWallRightSide)
             self.tagList = redTagList
@@ -64,8 +63,7 @@ class FROGFieldLayout(AprilTagFieldLayout):
             self.setOrigin(self.OriginPosition.kBlueAllianceWallRightSide)
             self.tagList = blueTagList
             self.alliance = BLUE_ALLIANCE
-    
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

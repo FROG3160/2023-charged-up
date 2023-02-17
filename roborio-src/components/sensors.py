@@ -1,9 +1,10 @@
-import wpilib
-from navx import AHRS
-from ctre import CANifier
-from utils.utils import Buffer
-from rev import ColorSensorV3
 import math
+
+import wpilib
+from ctre import CANifier
+from navx import AHRS
+from rev import ColorSensorV3
+from utils.utils import Buffer
 from wpimath.geometry import Rotation2d
 
 BUFFERLEN = 50
@@ -14,7 +15,6 @@ SENSORUNITS_IN_METERS = 0.001
 
 
 class FROGGyro:
-
     starting_angle = 0.0
 
     def __init__(self):
@@ -24,7 +24,6 @@ class FROGGyro:
         # self.field_heading = 360-242
         # self.gyro.reset()
         self.gyro.setAngleAdjustment(self.offset)
-        
 
     def getYaw(self):
         # returns gyro heading +180 to -180 degrees
@@ -78,7 +77,6 @@ class FROGGyro:
         return self.gyro.getAngleAdjustment()
 
 
-        
 class FROGdar:
     canifier: CANifier
 

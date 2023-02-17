@@ -1,7 +1,10 @@
 import math
+from logging import Logger
 
 import config
-from commands2 import SubsystemBase, Swerve4ControllerCommand
+from components.controllers import FROGHolonomic
+from components.sensors import FROGGyro
+from components.vision import FROGLimeLightVision, FROGPhotonVision
 from ctre import (
     AbsoluteSensorRange,
     ControlMode,
@@ -14,24 +17,16 @@ from ctre import (
     WPI_CANCoder,
     WPI_TalonFX,
 )
-from wpimath.trajectory import (
-    TrajectoryGenerator,
-    TrajectoryConfig,
-    TrapezoidProfileRadians,
-)
-from components.sensors import FROGGyro
-from components.vision import FROGPhotonVision, FROGLimeLightVision
 from utils.utils import DriveUnit
 from wpilib import Field2d, SmartDashboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import (
     Pose2d,
     Rotation2d,
-    Translation2d,
-    Transform3d,
-    Translation3d,
     Rotation3d,
-    Transform2d,
+    Transform3d,
+    Translation2d,
+    Translation3d,
 )
 from wpimath.kinematics import (
     ChassisSpeeds,
@@ -40,13 +35,8 @@ from wpimath.kinematics import (
     SwerveModulePosition,
     SwerveModuleState,
 )
-
-from .sensors import FROGGyro
-from utils.utils import DriveUnit, Rescale
-from wpimath.units import metersToInches, inchesToMeters, feetToMeters
-from logging import Logger
-import config
-from components.controllers import FROGHolonomic
+from wpimath.trajectory import TrajectoryConfig
+from wpimath.units import feetToMeters, inchesToMeters, metersToInches
 
 # Motor Control modes
 VELOCITY_MODE = ControlMode.Velocity
@@ -358,9 +348,7 @@ class SwerveChassis:
         self.limelightPoseEstimator = FROGLimeLightVision()
         self.center = Translation2d(0, 0)
 
-
     def setup(self):
-
         self.modules = (
             self.moduleFrontLeft,
             self.moduleFrontRight,
@@ -450,9 +438,7 @@ class SwerveChassis:
             self.starting_pose,
         )
         self.odometry.resetPosition(
-            self.gyro.getRotation2d(),
-            self.starting_pose,
-            *self.getModulePositions()
+            self.gyro.getRotation2d(), self.starting_pose, *self.getModulePositions()
         )
 
     def execute(self):
@@ -461,7 +447,7 @@ class SwerveChassis:
             #     #apply holonomic states
             #     pass
             # else:
-            self.setStatesFromSpeeds()#apply chassis Speeds
+            self.setStatesFromSpeeds()  # apply chassis Speeds
 
             for module, state in zip(self.modules, self.moduleStates):
                 module.setState(state)
@@ -489,9 +475,7 @@ class SwerveChassis:
         )
 
     def autoDrive(self) -> None:
-        """Sets ChassisSpeeds from return of the holonomic controller.
-
-        """
+        """Sets ChassisSpeeds from return of the holonomic controller."""
         self.chassisSpeeds = self.holonomicController.getChassisSpeeds(
             self.estimator.getEstimatedPosition()
         )
