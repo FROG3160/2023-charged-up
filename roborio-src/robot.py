@@ -36,7 +36,10 @@ class FROGbot(MagicRobot):
             self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 1).toPose2d().transformBy(
                 Transform2d(Translation2d(0,0),Rotation2d.fromDegrees(180))
             )
-
+        else:
+            self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 1).toPose2d().transformBy(
+                Transform2d(Translation2d(0,0),Rotation2d.fromDegrees(180))
+            )
 
         # declare buttons
         self.btnEnableAutoDrive = self.driverController.getRightBumper
@@ -51,7 +54,7 @@ class FROGbot(MagicRobot):
         pass
 
     def teleopInit(self):
-        self.holonomicController = FROGHolonomic(self.swerveChassis.kinematics)
+
         self.swerveChassis.enable()
 
     def teleopPeriodic(self):
@@ -61,23 +64,19 @@ class FROGbot(MagicRobot):
 
         if self.btnEnableAutoDrive():
             #self.swerveChassis.enableAuto()
-            if not self.holonomicController.trajectoryLoaded:
+            if not self.swerveChassis.holonomicController.trajectoryType:
                 startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
                 endTrajectoryPose = startTrajectoryPose + Transform2d(
                     feetToMeters(6), feetToMeters(3), 0
                 )
-                self.holonomicController.initTrajectory(
+                self.swerveChassis.holonomicController.initTrajectory(
                     startTrajectoryPose, # Starting position
 			        [], # Pass through these points
 			        endTrajectoryPose, # Ending position
                 )
-            chassisSpeeds = self.holonomicController.getChassisSpeeds(
-                self.swerveChassis.estimator.getEstimatedPosition(),
-                Rotation2d.fromDegrees(0)
-            )
-            self.swerveChassis.autoDrive(chassisSpeeds)
+            self.swerveChassis.autoDrive()
         else:
-            self.holonomicController.trajectoryLoaded = False
+            self.swerveChassis.holonomicController.trajectoryType = False
             #self.swerveChassis.disableAuto()
             self.swerveChassis.fieldOrientedDrive(
                 self.driverController.getFieldForward(),

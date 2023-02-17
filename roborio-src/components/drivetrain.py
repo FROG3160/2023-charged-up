@@ -46,11 +46,7 @@ from utils.utils import DriveUnit, Rescale
 from wpimath.units import metersToInches, inchesToMeters, feetToMeters
 from logging import Logger
 import config
-from wpimath.controller import (
-    PIDController,
-    ProfiledPIDControllerRadians,
-    HolonomicDriveController,
-)
+from components.controllers import FROGHolonomic
 
 # Motor Control modes
 VELOCITY_MODE = ControlMode.Velocity
@@ -303,6 +299,7 @@ class SwerveModule:
         self.drive.configAllSettings(config.cfgDriveMotor)
         self.drive.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 250)
         self.drive.setInverted(TalonFXInvertType.Clockwise)
+        self.drive.setSensorPhase(False)
         self.drive.configClosedloopRamp(0.25)
 
         # self.current_states = None
@@ -396,6 +393,8 @@ class SwerveChassis:
         )
         self.trajectoryConfig.setKinematics(self.kinematics)
 
+        self.holonomicController = FROGHolonomic(self.kinematics)
+
         self.gyro = FROGGyro()
         self.gyro.resetGyro()
         # self.field =
@@ -468,42 +467,6 @@ class SwerveChassis:
                 module.setState(state)
         self.periodic()
 
-    def getSimpleTrajectory(self):
-        self.startTrajectoryPose = self.estimator.getEstimatedPosition()
-        self.endTrajectoryPose = self.startTrajectoryPose + Transform2d(
-            feetToMeters(6), feetToMeters(3), 0
-        )
-        self.logger.info(
-            "Auto Drive - Start Pose: %s\n End Pose:%s",
-            self.startTrajectoryPose,
-            self.endTrajectoryPose,
-        )
-        return TrajectoryGenerator.generateTrajectory(
-            self.startTrajectoryPose,  # Starting position
-            [],  # Pass through these points
-            self.endTrajectoryPose,  # Ending position
-            self.trajectoryConfig,
-        )
-
-    # def getSwerveCommand(self):
-    #     self.xController = PIDController(1, 0, 0)
-    #     self.yController = PIDController(1, 0, 0)
-    #     self.angleController = ProfiledPIDControllerRadians(
-    #         1, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
-    #     )
-    #     self.angleController.enableContinuousInput(-1 * math.pi, math.pi)
-    #     self.holonomicController = HolonomicDriveController(
-    #         self.xController, self.yController, self.angleController
-    #     )
-    #     return Swerve4ControllerCommand(
-    #         self.getSimpleTrajectory(),
-    #         self.estimator.getEstimatedPosition,  # CALLABLE getPose
-    #         self.kinematics,
-    #         self.holonomicController,
-    #         self.setModuleStates,
-    #         [self],
-    #     )
-
     def getModuleStates(self):
         return [module.getCurrentState() for module in self.modules]
 
@@ -525,8 +488,13 @@ class SwerveChassis:
             xSpeed, ySpeed, rotSpeed, self.gyro.getRotation2d()
         )
 
-    def autoDrive(self, chassisSpeeds: ChassisSpeeds) -> None:
-        self.chassisSpeeds = chassisSpeeds
+    def autoDrive(self) -> None:
+        """Sets ChassisSpeeds from return of the holonomic controller.
+
+        """
+        self.chassisSpeeds = self.holonomicController.getChassisSpeeds(
+            self.estimator.getEstimatedPosition()
+        )
 
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(

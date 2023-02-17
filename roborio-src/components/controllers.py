@@ -6,15 +6,13 @@ import wpimath
 from wpimath.units import feetToMeters
 from wpimath.trajectory import TrajectoryGenerator, TrajectoryConfig, TrapezoidProfileRadians, TrajectoryUtil
 from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
+from wpimath.kinematics import ChassisSpeeds
 import math
 import config
 import os
-from commands2.button import CommandJoystick, CommandXboxController
 from pathplannerlib import PathPlanner,PathConstraints,PathPoint
+from magicbot import tunable
 
-
-MAX_TRAJECTORY_SPEED = feetToMeters(5)
-MAX_TRAJECTORY_ACCEL = feetToMeters(5)
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
@@ -201,63 +199,89 @@ class FROGXboxOperator(XboxController):
 
 
 class FROGHolonomic(HolonomicDriveController):
+
+    max_trajectory_speed = config.MAX_TRAJECTORY_SPEED
+    max_trajectory_accel = config.MAX_TRAJECTORY_ACCEL
+
     def __init__(self, kinematics):
         # the holonomic controller
-        self.kinematics = kinematics
-        self.xController = PIDController(1, 0, 0)
-        self.yController = PIDController(1, 0, 0)
-        self.angleController = ProfiledPIDControllerRadians(
-            2, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
-        )
+        self.xController = config.holonomicTranslationPIDController
+        self.yController = config.holonomicTranslationPIDController
+        self.angleController = config.holonomicAnglePIDController
         self.angleController.enableContinuousInput(-1*math.pi, math.pi)
         super().__init__(self.xController, self.yController, self.angleController)
         self.timer = Timer()
-        self.trajectoryLoaded = False
+        self.trajectoryType = False
+        self.kinematics = kinematics
 
-
+    def initialize(self, trajectoryType):
+        self.firstCall = True
+        self.trajectoryType = trajectoryType
 
     def initTrajectory(self, startPose: Pose2d, wayPoints: list[Translation2d], endPose: Pose2d ):
         # the trajectory setup
-        # trajectoryConfig = TrajectoryConfig(MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL)
-        # trajectoryConfig.setKinematics(self.kinematics)
-        # self.trajectory = TrajectoryGenerator.generateTrajectory(
-		# 	startPose, # Starting position
-		# 	wayPoints, # Pass through these points
-		# 	endPose, # Ending position
-		# 	trajectoryConfig
-        # )
-        self.firstCall = True
-        self.trajectoryLoaded = True
-        self.loadPathPlanner()
-        #self.loadPathWeaver()
+        trajectoryConfig = TrajectoryConfig(self.max_trajectory_speed, self.max_trajectory_accel)
+        trajectoryConfig.setKinematics(self.kinematics)
+        self.trajectory = TrajectoryGenerator.generateTrajectory(
+			startPose, # Starting position
+			wayPoints, # Pass through these points
+			endPose, # Ending position
+			trajectoryConfig
+        )
+        	# Pose2d(0, 0, Rotation2d.fromDegrees(0)), # Starting position
+			# [Translation2d(1,1), Translation2d(2,-1)], # Pass through these points
+			# Pose2d(3, 0, Rotation2d.fromDegrees(0)), # Ending position
+        self.initialize('wpilib')
 
     def initPPTrajectory(self):
+        """Initializes a PathPlanner trajectory
+        """
         self.trajectory = PathPlanner.generatePath(
-            PathConstraints(4, 3),
+            PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
             [ 
                 PathPoint(Translation2d(2.6, 4.6), Rotation2d.fromDegrees(90), Rotation2d.fromDegrees(0)), # position, heading(direction of travel), holonomic rotation
                 PathPoint(Translation2d(9, 7), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(-90)) # position, heading(direction of travel), holonomic rotation
             ]
         );
+        self.initialize('pathPlanner')
+        
+    def loadPathPlanner(self, pathName):
+        """Loads a PathPlanner trajectory from a preconfigured path.  
 
-    def loadPathPlanner(self):
+        Args:
+            pathName (_type_): The name of the path, without the .path extension.
+        """
         self.trajectory = PathPlanner.loadPath(
-            pathPlannerPath,
-            PathConstraints(6,4),
+            os.path.join(os.path.dirname(__file__), r"..", r"paths", pathName),
+            PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
             False
         )
+        self.initialize('pathPlanner')
 
     def loadPathWeaver(self):
         self.trajectory = TrajectoryUtil.fromPathweaverJson(pathWeaverPath)
+        self.initialize('pathWeaver')
 
-			# Pose2d(0, 0, Rotation2d.fromDegrees(0)), # Starting position
-			# [Translation2d(1,1), Translation2d(2,-1)], # Pass through these points
-			# Pose2d(3, 0, Rotation2d.fromDegrees(0)), # Ending position
+    def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
+        """Calculates the chassis speeds of the trajectory at the current time.
 
-    def getChassisSpeeds(self, chassisPose: Pose2d, finalRotation2d: Rotation2d):
-        if self.firstCall:
-            self.timer.start()
-            self.firstCall = False
-        # get the pose of the trajectory at the current time
-        goalPose = self.trajectory.sample(self.timer.get()).asWPILibState()
-        return self.calculate(chassisPose, goalPose, goalPose.pose.rotation())
+        Args:
+            currentPose (Pose2d): current pose of the Robot
+
+        Returns:
+            ChassisSpeeds: translation and rotational vectors desired
+        """
+        if not self.trajectoryType is None:
+            if self.firstCall:
+                self.timer.start()
+                self.firstCall = False
+            # get the pose of the trajectory at the current time
+            if self.trajectoryType == 'pathPlanner':
+                goalPose = self.trajectory.sample(self.timer.get()).asWPILibState()
+            else:
+                goalPose = self.trajectory.sample(self.timer.get())
+            return self.calculate(
+                currentPose,
+                goalPose,
+                goalPose.pose.rotation()
+            )

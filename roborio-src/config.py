@@ -1,5 +1,8 @@
 import math
+from wpimath.units import feetToMeters
 from wpimath.geometry import Translation2d
+from wpimath.controller import PIDController, ProfiledPIDControllerRadians
+from wpimath.trajectory import TrapezoidProfileRadians
 from ctre import (
     TalonFXConfiguration,
     SensorInitializationStrategy,
@@ -22,6 +25,9 @@ MAX_CHASSIS_RADIANS_SEC = MAX_CHASSIS_REV_SEC * math.tau
 
 MODULE_DRIVE_GEARING = [(14.0 / 50.0), (28.0 / 16.0), (15.0 / 45.0)] #Mk4 L3
 MODULE_WHEEL_DIAMETER = 0.1000125  # 3 15/16 inches in meters
+
+MAX_TRAJECTORY_SPEED = feetToMeters(5)
+MAX_TRAJECTORY_ACCEL = feetToMeters(5)
 
 MODULE_FRONT_LEFT = {
     'name': "FrontLeft",
@@ -68,6 +74,12 @@ MODULE_BACK_RIGHT = {
         -TRACK_WIDTH/2
     )
 }
+
+#
+# Holonomic PID values
+#
+holonomicTranslationPIDController = PIDController(1.5,0,0)
+holonomicAnglePIDController = ProfiledPIDControllerRadians(2.5,0,0,TrapezoidProfileRadians.Constraints(math.pi, math.pi))
 
 #
 # **Swerve Module Drive Motor Config
