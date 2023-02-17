@@ -1,9 +1,8 @@
-from wpilib import Solenoid, PneumaticsModuleType
 from ctre import WPI_TalonSRX
-from commands2 import SubsystemBase
+from wpilib import PneumaticsModuleType, Solenoid
 
 
-class FROGGrabber(SubsystemBase):
+class FROGGrabber:
     def __init__(self, motorLeftID, motorRightID, solenoidID):
         """Creates our FROGGrabber
 
@@ -12,7 +11,6 @@ class FROGGrabber(SubsystemBase):
             motorRightID (int): Motor ID for the Right Motor
             solenoidID (int): Solenoid ID for the grabber pneumatics.
         """
-        super().__init__()
         self.motorL = WPI_TalonSRX(motorLeftID)
         self.motorR = WPI_TalonSRX(motorRightID)
         self.pneumatics = Solenoid(PneumaticsModuleType.CTREPCM, solenoidID)
