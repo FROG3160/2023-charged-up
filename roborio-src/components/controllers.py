@@ -12,7 +12,7 @@ from wpimath.kinematics import ChassisSpeeds
 from pathplannerlib import PathConstraints, PathPlanner, PathPoint, PathPlannerTrajectory, controllers
 from magicbot import feedback
 from wpilib import SmartDashboard
-
+import os
 
 MAX_TRAJECTORY_SPEED = feetToMeters(5)
 MAX_TRAJECTORY_ACCEL = feetToMeters(5)
