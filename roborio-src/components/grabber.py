@@ -13,7 +13,7 @@ class FROGGrabber:
         """
         self.motorL = WPI_TalonSRX(motorLeftID)
         self.motorR = WPI_TalonSRX(motorRightID)
-        self.pneumatics = Solenoid(PneumaticsModuleType.CTREPCM, solenoidID)
+        self.pneumatics = Solenoid(PneumaticsModuleType.REVPH, solenoidID)
         # motors and stuff
 
     def open(self):
