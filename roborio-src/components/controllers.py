@@ -1,34 +1,41 @@
-import math
-import os
-
-import config
-import wpimath
-from pathplannerlib import PathConstraints, PathPlanner, PathPoint
-from utils.utils import remap
-from wpilib import Joystick, Timer, XboxController
+from wpilib import Joystick, XboxController,Timer
 from wpilib.interfaces import GenericHID
-from wpimath.controller import HolonomicDriveController
-from wpimath.geometry import Pose2d, Rotation2d, Translation2d
+from wpimath.controller import PIDController, ProfiledPIDControllerRadians, HolonomicDriveController
+from utils.utils import remap
+import wpimath
+from wpimath.units import feetToMeters
+from wpimath.trajectory import TrajectoryGenerator, TrajectoryConfig, TrapezoidProfileRadians, Trajectory
+from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
+import math
+import config
 from wpimath.kinematics import ChassisSpeeds
-from wpimath.trajectory import TrajectoryConfig, TrajectoryGenerator, TrajectoryUtil
+from pathplannerlib import PathConstraints, PathPlanner, PathPoint, PathPlannerTrajectory, controllers
+from magicbot import feedback
+from wpilib import SmartDashboard
+
+
+MAX_TRAJECTORY_SPEED = feetToMeters(5)
+MAX_TRAJECTORY_ACCEL = feetToMeters(5)
 
 RIGHT_RUMBLE = GenericHID.RumbleType.kRightRumble
 LEFT_RUMBLE = GenericHID.RumbleType.kLeftRumble
 
-pathFilename = r"mid-grid_charging-right"
-# get the dir of THIS file (vision.py), go up one level (..), and use the specified filename
-pathPlannerPath = os.path.join(os.path.dirname(__file__), r"..", r"paths", pathFilename)
-pathWeaverPath = os.path.join(
-    os.path.dirname(__file__), r"..", r"PathWeaver", "output", "Mid2-Left.wpilib.json"
-)
-
-# config for saitek joystick
-# self.driverController = FROGStick(0, 0, 1, 3, 2)
-# config for Logitech Extreme 3D
-# self.driverController = FROGStick(0, 0, 1, 2, 3)
-SAITEK_AXIS_CONFIG = {"xAxis": 0, "yAxis": 1, "rAxis": 3, "tAxis": 2}
-LOGITECH_EXTREME_AXIS_CONFIG = {"xAxis": 0, "yAxis": 1, "rAxis": 2, "tAxis": 3}
-
+     # config for saitek joystick
+        # self.driverController = FROGStick(0, 0, 1, 3, 2)
+        # config for Logitech Extreme 3D
+        #self.driverController = FROGStick(0, 0, 1, 2, 3)
+SAITEK_AXIS_CONFIG = {
+    'xAxis': 0,
+    'yAxis': 1,
+    'rAxis': 3,
+    'tAxis': 2
+}
+LOGITECH_EXTREME_AXIS_CONFIG = {
+    'xAxis': 0,
+    'yAxis': 1,
+    'rAxis': 2,
+    'tAxis': 3
+}
 
 class FROGStickDriver(Joystick):
     """Extended class of wpilib.Joystick
@@ -117,7 +124,7 @@ class FROGStickDriver(Joystick):
         val = -super().getThrottle()
         throttle = (val + 1) / 2
         return throttle
-
+        
     def get_rotation(self):
         return (
             self.getTwist() / self.ROTATION_DIVISOR
@@ -158,16 +165,18 @@ class FROGStickDriver(Joystick):
                 val = True
         return val
 
-
 class FROGXboxDriver(XboxController):
-    DEADBAND = 0.15
+    
+    DEADBAND = 0.045
     ROTATION_DIVISOR = 1
-
+    
     def __init__(self, channel):
+
         super().__init__(channel)
         self.button_latest = {}
 
     def getFieldRotation(self):
+        
         return wpimath.applyDeadband(-self.getRightX(), self.DEADBAND)
 
     def getFieldForward(self):
@@ -177,12 +186,15 @@ class FROGXboxDriver(XboxController):
         return wpimath.applyDeadband(-self.getLeftX(), self.DEADBAND)
 
     def getFieldThrottle(self):
-        return wpimath.applyDeadband(self.getRightTriggerAxis(), self.DEADBAND)
+        return wpimath.applyDeadband(self.getRightTriggerAxis(), 0)
 
 
 class FROGXboxOperator(XboxController):
     def __init__(self, channel):
         super().__init__(channel)
+
+
+
 
 
 class FROGHolonomic(HolonomicDriveController):
@@ -199,10 +211,18 @@ class FROGHolonomic(HolonomicDriveController):
         self.timer = Timer()
         self.trajectoryType = False
         self.kinematics = kinematics
+        SmartDashboard.putNumber('ControllerP', self.xController.getP())
+        SmartDashboard.putNumber('angleControllerP', self.angleController.getP())
 
     def initialize(self, trajectoryType):
         self.firstCall = True
         self.trajectoryType = trajectoryType
+
+    def loadPID(self):
+        self.xController.setP(SmartDashboard.getNumber('ControllerP'))
+        self.yController.setP(SmartDashboard.getNumber('ControllerP'))
+        self.angleController.setP(SmartDashboard.getNumber('angleControllerP'))
+
 
     def initTrajectory(
         self, startPose: Pose2d, wayPoints: list[Translation2d], endPose: Pose2d
@@ -223,21 +243,23 @@ class FROGHolonomic(HolonomicDriveController):
         # Pose2d(3, 0, Rotation2d.fromDegrees(0)), # Ending position
         self.initialize("wpilib")
 
-    def initPPTrajectory(self):
+    def initSimpleTrajectory(self, startPoint: PathPoint, endPoint: PathPoint):
         """Initializes a PathPlanner trajectory"""
         self.trajectory = PathPlanner.generatePath(
             PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
             [
-                PathPoint(
-                    Translation2d(2.6, 4.6),
-                    Rotation2d.fromDegrees(90),
-                    Rotation2d.fromDegrees(0),
-                ),  # position, heading(direction of travel), holonomic rotation
-                PathPoint(
-                    Translation2d(9, 7),
-                    Rotation2d.fromDegrees(0),
-                    Rotation2d.fromDegrees(-90),
-                ),  # position, heading(direction of travel), holonomic rotation
+                # PathPoint(
+                #     Translation2d(2.6, 4.6),
+                #     Rotation2d.fromDegrees(90),
+                #     Rotation2d.fromDegrees(0),
+                # ),  # position, heading(direction of travel), holonomic rotation
+                # PathPoint(
+                #     Translation2d(9, 7),
+                #     Rotation2d.fromDegrees(0),
+                #     Rotation2d.fromDegrees(-90),
+                # ),  # position, heading(direction of travel), holonomic rotation
+                startPoint,
+                endPoint
             ],
         )
         self.initialize("pathPlanner")
@@ -259,6 +281,14 @@ class FROGHolonomic(HolonomicDriveController):
         self.trajectory = TrajectoryUtil.fromPathweaverJson(pathWeaverPath)
         self.initialize("pathWeaver")
 
+    @feedback
+    def getGoalPose(self):
+        if type(self.trajectory) == PathPlannerTrajectory:
+            return self.trajectory.sample(self.timer.get()).asWPILibState()
+        else:
+            return self.trajectory.sample(self.timer.get())
+        
+
     def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
         """Calculates the chassis speeds of the trajectory at the current time.
 
@@ -273,8 +303,79 @@ class FROGHolonomic(HolonomicDriveController):
                 self.timer.start()
                 self.firstCall = False
             # get the pose of the trajectory at the current time
-            if self.trajectoryType == "pathPlanner":
-                goalPose = self.trajectory.sample(self.timer.get()).asWPILibState()
-            else:
-                goalPose = self.trajectory.sample(self.timer.get())
+            goalPose = self.getGoalPose()
+            self.logger.info(
+                "Auto Update -- initial Pose: %s\n  goal Pose: %s\n time: %s",
+                currentPose, goalPose, self.timer.get()
+            )
             return self.calculate(currentPose, goalPose, goalPose.pose.rotation())
+
+
+class PPHolonomic(controllers.PPHolonomicDriveController):
+    max_trajectory_speed = config.MAX_TRAJECTORY_SPEED
+    max_trajectory_accel = config.MAX_TRAJECTORY_ACCEL
+
+    def __init__(self, kinematics):
+        # the holonomic controller
+        self.xController = config.ppTranslationPIDController
+        self.yController = config.ppTranslationPIDController
+        self.rotationController = config.ppRotationPIDController
+        #self.angleController.enableContinuousInput(-1 * math.pi, math.pi)
+        super().__init__(self.xController, self.yController, self.rotationController)
+        self.timer = Timer()
+        self.trajectoryType = False
+        self.kinematics = kinematics
+        SmartDashboard.putNumber('ControllerP', self.xController.getP())
+        SmartDashboard.putNumber('angleControllerP', self.rotationController.getP())
+
+    def initialize(self, trajectoryType):
+        self.firstCall = True
+        self.trajectoryType = trajectoryType
+
+    def loadPID(self):
+        self.xController.setP(SmartDashboard.getNumber('ControllerP'))
+        self.yController.setP(SmartDashboard.getNumber('ControllerP'))
+        self.rotationController.setP(SmartDashboard.getNumber('angleControllerP'))
+
+
+    def initSimpleTrajectory(self, startPoint: PathPoint, endPoint: PathPoint):
+        """Initializes a PathPlanner trajectory"""
+        self.trajectory = PathPlanner.generatePath(
+            PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
+            False,
+            [
+                startPoint,
+                endPoint
+            ],
+        )
+        self.initialize("pathPlanner")
+
+    def loadPathPlanner(self, pathName):
+        """Loads a PathPlanner trajectory from a preconfigured path.
+
+        Args:
+            pathName (_type_): The name of the path, without the .path extension.
+        """
+        self.trajectory = PathPlanner.loadPath(
+            os.path.join(os.path.dirname(__file__), r"..", r"paths", pathName),
+            PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
+            False,
+        )
+        self.initialize("pathPlanner")
+
+    def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
+        """Calculates the chassis speeds of the trajectory at the current time.
+
+        Args:
+            currentPose (Pose2d): current pose of the Robot
+
+        Returns:
+            ChassisSpeeds: translation and rotational vectors desired
+        """
+        if not self.trajectoryType is None:
+            if self.firstCall:
+                self.timer.start()
+                self.firstCall = False
+            # get the pose of the trajectory at the current time
+            referenceState = self.trajectory.sample(self.timer.get())
+            return self.calculate(currentPose, referenceState)
