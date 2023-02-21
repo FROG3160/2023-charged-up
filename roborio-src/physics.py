@@ -12,13 +12,17 @@
 #
 # Examples can be found at https://github.com/robotpy/examples
 
+import wpilib.simulation
+
 from pyfrc.physics.core import PhysicsInterface
 from pyfrc.physics.drivetrains import four_motor_swerve_drivetrain, linear_deadzone
 
-# if typing.TYPE_CHECKING:
-from robot import FROGbot
+
 
 # import typing
+
+# if typing.TYPE_CHECKING:
+from robot import FROGbot
 
 
 class PhysicsEngine:
@@ -37,11 +41,10 @@ class PhysicsEngine:
         self.robot = robot
         self.physics_controller.field.setRobotPose(self.robot.startingPose2d)
 
+
     def update_sim(self, now, tm_diff):
         pose = self.physics_controller.drive(
             self.robot.swerveChassis.chassisSpeeds, tm_diff
         )
         self.robot.swerveChassis.gyro.setAngleAdjustment(-pose.rotation().degrees())
-        self.robot.swerveChassis.setPosition(
-            self.physics_controller.field.getRobotPose()
-        )
+        self.robot.swerveChassis.setFieldPosition(self.physics_controller.field.getRobotPose())
