@@ -1,10 +1,9 @@
-import math
-
 import wpilib
-from ctre import CANifier
 from navx import AHRS
-from rev import ColorSensorV3
+from ctre import CANifier
 from utils.utils import Buffer
+from rev import ColorSensorV3
+import math
 from wpimath.geometry import Rotation2d
 
 BUFFERLEN = 50
@@ -25,7 +24,7 @@ class FROGGyro:
         # self.gyro.reset()
         self.gyro.setAngleAdjustment(self.offset)
 
-    def getYaw(self):
+    def getYawCCW(self):
         # returns gyro heading +180 to -180 degrees
         # and inverts it to change from bearing to
         # cartesian angles with CCW positive.
@@ -41,7 +40,7 @@ class FROGGyro:
         return Rotation2d.fromDegrees(self.getAngleCCW())
 
     def getOffsetYaw(self):
-        chassisYaw = self.getYaw()
+        chassisYaw = self.getYawCCW()
         fieldYaw = Rotation2d.fromDegrees(chassisYaw + self.starting_angle)
         # Adding an angle to the current reading can cause the result
         # to be outside -180 to +180 degrees, so we utilize the atan2
