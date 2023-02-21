@@ -1,16 +1,16 @@
+import os
 import typing
-
 import wpilib
-from components.field import FROGFieldLayout
-from ntcore import NetworkTableInstance
-from photonvision import PhotonCamera, PoseStrategy, RobotPoseEstimator
+from photonvision import PhotonCamera, PoseStrategy, RobotPoseEstimator, SimPhotonCamera
+from robotpy_apriltag import AprilTagFieldLayout
+from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Translation3d
 from wpilib import SmartDashboard
-from wpimath.geometry import Pose3d, Rotation3d, Transform3d, Translation3d
-from wpimath.units import metersToInches
+from ntcore import NetworkTableInstance, NetworkTable
+from wpimath.units import metersToInches, inchesToMeters, radiansToDegrees
+from components.field import FROGFieldLayout
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
 BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
-
 
 def arrayToPose3d(poseArray) -> Pose3d:
     return Pose3d(
@@ -18,11 +18,10 @@ def arrayToPose3d(poseArray) -> Pose3d:
         Rotation3d(poseArray[3], poseArray[4], poseArray[5]),
     )
 
-
 class FROGPhotonVision:
-    def __init__(self, cameraName: str, cameraTransform3d: Transform3d):
-        self.camera = PhotonCamera(cameraName=cameraName)
-        self.fieldLayout = FROGFieldLayout()
+    def __init__(self, fieldLayout: FROGFieldLayout, cameraName: str, cameraTransform3d: Transform3d):
+        self.camera = PhotonCamera(cameraName = cameraName)
+        self.fieldLayout = fieldLayout
         self.poseEstimator = RobotPoseEstimator(
             self.fieldLayout,
             PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
@@ -46,6 +45,7 @@ class FROGPhotonVision:
             return (self.currentPose, visionTime)
         else:
             return (None, None)
+    
 
     def periodic(self) -> None:
         self.getEstimatedRobotPose()
@@ -66,10 +66,8 @@ class FROGLimeLightVision:
         self.limelightTable = NetworkTableInstance.getDefault().getTable(
             key="limelight"
         )
-        self.botPose = self.limelightTable.getFloatArrayTopic("botpose").subscribe(
-            [-99, -99, -99, 0, 0, 0]
-        )
-        # self.botPose = self.limelightTable.getDoubleArrayTopic("botpose").subscribe([])
+        self.botPose = self.limelightTable.getFloatArrayTopic("botpose").subscribe([-99, -99, -99, 0, 0, 0])
+        #self.botPose = self.limelightTable.getDoubleArrayTopic("botpose").subscribe([])
         self.botPoseBlue = self.limelightTable.getFloatArrayTopic(
             "botpose_wpiblue"
         ).subscribe([-99, -99, -99, 0, 0, 0])
@@ -117,6 +115,5 @@ class FROGLimeLightVision:
         SmartDashboard.putNumber("RedBotPose_Y", metersToInches(botpose.y))
         SmartDashboard.putNumber("RedBotPose_Z", metersToInches(botpose.z))
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     pass
