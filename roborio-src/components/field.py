@@ -1,9 +1,7 @@
-import os
-
-import wpilib
-from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Rotation3d, Transform3d, Translation3d
 from wpimath.units import inchesToMeters
+from robotpy_apriltag import AprilTagFieldLayout
+import os, wpilib
 
 apriltagsFilename = r"apriltags_layout.json"
 # get the dir of THIS file (vision.py), go up one level (..), and use the specified filename
@@ -26,7 +24,6 @@ botPositionsFromTag = (
     ),
 )
 
-
 # tag list ordered by view from driverstation of the alliance color
 # ( rightTagID, MiddleTagID, LeftTagID)
 blueTagList = (8, 7, 6)
@@ -38,10 +35,10 @@ def getAlliance():
 
 
 class FROGFieldLayout(AprilTagFieldLayout):
-    def __init__(self):
+    def __init__(self, alliance):
         super().__init__(apriltagsLayoutPath)
         # set layout to be specific to the alliance end
-        self.setAlliance()
+        self.setAlliance(alliance)
 
     def getTagtoRobotTransform(self, fieldPose: Pose3d, tagID: int) -> Transform3d:
         return fieldPose - self.getTagPose(tagID)
