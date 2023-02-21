@@ -3,16 +3,14 @@ from wpilib import PneumaticsModuleType, Solenoid
 
 
 class FROGGrabber:
-    def __init__(self, motorLeftID, motorRightID, solenoidID):
+    def __init__(self, motorID, solenoidID):
         """Creates our FROGGrabber
 
         Args:
-            motorLeftID (int): Motor ID for the Left Motor
-            motorRightID (int): Motor ID for the Right Motor
+            motorID (int): Motor ID for the motor
             solenoidID (int): Solenoid ID for the grabber pneumatics.
         """
-        self.motorL = WPI_TalonSRX(motorLeftID)
-        self.motorR = WPI_TalonSRX(motorRightID)
+        self.motor = WPI_TalonSRX(motorID)
         self.pneumatics = Solenoid(PneumaticsModuleType.REVPH, solenoidID)
         # motors and stuff
 
@@ -28,11 +26,11 @@ class FROGGrabber:
         # grab the cone/cube probably set a button to close
 
     def wheelsOn(self, speed):
-        self.motorL.set(speed)
+        self.motor.set(speed)
         self.motorR.set(speed)
         # set a button to activate
 
     def wheelsOff(self):
-        self.motorL.disable()
+        self.motor.disable()
         self.motorR.disable()
         # use same button to deactivate
