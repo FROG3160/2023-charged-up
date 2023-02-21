@@ -1,17 +1,16 @@
 import math
-
-from ctre import (
-    AbsoluteSensorRange,
-    BaseTalonPIDSetConfiguration,
-    CANCoderConfiguration,
-    FeedbackDevice,
-    SensorInitializationStrategy,
-    TalonFXConfiguration,
-)
-from wpimath.controller import PIDController, ProfiledPIDControllerRadians
 from wpimath.geometry import Translation2d
-from wpimath.trajectory import TrapezoidProfileRadians
 from wpimath.units import feetToMeters
+from wpimath.controller import PIDController, ProfiledPIDControllerRadians
+from wpimath.trajectory import TrapezoidProfileRadians
+from ctre import (
+    TalonFXConfiguration,
+    SensorInitializationStrategy,
+    BaseTalonPIDSetConfiguration,
+    FeedbackDevice,
+    CANCoderConfiguration,
+    AbsoluteSensorRange,
+)
 
 TRACK_WIDTH = 20 / 12
 WHEELBASE = 20 / 12
@@ -21,14 +20,14 @@ WHEELBASE = 20 / 12
 MAX_FEET_PER_SEC = 10
 MAX_METERS_PER_SEC = MAX_FEET_PER_SEC * 0.3038
 
-MAX_CHASSIS_REV_SEC = 1
+MAX_CHASSIS_REV_SEC = 0.5
 MAX_CHASSIS_RADIANS_SEC = MAX_CHASSIS_REV_SEC * math.tau
 
 MODULE_DRIVE_GEARING = [(14.0 / 50.0), (28.0 / 16.0), (15.0 / 45.0)]  # Mk4 L3
 MODULE_WHEEL_DIAMETER = 0.1000125  # 3 15/16 inches in meters
 
-MAX_TRAJECTORY_SPEED = feetToMeters(5)
-MAX_TRAJECTORY_ACCEL = feetToMeters(5)
+MAX_TRAJECTORY_SPEED = feetToMeters(2)
+MAX_TRAJECTORY_ACCEL = feetToMeters(2)
 
 MODULE_FRONT_LEFT = {
     "name": "FrontLeft",
@@ -71,6 +70,8 @@ holonomicTranslationPIDController = PIDController(1.5, 0, 0)
 holonomicAnglePIDController = ProfiledPIDControllerRadians(
     2.5, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
 )
+ppTranslationPIDController = PIDController(1,0,0)
+ppRotationPIDController = PIDController(1,0,0)
 
 #
 # **Swerve Module Drive Motor Config
