@@ -8,12 +8,14 @@ from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
 from wpimath.units import feetToMeters
 from pathplannerlib import PathPoint
 from wpimath.units import inchesToMeters
+from components.grabber import FROGGrabber
+from components.arm import Arm
 
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
 BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
 
-CTRE_PCM = wpilib.PneumaticsModuleType.CTREPCM
+
 class FROGbot(MagicRobot):
 
     # Any magicbot component needs to be listed here
@@ -27,8 +29,8 @@ class FROGbot(MagicRobot):
         self.moduleBackLeft = SwerveModule(**config.MODULE_BACK_LEFT)
         self.swerveBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
 
-        self.intake_rollerDeploy = wpilib.Solenoid(CTRE_PCM, 3)
-        self.intake_rollerDeploy.set(False)
+        self.grabber = FROGGrabber(43, 0)
+        self.arm = Arm(41, 42)
 
         self.driverController = FROGXboxDriver(0)
         self.operatorController = FROGXboxOperator(1)
