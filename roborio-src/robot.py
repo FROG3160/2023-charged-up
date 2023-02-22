@@ -55,6 +55,8 @@ class FROGbot(MagicRobot):
         self.btnGoToPositionB = self.driverController.getBButton
         self.btnGoToPositionA = self.driverController.getAButton
 
+        self.btnCloseGrabber = self.operatorController.getRightBumper
+
         self.positionA = Pose2d( inchesToMeters(78), inchesToMeters(108.2), 0)
         self.positionB = Pose2d( inchesToMeters(203.5), inchesToMeters(174.2), 0)
     
@@ -71,6 +73,14 @@ class FROGbot(MagicRobot):
         self.swerveChassis.enable()
 
     def teleopPeriodic(self):
+        if self.btnCloseGrabber():
+            self.grabber.close()
+        else:
+            self.grabber.open()
+        self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
+        self.arm.boom.run(-self.operatorController.getRightY())
+        self.arm.stick.run(-self.operatorController.getLeftY())
+
         if self.btnResetEstimator():
             print("Resetting Estimator to Vision Pose Estimate")
             self.swerveChassis.setFieldPosition(
