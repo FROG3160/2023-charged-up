@@ -68,7 +68,7 @@ def constrain_radians(rads):
 
 
 class FROGSwerveModuleState(SwerveModuleState):
-    def optimize(self, current_rotation: Rotation2d):
+    def optimize(self, current_steer_position):
         # def optimize_steer_angle(new_state: SwerveModuleState, current_radians):
         """This function takes the desired module state and the current
         angle of the wheel and calculates a new position that keeps the
@@ -91,7 +91,7 @@ class FROGSwerveModuleState(SwerveModuleState):
         # current_angle = math.atan2(
         #     math.sin(current_rotation), math.cos(current_rotation)
         # )
-        current_angle = constrain_radians(current_rotation.radians())
+        current_angle = constrain_radians(current_steer_position / config.CANCODER_TICKS_PER_RADIAN)
 
         n_offset = desired_angle - current_angle
 
@@ -108,7 +108,10 @@ class FROGSwerveModuleState(SwerveModuleState):
 
         if abs(n_offset) > math.pi / 2:
             print(">>>>>>>>>>>>>>>>>ERROR<<<<<<<<<<<<<<<<<<<<")
-        self.speed *= invert_speed
+        
+        #self.speed *= invert_speed
+        self.invert_speed = invert_speed
+        self.position_offset = n_offset
         self.angle = Rotation2d(new_angle)
         # return FROGSwerveModuleState(self.speed * invert_speed, Rotation2d(new_angle))
 
@@ -235,6 +238,10 @@ class SwerveModule:
         else:
             return Rotation2d.fromDegrees(0)
 
+    def getSteerPosition(self):
+        return self.steer.getSelectedSensorPosition(0)
+
+
     # def getCommandedVelocity(self):
     #     return self.calculated_velocity
 
@@ -319,17 +326,19 @@ class SwerveModule:
         if self.enabled:
             #
             # using built-in optimize method instead of our custom one from last year
-            self.requestedState.optimize(self.getCurrentRotation())
+            current_steer_position = self.getSteerPosition()
+            self.requestedState.optimize(current_steer_position)
             self.periodic()
 
             self.steer.set(
                 POSITION_MODE,
-                self.requestedState.angle.radians() * config.CANCODER_TICKS_PER_RADIAN,
+                current_steer_position
+                + (self.requestedState.position_offset * config.CANCODER_TICKS_PER_RADIAN),
             )
 
             self.drive.set(
                 VELOCITY_MODE,
-                self.drive_unit.speedToVelocity(self.requestedState.speed),
+                self.drive_unit.speedToVelocity(self.requestedState.speed * self.requestedState.invert_speed),
             )
         else:
             self.drive.set(0)
