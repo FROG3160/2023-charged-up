@@ -26,7 +26,7 @@ class FROGPhotonVision:
         self.logger.info(f'Initializing with fieldlayout origin: {self.fieldLayout.alliance}')
         self.poseEstimator = RobotPoseEstimator(
             self.fieldLayout,
-            PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
+            PoseStrategy.LOWEST_AMBIGUITY,
             [
                 (
                     self.camera,
