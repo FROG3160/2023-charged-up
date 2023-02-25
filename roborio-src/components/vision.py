@@ -1,6 +1,6 @@
 import os
 import typing
-import wpilib
+import wpilib, logging
 from photonvision import PhotonCamera, PoseStrategy, RobotPoseEstimator, SimPhotonCamera
 from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Translation3d
@@ -20,8 +20,10 @@ def arrayToPose3d(poseArray) -> Pose3d:
 
 class FROGPhotonVision:
     def __init__(self, fieldLayout: FROGFieldLayout, cameraName: str, cameraTransform3d: Transform3d):
+        self.logger = logging.getLogger("FROGPhotonVision")
         self.camera = PhotonCamera(cameraName = cameraName)
         self.fieldLayout = fieldLayout
+        self.logger.info(f'Initializing with fieldlayout origin: {self.fieldLayout.alliance}')
         self.poseEstimator = RobotPoseEstimator(
             self.fieldLayout,
             PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
@@ -48,6 +50,7 @@ class FROGPhotonVision:
     
 
     def periodic(self) -> None:
+        self.logger.info(f'Getting pose from {self.fieldlayout.alliance}')
         self.getEstimatedRobotPose()
         SmartDashboard.putNumber(
             "PhotonVision_X_Inches", metersToInches(self.currentPose.X())

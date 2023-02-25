@@ -39,10 +39,14 @@ class PhysicsEngine:
 
         self.physics_controller = physics_controller
         self.robot = robot
-        self.physics_controller.field.setRobotPose(self.robot.startingPose2d)
+        self.startingPositionSet = False
 
 
     def update_sim(self, now, tm_diff):
+        if not self.robot.startingPose2d is None and not self.startingPositionSet:
+            self.physics_controller.field.setRobotPose(self.robot.startingPose2d)
+            self.startingPositionSet = True
+
         pose = self.physics_controller.drive(
             self.robot.swerveChassis.chassisSpeeds, tm_diff
         )

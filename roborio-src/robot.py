@@ -35,18 +35,7 @@ class FROGbot(MagicRobot):
         self.driverController = FROGXboxDriver(0)
         self.operatorController = FROGXboxOperator(1)
 
-
-        if self.isSimulation():
-            self.alliance = BLUE_ALLIANCE
-        else:
-            self.alliance = wpilib.DriverStation.getAlliance()
-        self.fieldLayout = FROGFieldLayout(self.alliance)
-        self.logger.info(f"Alliance set to {self.alliance}")
-
-        self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 2).toPose2d().transformBy(
-            Transform2d(Translation2d(0,0),Rotation2d.fromDegrees(180))
-        )
-
+        self.fieldLayout = FROGFieldLayout()
 
         # declare buttons
         self.btnEnableAutoDrive = self.driverController.getRightBumper
@@ -59,17 +48,29 @@ class FROGbot(MagicRobot):
 
         self.positionA = Pose2d( inchesToMeters(78), inchesToMeters(108.2), 0)
         self.positionB = Pose2d( inchesToMeters(203.5), inchesToMeters(174.2), 0)
+
+        self.startingPose2d = None
+    
+    def setAlliance(self):
+        self.alliance = wpilib.DriverStation.getAlliance()
+        self.fieldLayout.setAlliance(self.alliance)
+        self.logger.info(f"FROGBot.fieldLayout alliance is {self.fieldLayout.alliance}")
+        self.logger.info(f"SwerveChassis.fieldLayout alliance is {self.swerveChassis.visionPoseEstimator.fieldLayout.alliance}")
+        self.logger.info(f'FROGPhotonVision.fieldlayout alliance is {self.swerveChassis.visionPoseEstimator.poseEstimator.getFieldLayout().alliance}')
+    
     
     def robotInit(self) -> None:
         super().robotInit()  #calls createObjects()
-        self.swerveChassis.setFieldPosition(self.startingPose2d)
   
     def autonomousInit(self):
-        self.fieldLayout.setAlliance(self.alliance)
-        pass
+        self.setAlliance()
+        self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 2).toPose2d().transformBy(
+            Transform2d(Translation2d(0,0),Rotation2d.fromDegrees(180))
+        )
+        self.swerveChassis.setFieldPosition(self.startingPose2d)
 
     def teleopInit(self):
-        self.fieldLayout.setAlliance(self.alliance)
+        self.setAlliance()
         self.swerveChassis.enable()
 
     def teleopPeriodic(self):

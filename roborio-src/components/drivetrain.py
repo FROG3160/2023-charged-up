@@ -372,12 +372,9 @@ class SwerveChassis:
 
     fieldLayout: FROGFieldLayout
 
-    startingPose2d: Pose2d
-
     def __init__(self):
         self.enabled = False
         # TODO: Adjust for field placement
-        self.starting_pose = Pose2d(0, 0, 0)
 
         #self.limelightPoseEstimator = FROGLimeLightVision()
         self.center = Translation2d(0, 0)
@@ -437,7 +434,7 @@ class SwerveChassis:
         #
         # initialize the drivetrain with zero movement
         self.chassisSpeeds = ChassisSpeeds(0, 0, 0)
-        self.logger.info(f"Starting Position: {self.startingPose2d}")
+        self.startingPose2d = Pose2d()
         # TODO: set values for pose depending on starting field position
         # self.odometry = SwerveDrive4Odometry(
         #     self.kinematics,
@@ -479,11 +476,10 @@ class SwerveChassis:
         self.moduleStates = states
 
     def setFieldPosition(self, pose: Pose2d):
-        self.starting_pose = pose
         self.estimator.resetPosition(
             self.gyro.getRotation2d(),
             tuple(self.getModulePositions()),
-            self.starting_pose,
+            pose,
         )
         # self.odometry.resetPosition(
         #     self.gyro.getRotation2d(),
