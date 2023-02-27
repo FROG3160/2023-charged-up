@@ -17,15 +17,15 @@ BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
 botPositionsFromTag = (
     Transform3d(
         Translation3d(X_CHANGE, -Y_CHANGE, -Z_CHANGE),
-        Rotation3d(0, 0, 3.141593)
+        Rotation3d(0, 0, 0)
     ),
     Transform3d(
         Translation3d(X_CHANGE, 0, -Z_CHANGE),
-        Rotation3d(0, 0, 3.141593)
+        Rotation3d(0, 0, 0)
     ),
     Transform3d(
         Translation3d(X_CHANGE, Y_CHANGE, -Z_CHANGE),
-        Rotation3d(0, 0, 3.141593)
+        Rotation3d(0, 0, 0)
     )
 )
 
