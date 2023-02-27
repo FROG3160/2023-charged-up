@@ -1,4 +1,4 @@
-from wpilib import Joystick, XboxController,Timer
+from wpilib import Joystick, XboxController,Timer, DriverStation
 from wpilib.interfaces import GenericHID
 from wpimath.controller import PIDController, ProfiledPIDControllerRadians, HolonomicDriveController
 from utils.utils import remap
@@ -361,6 +361,7 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
             PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
             False,
         )
+        self.trajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(self.trajectory, DriverStation.getAlliance())
         self.initialize("pathPlanner")
 
     def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
