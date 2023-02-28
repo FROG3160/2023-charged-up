@@ -42,7 +42,7 @@ from wpimath.kinematics import (
 
 from .sensors import FROGGyro
 from utils.utils import DriveUnit, Rescale
-from wpimath.units import metersToInches, inchesToMeters, feetToMeters
+from wpimath.units import metersToInches, inchesToMeters, feetToMeters, degreesToRadians
 from logging import Logger
 import config
 from wpimath.controller import (
@@ -411,11 +411,8 @@ class SwerveChassis:
 
         self.visionPoseEstimator = FROGPhotonVision(
             self.fieldLayout,
-            "OV5647",
-            Transform3d(
-                Translation3d(0, 0, inchesToMeters(24)),
-                Rotation3d(0, 0, 0), #math.pi),
-            ),
+            config.PHOTONVISION_CAMERA_NAME,
+            config.PHOTONVISION_CAMERA_POSE
         )
 
         self.trajectoryConfig = TrajectoryConfig(
@@ -567,17 +564,17 @@ class SwerveChassis:
             Rotation2d.fromDegrees(self.gyro.getYawCCW()),
             tuple(self.getModulePositions()),
         )
-        visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
-        # visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
-        if visionPose:
-            if (
-                abs(visionPose.x - self.estimatorPose.x) < 1
-                and abs(visionPose.y - self.estimatorPose.y) < 1
-            ):
-                currentPose = self.estimator.getEstimatedPosition()
-                self.logger.info(f"Vision Pose used: {visionPose}")
-                self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
-                adjustedPose = self.estimator.getEstimatedPosition()
+        # visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
+        # # visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
+        # if visionPose:
+        #     if (
+        #         abs(visionPose.x - self.estimatorPose.x) < 1
+        #         and abs(visionPose.y - self.estimatorPose.y) < 1
+        #     ):
+        #         currentPose = self.estimator.getEstimatedPosition()
+        #         self.logger.info(f"Vision Pose used: {visionPose}")
+        #         self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
+        #         adjustedPose = self.estimator.getEstimatedPosition()
                 # self.logger.info(
                 #     "Vision Update -- initial Pose: %s\n  vision Pose: %s\n final Pose: %s",
                 #     currentPose, visionPose, adjustedPose
@@ -609,13 +606,13 @@ class SwerveChassis:
         # SmartDashboard.putNumber(
         #     "Odometry_T_Degrees", self.odometryPose.rotation().degrees()
         # )
-        if visionPose:
-            SmartDashboard.putNumber(
-                "Vision_X_Inches", metersToInches(visionPose.X())
-            )
-            SmartDashboard.putNumber(
-                "Vision_Y_Inches", metersToInches(visionPose.Y())
-            )
-            SmartDashboard.putNumber(
-                "Vision_T_Degrees", visionPose.rotation().toRotation2d().degrees()
-            )
+        # if visionPose:
+        #     SmartDashboard.putNumber(
+        #         "Vision_X_Inches", metersToInches(visionPose.X())
+        #     )
+        #     SmartDashboard.putNumber(
+        #         "Vision_Y_Inches", metersToInches(visionPose.Y())
+        #     )
+        #     SmartDashboard.putNumber(
+        #         "Vision_T_Degrees", visionPose.rotation().toRotation2d().degrees()
+        #     )
