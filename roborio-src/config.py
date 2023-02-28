@@ -119,6 +119,22 @@ CANCODER_TICKS_PER_ROTATION = 4096
 CANCODER_TICKS_PER_DEGREE = CANCODER_TICKS_PER_ROTATION / 360
 CANCODER_TICKS_PER_RADIAN = CANCODER_TICKS_PER_ROTATION / math.tau
 
+#Boom motor config
+cfgBoomMotor = TalonFXConfiguration()
+cfgBoomMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.RemoteSensor0)
+cfgBoomMotor.slot0.kP = 0.16  # TODO: Confirm PID
+cfgBoomMotor.slot0.kI = 0.0
+cfgBoomMotor.slot0.kD = 0.0
+cfgBoomMotor.slot0.kF = 0.0
+
+#Stick motor config
+cfgStickMotor = TalonFXConfiguration()
+cfgStickMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.RemoteSensor0)
+cfgStickMotor.slot0.kP = 0.096  # TODO: Confirm PID
+cfgStickMotor.slot0.kI = 0.0
+cfgStickMotor.slot0.kD = 0.0
+cfgStickMotor.slot0.kF = 0.0
+
 #
 #  MaxBotix MB1043-000 config
 #
