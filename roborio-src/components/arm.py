@@ -1,5 +1,6 @@
 from commands2 import SubsystemBase
 from ctre import WPI_TalonFX
+import config
 
 
 class SubArm(SubsystemBase):
@@ -27,7 +28,14 @@ class Arm(SubsystemBase):
         super().__init__()
 
         self.boom = SubArm(boomMotorID)
+        self.boom.motor.configAllSettings(config.cfgBoomMotor)
+        self.boom.motor.setInverted(False)
+        self.boom.motor.setSensorPhase(False)
+
         self.stick = SubArm(stickMotorID)
+        self.stick.motor.configAllSettings(config.cfgStickMotor)
+        self.stick.motor.setInverted(False)
+        self.stick.motor.setSensorPhase(False)
 
     def manual(self, boomSpeed, stickSpeed):
         self.boom.run(boomSpeed)
