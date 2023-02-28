@@ -37,21 +37,29 @@ class FROGPhotonVision:
         self.currentPose = Pose3d()
         self.previousEstimatedRobotPose = None
 
+
     def getEstimatedRobotPose(self) -> typing.Tuple[Pose3d, float]:
         # if self.previousEstimatedRobotPose:
         #     self.poseEstimator.setReferencePose(self.previousEstimatedRobotPose)
         if not wpilib.RobotBase.isSimulation():
             self.currentPose, visionTime = self.poseEstimator.update()
+            self.periodic()
             # if self.currentPose:
             #     self.previousEstimatedRobotPose = self.currentPose
             return (self.currentPose, visionTime)
         else:
             return (None, None)
+        
     
 
     def periodic(self) -> None:
-        self.logger.info(f'Getting pose from {self.fieldlayout.alliance}')
-        self.getEstimatedRobotPose()
+        if self.camera.hasTargets():
+            result = self.camera.getLatestResult()
+            bestTarget = result.getBestTarget()
+            bestTgtTransform = bestTarget.getBestCameraToTarget()
+            SmartDashboard.putNumber("TgtTransform_X", metersToInches(bestTgtTransform.X()))
+            SmartDashboard.putNumber("TgtTransform_Y", metersToInches(bestTgtTransform.Y()))
+            SmartDashboard.putNumber("TgtTransform_Degrees", metersToInches(bestTgtTransform.rotation().toRotation2d().degrees()))
         SmartDashboard.putNumber(
             "PhotonVision_X_Inches", metersToInches(self.currentPose.X())
         )
