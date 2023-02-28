@@ -5,6 +5,7 @@ from utils.utils import Buffer
 from rev import ColorSensorV3
 import math
 from wpimath.geometry import Rotation2d
+from magicbot import feedback
 
 BUFFERLEN = 50
 
@@ -14,20 +15,22 @@ SENSORUNITS_IN_METERS = 0.001
 
 
 class FROGGyro:
-    starting_angle = 0.0
-
+    
     def __init__(self):
         # TODO Make sure if we need this.
         self.gyro = AHRS.create_spi()
+        self.starting_angle = 0.0
         self.offset = 0
         # self.field_heading = 360-242
         # self.gyro.reset()
         self.gyro.setAngleAdjustment(self.offset)
 
+    @feedback
     def getYawCCW(self):
         # returns gyro heading +180 to -180 degrees
         # and inverts it to change from bearing to
         # cartesian angles with CCW positive.
+        wpilib.SmartDashboard.putNumber('getYawCCW', -self.gyro.getYaw())
         return -self.gyro.getYaw()
 
     def setOffset(self, offset):
@@ -58,7 +61,9 @@ class FROGGyro:
     def getAngle(self):
         return self.gyro.getAngle()
 
+    @feedback
     def getAngleCCW(self):
+        wpilib.SmartDashboard.putNumber('getAngleCCW', -self.gyro.getAngle())
         return -self.gyro.getAngle()
 
     def getAngleConstrained(self):
@@ -153,12 +158,21 @@ class FROGColor:
         pass
 
 
-class FROGsonic:
+class FROGsonic(wpilib.AnalogInput):
+
+        # self.sonic_cargoUltrasonic = wpilib.AnalogInput(0)
+        # self.sonic_mm = 25.4
+        # self.sonic_mv = 9.8
+
     cargoUltrasonic: wpilib.AnalogInput
     mm: float
     mv: float
 
-    def __init__(self):
+    def __init__(self, port: int, voltsPerInch: float):
+        super().__init__(port)
+        self.voltsPerInch = voltsPerInch
+
+        
         pass
 
     def execute(self):
@@ -169,4 +183,5 @@ class FROGsonic:
 
     def getInches(self):
         self.USVolt = self.cargoUltrasonic.getVoltage()
-        return (self.USVolt * self.mm / (self.mv / 1000)) * 0.039
+        return self.USVolt / self.voltsPerInch
+        #return (self.USVolt * self.mm / (self.mv / 1000)) * 0.039
