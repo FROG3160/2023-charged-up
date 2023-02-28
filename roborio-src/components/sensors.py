@@ -25,7 +25,6 @@ class FROGGyro:
         # self.gyro.reset()
         self.gyro.setAngleAdjustment(self.offset)
 
-    @feedback
     def getYawCCW(self):
         # returns gyro heading +180 to -180 degrees
         # and inverts it to change from bearing to
@@ -61,7 +60,6 @@ class FROGGyro:
     def getAngle(self):
         return self.gyro.getAngle()
 
-    @feedback
     def getAngleCCW(self):
         wpilib.SmartDashboard.putNumber('getAngleCCW', -self.gyro.getAngle())
         return -self.gyro.getAngle()
