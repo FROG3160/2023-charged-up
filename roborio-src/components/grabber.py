@@ -1,5 +1,6 @@
 from ctre import WPI_TalonSRX
 from wpilib import PneumaticsModuleType, Solenoid
+from components.sensors import FROGsonic
 
 
 class FROGGrabber:
@@ -12,6 +13,7 @@ class FROGGrabber:
         """
         self.motor = WPI_TalonSRX(motorID)
         self.pneumatics = Solenoid(PneumaticsModuleType.REVPH, solenoidID)
+        self.ultrasonic = FROGsonic(0, 0.02477)
         # motors and stuff
 
     def open(self):
