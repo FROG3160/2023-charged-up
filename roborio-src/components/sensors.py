@@ -158,20 +158,12 @@ class FROGColor:
 
 class FROGsonic(wpilib.AnalogInput):
 
-        # self.sonic_cargoUltrasonic = wpilib.AnalogInput(0)
-        # self.sonic_mm = 25.4
-        # self.sonic_mv = 9.8
 
-    cargoUltrasonic: wpilib.AnalogInput
-    mm: float
-    mv: float
 
     def __init__(self, port: int, voltsPerInch: float):
         super().__init__(port)
         self.voltsPerInch = voltsPerInch
 
-        
-        pass
 
     def execute(self):
         pass
@@ -180,6 +172,6 @@ class FROGsonic(wpilib.AnalogInput):
         self.getInches()
 
     def getInches(self):
-        self.USVolt = self.cargoUltrasonic.getVoltage()
-        return self.USVolt / self.voltsPerInch
+        self.volts = self.getVoltage()
+        return self.volts / self.voltsPerInch
         #return (self.USVolt * self.mm / (self.mv / 1000)) * 0.039
