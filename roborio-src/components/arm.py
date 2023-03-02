@@ -1,14 +1,12 @@
-from commands2 import SubsystemBase
 from ctre import WPI_TalonFX
 import config
 
 
-class SubArm(SubsystemBase):
+class SubArm():
     def __init__(
         self,
         motorID=int,
     ):
-        super().__init__()
         self.motor = WPI_TalonFX(motorID)
 
     def getEncoderPosition(self) -> float:
@@ -23,9 +21,8 @@ class SubArm(SubsystemBase):
         self.motor.set(0)
 
 
-class Arm(SubsystemBase):
+class Arm():
     def __init__(self, boomMotorID, stickMotorID) -> None:
-        super().__init__()
 
         self.boom = SubArm(boomMotorID)
         self.boom.motor.configAllSettings(config.cfgBoomMotor)
