@@ -1,7 +1,7 @@
 import os
 import typing
 import wpilib, logging
-from photonvision import PhotonCamera, PoseStrategy, RobotPoseEstimator, SimPhotonCamera
+from photonvision import PhotonCamera, PoseStrategy, RobotPoseEstimator, SimPhotonCamera, PhotonPoseEstimator
 from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Translation3d
 from wpilib import SmartDashboard
@@ -15,8 +15,7 @@ BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
 def arrayToPose3d(poseArray) -> Pose3d:
     return Pose3d(
         Translation3d(poseArray[0], poseArray[1], poseArray[2]),
-        Rotation3d(poseArray[3], poseArray[4], poseArray[5]),
-    )
+        Rotation3d(poseArray[3], poseArray[4], poseArray[5]),    )
 
 class FROGPhotonVision:
     def __init__(self, fieldLayout: FROGFieldLayout, cameraName: str, cameraTransform3d: Transform3d):
@@ -24,16 +23,21 @@ class FROGPhotonVision:
         self.camera = PhotonCamera(cameraName = cameraName)
         self.fieldLayout = fieldLayout
         self.logger.info(f'Initializing with fieldlayout origin: {self.fieldLayout.alliance}')
-        self.poseEstimator = RobotPoseEstimator(
+        self.poseEstimator = PhotonPoseEstimator(
             self.fieldLayout,
             PoseStrategy.LOWEST_AMBIGUITY,
-            [
-                (
-                    self.camera,
-                    cameraTransform3d,
-                ),
-            ],
+            cameraTransform3d
         )
+        # self.poseEstimator = RobotPoseEstimator(
+        #     self.fieldLayout,
+        #     PoseStrategy.LOWEST_AMBIGUITY,
+        #     [
+        #         (
+        #             self.camera,
+        #             cameraTransform3d,
+        #         ),
+        #     ],
+        # )
         self.currentPose = Pose3d()
         self.previousEstimatedRobotPose = None
 
