@@ -18,7 +18,7 @@ WHEELBASE = 20 / 12
 # SwerveDriveSpecialties modules have the following max speeds (in ft/sec):
 # L1 - 13.5, L2 - 16.3, L3 - 18
 MAX_FEET_PER_SEC = 8
-MIN_FEET_PER_SEC = 0.5
+MIN_FEET_PER_SEC = 0.55
 MAX_METERS_PER_SEC = feetToMeters(MAX_FEET_PER_SEC)
 MIN_METERS_PER_SEC = feetToMeters(MIN_FEET_PER_SEC)
 
@@ -143,7 +143,18 @@ cfgStickMotor.clearPositionOnLimitR = True
 cfgStickMotor.motionAcceleration = 10000
 cfgStickMotor.motionCruiseVelocity = 20000
 
-
+BOOM_GRID_UPPER = 15400
+STICK_GRID_UPPER = 320000
+BOOT_GRID_MID = 43000
+STICK_GRID_MID = 246000
+BOOM_GRID_LOW = 106600
+STICK_GRID_LOW = 400
+BOOM_HOME = 400
+STICK_HOME = 400
+BOOM_FLOOR_PICKUP = 145600
+STICK_FLOOR_PICKUP = 400
+BOOM_FLOOR_MANIPULATE = 106600
+STICK_FLOOR_MANIPULATE = 400
 
 #
 #  MaxBotix MB1043-000 config
@@ -178,6 +189,9 @@ ULTRASONIC = {
 #Vision Camera config
 PHOTONVISION_CAMERA_NAME = "OV5647"
 PHOTONVISION_CAMERA_POSE = Transform3d(
-                Translation3d(inchesToMeters(-9), 0, inchesToMeters(49.8)),
+                Translation3d(inchesToMeters(-10), 0, inchesToMeters(49.8)),
                 Rotation3d(0, degreesToRadians(-27), degreesToRadians(180))
 )
+
+
+pass
