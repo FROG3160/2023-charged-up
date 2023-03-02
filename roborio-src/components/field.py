@@ -34,6 +34,30 @@ botPositionsFromTag = (
 blueTagList = (8, 7, 6)
 redTagList = (3, 2, 1)
 
+blueGridPositions = {
+    1: (8, 1),
+    2: (8, 2),
+    3: (8, 3),
+    4: (7, 1), 
+    5: (7, 2),
+    6: (7, 3),
+    7: (6, 1),
+    8: (6, 2),
+    9: (6, 3)
+}
+
+redGridPositions = {
+    1: (3, 1),
+    2: (3, 2),
+    3: (3, 3),
+    4: (2, 1), 
+    5: (2, 2),
+    6: (2, 3),
+    7: (1, 1),
+    8: (1, 2),
+    9: (1, 3)
+}
+
 def getAlliance():
     return wpilib.DriverStation.getAlliance()
 
@@ -54,15 +78,21 @@ class FROGFieldLayout(AprilTagFieldLayout):
 
     def getGridRelativePosition(self, gridNum: int, position: int) -> Pose3d:
         return self.getTagRelativePosition( self.tagList[gridNum-1], position )
+    
+    def getPosition(self, position: int) -> Pose3d:
+        return self.getTagRelativePosition(*self.gridPositions[position])
+    
     # set alliance/change origin
     def setAlliance(self, alliance = getAlliance()):
         self.logger.info(f"FROGFieldLayout.setAlliance() called with {alliance}")
         if alliance == RED_ALLIANCE:
             self.setOrigin(self.OriginPosition.kRedAllianceWallRightSide)
+            self.gridPositions = redGridPositions
             self.tagList = redTagList
             self.alliance = RED_ALLIANCE
         elif alliance == BLUE_ALLIANCE:
             self.setOrigin(self.OriginPosition.kBlueAllianceWallRightSide)
+            self.gridPositions = blueGridPositions
             self.tagList = blueTagList
             self.alliance = BLUE_ALLIANCE
     
