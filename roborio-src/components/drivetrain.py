@@ -579,7 +579,7 @@ class SwerveChassis:
             Rotation2d.fromDegrees(self.gyro.getYawCCW()),
             tuple(self.getModulePositions()),
         )
-        # visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
+        visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
         # # visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
         # if visionPose:
         #     if (
@@ -621,13 +621,16 @@ class SwerveChassis:
         # SmartDashboard.putNumber(
         #     "Odometry_T_Degrees", self.odometryPose.rotation().degrees()
         # )
-        # if visionPose:
-        #     SmartDashboard.putNumber(
-        #         "Vision_X_Inches", metersToInches(visionPose.X())
-        #     )
-        #     SmartDashboard.putNumber(
-        #         "Vision_Y_Inches", metersToInches(visionPose.Y())
-        #     )
-        #     SmartDashboard.putNumber(
-        #         "Vision_T_Degrees", visionPose.rotation().toRotation2d().degrees()
-        #     )
+        if visionPose:
+            SmartDashboard.putNumber(
+                "Vision_X_Inches", metersToInches(visionPose.X())
+            )
+            SmartDashboard.putNumber(
+                "Vision_Y_Inches", metersToInches(visionPose.Y())
+            )
+            SmartDashboard.putNumber(
+                "Vision_Z_Inches", metersToInches(visionPose.Z())
+            )
+            SmartDashboard.putNumber(
+                "Vision_T_Degrees", visionPose.rotation().toRotation2d().degrees()
+            )
