@@ -85,17 +85,18 @@ class FROGbot(MagicRobot):
         else:
             self.grabber.open()
         self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
-        self.arm.boom.run(self.operatorController.getRightY())
-        self.arm.stick.run(-self.operatorController.getLeftY())
+        # self.arm.boom.run(self.operatorController.getRightY())
+        # self.arm.stick.run(-self.operatorController.getLeftY())
         if self.btnFloorPickup():
             self.arm.boom.motor.set(ControlMode.Position, 146000)
             self.arm.stick.motor.set(ControlMode.Position, 0)
-        if self.btnFloorManipulate():
+        elif self.btnFloorManipulate():
             self.arm.boom.motor.set(ControlMode.Position, 106000)
             self.arm.stick.motor.set(ControlMode.Position, 0)
-        if self.btnHome():
+        elif self.btnHome():
             self.arm.boom.motor.set(ControlMode.Position, 0)
             self.arm.stick.motor.set(ControlMode.Position, 0)
+
 
         if self.btnResetEstimator():
             print("Resetting Estimator to Vision Pose Estimate")
