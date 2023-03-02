@@ -41,7 +41,7 @@ from wpimath.kinematics import (
 )
 
 from .sensors import FROGGyro
-from utils.utils import DriveUnit, Rescale
+from utils.utils import DriveUnit, remap
 from wpimath.units import metersToInches, inchesToMeters, feetToMeters, degreesToRadians
 from logging import Logger
 import config
@@ -317,10 +317,14 @@ class SwerveModule:
         self.drive.setSensorPhase(False)
         self.drive.configClosedloopRamp(0.25)
 
+        SmartDashboard.putNumber("Drive kF", config.cfgDriveMotor.slot0.kF)
+
         # self.current_states = None
         # self.current_speeds = None
 
     def setState(self, state: SwerveModuleState):
+        # TODO: Remove the following config change once tuning is done
+        self.setDriveF(SmartDashboard.getNumber("Drive kF", config.cfgDriveMotor.slot0.kF))
         self.requestedState = FROGSwerveModuleState(state.speed, state.angle)
 
         if self.enabled:
@@ -336,12 +340,20 @@ class SwerveModule:
                 + (self.requestedState.position_offset * config.CANCODER_TICKS_PER_RADIAN),
             )
 
+            # constrain speed within min and max speeds
+            driveSpeed = math.copysign(
+                remap(abs(self.requestedState.speed), 0, config.MAX_METERS_PER_SEC, config.MIN_METERS_PER_SEC, config.MAX_METERS_PER_SEC),
+                self.requestedState.speed
+            )
             self.drive.set(
                 VELOCITY_MODE,
-                self.drive_unit.speedToVelocity(self.requestedState.speed * self.requestedState.invert_speed),
+                self.drive_unit.speedToVelocity(driveSpeed * self.requestedState.invert_speed),
             )
         else:
             self.drive.set(0)
+
+    def setDriveF(self, newF):
+        self.drive.config_kF(0, newF)
 
     # def initSendable(self, builder) -> None:
 
@@ -554,6 +566,9 @@ class SwerveChassis:
         )
 
     def autoDrive(self) -> None:
+        # TODO: Remove this call once we have tuned the drivetrain
+        #       It allows us to adjust PID values on the fly.
+        self.holonomicController.loadPID()
         """Sets ChassisSpeeds from return of the holonomic controller."""
         self.chassisSpeeds = self.holonomicController.getChassisSpeeds(
             self.estimator.getEstimatedPosition()
