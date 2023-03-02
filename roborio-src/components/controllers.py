@@ -333,9 +333,9 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.trajectoryType = trajectoryType
 
     def loadPID(self):
-        self.xController.setP(SmartDashboard.getNumber('ControllerP'))
-        self.yController.setP(SmartDashboard.getNumber('ControllerP'))
-        self.rotationController.setP(SmartDashboard.getNumber('angleControllerP'))
+        self.xController.setP(SmartDashboard.getNumber('ControllerP', self.xController.getP()))
+        self.yController.setP(SmartDashboard.getNumber('ControllerP', self.yController.getP()))
+        self.rotationController.setP(SmartDashboard.getNumber('angleControllerP', self.rotationController.getP()))
 
 
     def initSimpleTrajectory(self, startPoint: PathPoint, endPoint: PathPoint):
