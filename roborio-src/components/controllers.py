@@ -13,6 +13,7 @@ from pathplannerlib import PathConstraints, PathPlanner, PathPoint, PathPlannerT
 from magicbot import feedback
 from wpilib import SmartDashboard
 import os
+from wpimath.units import inchesToMeters
 
 MAX_TRAJECTORY_SPEED = feetToMeters(5)
 MAX_TRAJECTORY_ACCEL = feetToMeters(5)
@@ -325,8 +326,11 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.timer = Timer()
         self.trajectoryType = False
         self.kinematics = kinematics
-        SmartDashboard.putNumber('ControllerP', self.xController.getP())
-        SmartDashboard.putNumber('angleControllerP', self.rotationController.getP())
+        #SmartDashboard.putNumber('ControllerP', self.xController.getP())
+        #SmartDashboard.putNumber('angleControllerP', self.rotationController.getP())
+        SmartDashboard.putBoolean('AT TARGET', False)
+        self.setTolerance(Pose2d(inchesToMeters(5),inchesToMeters(5), Rotation2d(.05)))
+
 
     def initialize(self, trajectoryType):
         self.firstCall = True
@@ -373,6 +377,7 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         Returns:
             ChassisSpeeds: translation and rotational vectors desired
         """
+        SmartDashboard.putBoolean('AT TARGET', self.atReference())
         if not self.trajectoryType is None:
             if self.firstCall:
                 self.timer.start()
