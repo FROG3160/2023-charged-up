@@ -88,14 +88,14 @@ class FROGbot(MagicRobot):
         # self.arm.boom.run(self.operatorController.getRightY())
         # self.arm.stick.run(-self.operatorController.getLeftY())
         if self.btnFloorPickup():
-            self.arm.boom.motor.set(ControlMode.Position, 146000)
-            self.arm.stick.motor.set(ControlMode.Position, 0)
+            self.arm.boom.toPosition(config.BOOM_FLOOR_PICKUP)
+            self.arm.stick.toPosition(config.STICK_FLOOR_PICKUP)
         elif self.btnFloorManipulate():
-            self.arm.boom.motor.set(ControlMode.Position, 106000)
-            self.arm.stick.motor.set(ControlMode.Position, 0)
+            self.arm.boom.toPosition(config.BOOM_FLOOR_MANIPULATE)
+            self.arm.stick.toPosition(config.STICK_FLOOR_MANIPULATE)
         elif self.btnHome():
-            self.arm.boom.motor.set(ControlMode.Position, 0)
-            self.arm.stick.motor.set(ControlMode.Position, 0)
+            self.arm.boom.toPosition(config.BOOM_HOME)
+            self.arm.stick.toPosition(config.STICK_HOME)
 
 
         if self.btnResetEstimator():
