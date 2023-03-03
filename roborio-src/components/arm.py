@@ -1,4 +1,4 @@
-from ctre import WPI_TalonFX
+from ctre import WPI_TalonFX, ControlMode
 import config
 
 
@@ -16,6 +16,9 @@ class SubArm():
         # TODO: Determine the actual position the arm is moving in based on
         # running the motor forward and backward.
         self.motor.set(speed)
+
+    def toPosition(self, position: float):
+        self.motor.set(ControlMode.Position, position)
 
     def stop(self):
         self.motor.set(0)
