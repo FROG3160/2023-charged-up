@@ -360,18 +360,19 @@ class SwerveModule:
     #     super().initSendable(builder)
 
     def periodic(self) -> None:
-        SmartDashboard.putNumber(
-            "{}_steerAngle".format(self.name), self.getCurrentRotation().degrees()
-        )
-        SmartDashboard.putNumber(
-            "{}_driveSpeed".format(self.name), self.getCurrentSpeed()
-        )
-        SmartDashboard.putNumber(
-            "{}_requestedAngle".format(self.name), self.requestedState.angle.degrees()
-        )
-        SmartDashboard.putNumber(
-            "{}_requestedSpeed".format(self.name), self.requestedState.speed
-        )
+        pass
+        # SmartDashboard.putNumber(
+        #     "{}_steerAngle".format(self.name), self.getCurrentRotation().degrees()
+        # )
+        # SmartDashboard.putNumber(
+        #     "{}_driveSpeed".format(self.name), self.getCurrentSpeed()
+        # )
+        # SmartDashboard.putNumber(
+        #     "{}_requestedAngle".format(self.name), self.requestedState.angle.degrees()
+        # )
+        # SmartDashboard.putNumber(
+        #     "{}_requestedSpeed".format(self.name), self.requestedState.speed
+        # )
 
 
 class SwerveChassis:
@@ -568,7 +569,7 @@ class SwerveChassis:
     def autoDrive(self) -> None:
         # TODO: Remove this call once we have tuned the drivetrain
         #       It allows us to adjust PID values on the fly.
-        self.holonomicController.loadPID()
+        #self.holonomicController.loadPID()
         """Sets ChassisSpeeds from return of the holonomic controller."""
         self.chassisSpeeds = self.holonomicController.getChassisSpeeds(
             self.estimator.getEstimatedPosition()
@@ -581,15 +582,15 @@ class SwerveChassis:
         )
         visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
         # # visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
-        # if visionPose:
-        #     if (
-        #         abs(visionPose.x - self.estimatorPose.x) < 1
-        #         and abs(visionPose.y - self.estimatorPose.y) < 1
-        #     ):
-        #         currentPose = self.estimator.getEstimatedPosition()
-        #         self.logger.info(f"Vision Pose used: {visionPose}")
-        #         self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
-        #         adjustedPose = self.estimator.getEstimatedPosition()
+        if visionPose:
+            if (
+                abs(visionPose.x - self.estimatorPose.x) < 0.5
+                and abs(visionPose.y - self.estimatorPose.y) < 0.5
+            ):
+                currentPose = self.estimator.getEstimatedPosition()
+                #self.logger.info(f"Vision Pose used: {visionPose}")
+                self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
+                adjustedPose = self.estimator.getEstimatedPosition()
                 # self.logger.info(
                 #     "Vision Update -- initial Pose: %s\n  vision Pose: %s\n final Pose: %s",
                 #     currentPose, visionPose, adjustedPose
