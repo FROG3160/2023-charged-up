@@ -22,6 +22,7 @@ class FROGPhotonVision:
     def __init__(self, fieldLayout: FROGFieldLayout, cameraName: str, cameraTransform3d: Transform3d):
         self.logger = logging.getLogger("FROGPhotonVision")
         self.camera = PhotonCamera(cameraName = cameraName)
+        self.camera.setDriverMode(False)
         self.fieldLayout = fieldLayout
         self.logger.info(f'Initializing with fieldlayout origin: {self.fieldLayout.alliance}')
         self.poseEstimator = RobotPoseEstimator(
