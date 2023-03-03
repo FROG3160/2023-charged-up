@@ -28,8 +28,8 @@ MAX_CHASSIS_RADIANS_SEC = MAX_CHASSIS_REV_SEC * math.tau
 MODULE_DRIVE_GEARING = [(14.0 / 50.0), (28.0 / 16.0), (15.0 / 45.0)]  # Mk4 L3
 MODULE_WHEEL_DIAMETER = 0.1000125  # 3 15/16 inches in meters
 
-MAX_TRAJECTORY_SPEED = feetToMeters(2)
-MAX_TRAJECTORY_ACCEL = feetToMeters(2)
+MAX_TRAJECTORY_SPEED = feetToMeters(4)
+MAX_TRAJECTORY_ACCEL = feetToMeters(4)
 
 MODULE_FRONT_LEFT = {
     "name": "FrontLeft",
@@ -72,8 +72,8 @@ holonomicTranslationPIDController = PIDController(1.5, 0, 0)
 holonomicAnglePIDController = ProfiledPIDControllerRadians(
     2.5, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
 )
-ppTranslationPIDController = PIDController(4,0,0)
-ppRotationPIDController = PIDController(8,0,0)
+ppTranslationPIDController = PIDController(1,0,0)
+ppRotationPIDController = PIDController(2,0,0)
 
 #
 # **Swerve Module Drive Motor Config
@@ -123,7 +123,7 @@ CANCODER_TICKS_PER_RADIAN = CANCODER_TICKS_PER_ROTATION / math.tau
 
 #Boom motor config
 cfgBoomMotor = TalonFXConfiguration()
-cfgBoomMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.RemoteSensor0)
+cfgBoomMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
 cfgBoomMotor.slot0.kP = 0.16
 cfgBoomMotor.slot0.kI = 0.0
 cfgBoomMotor.slot0.kD = 0.0
@@ -134,7 +134,7 @@ cfgBoomMotor.motionCruiseVelocity = 15000
 
 #Stick motor config
 cfgStickMotor = TalonFXConfiguration()
-cfgStickMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.RemoteSensor0)
+cfgStickMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
 cfgStickMotor.slot0.kP = 0.096
 cfgStickMotor.slot0.kI = 0.0
 cfgStickMotor.slot0.kD = 0.0
@@ -150,7 +150,7 @@ STICK_GRID_MID = 246000
 BOOM_GRID_LOW = 106600
 STICK_GRID_LOW = 400
 BOOM_HOME = 400
-STICK_HOME = 400
+STICK_HOME = 0
 BOOM_FLOOR_PICKUP = 145600
 STICK_FLOOR_PICKUP = 400
 BOOM_FLOOR_MANIPULATE = 106600
@@ -189,8 +189,8 @@ ULTRASONIC = {
 #Vision Camera config
 PHOTONVISION_CAMERA_NAME = "OV5647"
 PHOTONVISION_CAMERA_POSE = Transform3d(
-                Translation3d(inchesToMeters(-10), 0, inchesToMeters(49.8)),
-                Rotation3d(0, degreesToRadians(-27), degreesToRadians(180))
+                Translation3d(inchesToMeters(-9), 0, inchesToMeters(49.8)),
+                Rotation3d(0, degreesToRadians(32), degreesToRadians(180))
 )
 
 
