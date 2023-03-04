@@ -124,32 +124,38 @@ CANCODER_TICKS_PER_RADIAN = CANCODER_TICKS_PER_ROTATION / math.tau
 #Boom motor config
 cfgBoomMotor = TalonFXConfiguration()
 cfgBoomMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
-cfgBoomMotor.slot0.kP = 0.16
+cfgBoomMotor.slot0.kP = 0.24 #0.16
 cfgBoomMotor.slot0.kI = 0.0
 cfgBoomMotor.slot0.kD = 0.0
 cfgBoomMotor.slot0.kF = 0.0
 cfgBoomMotor.clearPositionOnLimitR = True
-cfgBoomMotor.motionAcceleration = 7500
-cfgBoomMotor.motionCruiseVelocity = 15000
+cfgBoomMotor.motionAcceleration = 40000
+cfgBoomMotor.motionCruiseVelocity = 20000
+cfgBoomMotor.motionCurveStrength = 3
+cfgBoomMotor.slot0.allowableClosedloopError = 0
+cfgBoomMotor.neutralDeadband = 0.02
 
 #Stick motor config
 cfgStickMotor = TalonFXConfiguration()
 cfgStickMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
-cfgStickMotor.slot0.kP = 0.096
+cfgStickMotor.slot0.kP = 0.30 #0.096
 cfgStickMotor.slot0.kI = 0.0
 cfgStickMotor.slot0.kD = 0.0
 cfgStickMotor.slot0.kF = 0.0
 cfgStickMotor.clearPositionOnLimitR = True
-cfgStickMotor.motionAcceleration = 10000
+cfgStickMotor.motionAcceleration = 30000
 cfgStickMotor.motionCruiseVelocity = 20000
+cfgStickMotor.motionCurveStrength = 2
+cfgStickMotor.slot0.allowableClosedloopError = 0
+cfgStickMotor.neutralDeadband = 0.02
 
-BOOM_GRID_UPPER = 15400
-STICK_GRID_UPPER = 320000
-BOOT_GRID_MID = 43000
+BOOM_GRID_UPPER = 150400
+STICK_GRID_UPPER = 319500
+BOOM_GRID_MID = 43000
 STICK_GRID_MID = 246000
 BOOM_GRID_LOW = 106600
 STICK_GRID_LOW = 400
-BOOM_HOME = 400
+BOOM_HOME = 200
 STICK_HOME = 0
 BOOM_FLOOR_PICKUP = 145600
 STICK_FLOOR_PICKUP = 400
