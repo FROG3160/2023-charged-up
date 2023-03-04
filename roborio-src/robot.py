@@ -4,12 +4,14 @@ from magicbot import MagicRobot, tunable, feedback
 from components.drivetrain import SwerveChassis, SwerveModule
 from components.controllers import FROGStickDriver, FROGXboxDriver, FROGXboxOperator, FROGHolonomic
 from components.field import FROGFieldLayout
+from components.led import FROGLED
 from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
 from wpimath.units import feetToMeters
 from pathplannerlib import PathPoint
 from wpimath.units import inchesToMeters
 from components.grabber import FROGGrabber
 from components.arm import Arm
+from components.sensors import FROGColor
 from wpimath.units import degreesToRadians
 from ctre import ControlMode
 
@@ -24,6 +26,7 @@ class FROGbot(MagicRobot):
     # in order for their "execute" method to be run
     # every loop
     swerveChassis: SwerveChassis
+    arm: Arm
 
     def createObjects(self) -> None:
         self.moduleFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
@@ -32,7 +35,9 @@ class FROGbot(MagicRobot):
         self.swerveBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
 
         self.grabber = FROGGrabber(43, 0)
-        self.arm = Arm(41, 42)
+        #self.sensor = FROGColor()
+
+        self.leds = FROGLED(35)
 
         self.driverController = FROGXboxDriver(0)
         self.operatorController = FROGXboxOperator(1)
@@ -48,15 +53,18 @@ class FROGbot(MagicRobot):
         self.btnGoToPositionA = self.driverController.getAButton
         self.btnRunPathOut = self.driverController.getYButton
 
-        self.btnCloseGrabber = self.operatorController.getRightBumper
+        self.btnToggleGrabber = self.operatorController.getLeftBumperPressed
         self.btnFloorPickup = self.operatorController.getAButtonPressed
         self.btnFloorManipulate = self.operatorController.getBButtonPressed
         self.btnHome = self.operatorController.getXButtonPressed
+        self.btnMidPlace = self.operatorController.getYButtonPressed
+        self.btnUpperPlace = self.operatorController.getRightBumperPressed
 
-        self.positionA = Pose2d( inchesToMeters(78), inchesToMeters(108.2), 0)
+        self.positionA = Pose2d( inchesToMeters(98.5), inchesToMeters(70), 0)
         self.positionB = Pose2d( inchesToMeters(203.5), inchesToMeters(174.2), 0)
 
         self.startingPose2d = None
+        self.grabberIsOpen = False
     
     def setAlliance(self):
         self.alliance = wpilib.DriverStation.getAlliance()
@@ -68,6 +76,7 @@ class FROGbot(MagicRobot):
     
     def robotInit(self) -> None:
         super().robotInit()  #calls createObjects()
+        self.leds.Fire()
   
     def autonomousInit(self):
         self.setAlliance()
@@ -79,11 +88,14 @@ class FROGbot(MagicRobot):
         self.swerveChassis.enable()
 
     def teleopPeriodic(self):
+        #wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
         wpilib.SmartDashboard.putNumber('Ultrasonic Distance', self.grabber.ultrasonic.getInches())
-        if self.btnCloseGrabber():
-            self.grabber.close()
-        else:
-            self.grabber.open()
+        if self.btnToggleGrabber():
+            self.grabberIsOpen = [True, False][self.grabberIsOpen]
+            if self.grabberIsOpen:
+                self.grabber.open()
+            else:
+                self.grabber.close()
         self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
         # self.arm.boom.run(self.operatorController.getRightY())
         # self.arm.stick.run(-self.operatorController.getLeftY())
@@ -96,6 +108,12 @@ class FROGbot(MagicRobot):
         elif self.btnHome():
             self.arm.boom.toPosition(config.BOOM_HOME)
             self.arm.stick.toPosition(config.STICK_HOME)
+        elif self.btnMidPlace():
+            self.arm.boom.toPosition(config.BOOM_GRID_MID)
+            self.arm.stick.toPosition(config.STICK_GRID_MID)
+        elif self.btnUpperPlace():
+            self.arm.boom.toPosition(config.BOOM_GRID_UPPER)
+            self.arm.stick.toPosition(config.STICK_GRID_UPPER)
 
 
         if self.btnResetEstimator():
