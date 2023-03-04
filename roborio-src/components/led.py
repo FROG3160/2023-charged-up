@@ -7,18 +7,19 @@ from ctre.led import (
     FireAnimation,
     SingleFadeAnimation,
     StrobeAnimation
-
 )
 
 BRIGHTNESS = 0.4
 FORWARD = ColorFlowAnimation.Direction.Forward
 BACKWARD = ColorFlowAnimation.Direction.Backward
-NUM_LEDS = 8 + 47
-RAINBOW = RainbowAnimation(1, 0.9, NUM_LEDS)
-TWINKLE = TwinkleAnimation(0, 225, 0, 225, 0.5, NUM_LEDS)
-COLORFLOWFORWARD = ColorFlowAnimation(125, 235, 0, 0, 0.5, NUM_LEDS, FORWARD)
-COLORFLOWBACKWARD = ColorFlowAnimation(125, 235, 3, 0, 0.5, NUM_LEDS, BACKWARD)
-FIRE = FireAnimation(1, 0.5, NUM_LEDS, 0.7, 0.3)
+NUM_CANDLE_LEDS = 8
+NUM_STRIP_LEDS = 63
+NUM_TOTAL_LEDS = NUM_CANDLE_LEDS + NUM_STRIP_LEDS  # the 8 LEDs of the CANdle + the strip
+RAINBOW = RainbowAnimation(1, 0.9, NUM_TOTAL_LEDS)
+TWINKLE = TwinkleAnimation(0, 225, 0, 225, 0.5, NUM_TOTAL_LEDS)
+COLORFLOWFORWARD = ColorFlowAnimation(125, 235, 0, 0, 0.5, NUM_TOTAL_LEDS, FORWARD)
+COLORFLOWBACKWARD = ColorFlowAnimation(125, 235, 3, 0, 0.5, NUM_TOTAL_LEDS, BACKWARD)
+FIRE = FireAnimation(1, 0.5, NUM_TOTAL_LEDS + 15, 0.7, 0.3, False, NUM_CANDLE_LEDS)
 
 
 class FROGLED:
