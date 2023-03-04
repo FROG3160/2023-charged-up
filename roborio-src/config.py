@@ -122,6 +122,7 @@ CANCODER_TICKS_PER_DEGREE = CANCODER_TICKS_PER_ROTATION / 360
 CANCODER_TICKS_PER_RADIAN = CANCODER_TICKS_PER_ROTATION / math.tau
 
 #Boom motor config
+BOOM_MOTOR_ID = 41
 cfgBoomMotor = TalonFXConfiguration()
 cfgBoomMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
 cfgBoomMotor.slot0.kP = 0.24 #0.16
@@ -136,6 +137,7 @@ cfgBoomMotor.slot0.allowableClosedloopError = 0
 cfgBoomMotor.neutralDeadband = 0.02
 
 #Stick motor config
+STICK_MOTOR_ID = 42
 cfgStickMotor = TalonFXConfiguration()
 cfgStickMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
 cfgStickMotor.slot0.kP = 0.30 #0.096
@@ -153,13 +155,13 @@ BOOM_GRID_UPPER = 150400
 STICK_GRID_UPPER = 319500
 BOOM_GRID_MID = 43000
 STICK_GRID_MID = 246000
-BOOM_GRID_LOW = 106600
+BOOM_GRID_LOW = 95300
 STICK_GRID_LOW = 400
-BOOM_HOME = 200
+BOOM_HOME = 0
 STICK_HOME = 0
 BOOM_FLOOR_PICKUP = 145600
 STICK_FLOOR_PICKUP = 400
-BOOM_FLOOR_MANIPULATE = 106600
+BOOM_FLOOR_MANIPULATE = 93500
 STICK_FLOOR_MANIPULATE = 400
 
 #
