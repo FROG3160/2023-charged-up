@@ -384,6 +384,7 @@ class SwerveChassis:
     logger: Logger
 
     fieldLayout: FROGFieldLayout
+    limelight: FROGLimeLightVision
 
     def __init__(self):
         self.enabled = False
@@ -574,6 +575,9 @@ class SwerveChassis:
         self.chassisSpeeds = self.holonomicController.getChassisSpeeds(
             self.estimator.getEstimatedPosition()
         )
+
+    def robotOrientedDrive(self, vX, vY, vT):
+        self.chassisSpeeds = ChassisSpeeds(vX, vY, vT)
 
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(

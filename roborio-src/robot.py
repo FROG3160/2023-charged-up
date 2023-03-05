@@ -5,6 +5,7 @@ from components.drivetrain import SwerveChassis, SwerveModule
 from components.controllers import FROGStickDriver, FROGXboxDriver, FROGXboxOperator, FROGHolonomic
 from components.field import FROGFieldLayout
 from components.led import FROGLED
+from components.vision import FROGLimeLightVision
 from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
 from wpimath.units import feetToMeters
 from pathplannerlib import PathPoint
@@ -25,8 +26,11 @@ class FROGbot(MagicRobot):
     # Any magicbot component needs to be listed here
     # in order for their "execute" method to be run
     # every loop
+
+    #Upper leve components first, lower level components last
     swerveChassis: SwerveChassis
     arm: Arm
+    limelight: FROGLimeLightVision
 
     def createObjects(self) -> None:
         self.moduleFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
@@ -44,15 +48,17 @@ class FROGbot(MagicRobot):
 
         self.fieldLayout = FROGFieldLayout()
 
-        # declare buttons
+        # declare buttons for driver
         self.btnEnableAutoDrive = self.driverController.getRightBumper
         self.btnEnableAutoRotate = self.driverController.getLeftBumper
-        self.btnResetEstimator = self.driverController.getStartButtonPressed
-        self.btnResetGyro = self.driverController.getRightStickButtonPressed
+        self.btnResetEstimator = self.driverController.getBackButtonPressed
+        self.btnResetGyro = self.driverController.getStartButtonPressed
         self.btnGoToPositionB = self.driverController.getBButton
         self.btnGoToPositionA = self.driverController.getAButton
-        self.btnRunPathOut = self.driverController.getYButton
+        self.btnDriveToCube = self.driverController.getXButton
+        self.btnDriveToCone = self.driverController.getYButton
 
+        # declare buttons for operator
         self.btnToggleGrabber = self.operatorController.getLeftBumperPressed
         self.btnFloorPickup = self.operatorController.getAButtonPressed
         self.btnFloorManipulate = self.operatorController.getBButtonPressed
@@ -155,7 +161,6 @@ class FROGbot(MagicRobot):
 			        endPoint, # Ending position
                 )
             self.swerveChassis.autoDrive()
-
         elif self.btnGoToPositionA():
             #self.swerveChassis.enableAuto()
             if not self.swerveChassis.holonomicController.trajectoryType:
@@ -169,7 +174,6 @@ class FROGbot(MagicRobot):
 			        endPoint, # Ending position
                 )
             self.swerveChassis.autoDrive()
-
         elif self.btnGoToPositionB():
             #self.swerveChassis.enableAuto()
             if not self.swerveChassis.holonomicController.trajectoryType:
@@ -183,11 +187,24 @@ class FROGbot(MagicRobot):
 			        endPoint, # Ending position
                 )
             self.swerveChassis.autoDrive()
-        elif self.btnRunPathOut():
-            if not self.swerveChassis.holonomicController.trajectoryType:
-                self.swerveChassis.holonomicController.loadPathPlanner('pp_test1')
-            self.swerveChassis.autoDrive()
-
+        # elif self.btnDrivePath():
+        #     if not self.swerveChassis.holonomicController.trajectoryType:
+        #         self.swerveChassis.holonomicController.loadPathPlanner('pp_test1')
+        #     self.swerveChassis.autoDrive()
+        elif self.btnDriveToCone():
+            self.limelight.findCones()
+            if self.limelight.hasTarget():
+                vT = self.limelight.tx / 40
+                vX = self.limelight.ta * -0.0098 + 1.0293
+                vY = 0
+                self.swerveChassis.robotOrientedDrive(-vX, vY, -vT)
+        elif self.btnDriveToCube():
+            self.limelight.findCubes()
+            if self.limelight.hasTarget():
+                vT = self.limelight.tx / 40
+                vX = self.limelight.ta * -0.0098 + 1.0293
+                vY = 0
+                self.swerveChassis.robotOrientedDrive(-vX, vY, -vT)
         else:
             self.swerveChassis.holonomicController.trajectoryType = False
             #self.swerveChassis.disableAuto()
