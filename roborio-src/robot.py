@@ -12,7 +12,7 @@ from pathplannerlib import PathPoint
 from wpimath.units import inchesToMeters
 from components.grabber import FROGGrabber
 from components.arm import Arm
-from components.sensors import FROGColor
+from components.sensors import FROGColor, FROGGyro
 from wpimath.units import degreesToRadians
 from ctre import ControlMode
 
@@ -31,6 +31,7 @@ class FROGbot(MagicRobot):
     swerveChassis: SwerveChassis
     arm: Arm
     limelight: FROGLimeLightVision
+    gyro: FROGGyro
 
     def createObjects(self) -> None:
         self.moduleFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
@@ -39,7 +40,7 @@ class FROGbot(MagicRobot):
         self.swerveBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
 
         self.grabber = FROGGrabber(43, 0)
-        #self.sensor = FROGColor()
+        self.sensor = FROGColor()
 
         self.leds = FROGLED(35)
 
@@ -94,7 +95,7 @@ class FROGbot(MagicRobot):
         self.swerveChassis.enable()
 
     def teleopPeriodic(self):
-        #wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
+        wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
         wpilib.SmartDashboard.putNumber('Ultrasonic Distance', self.grabber.ultrasonic.getInches())
         if self.btnToggleGrabber():
             self.grabberIsOpen = [True, False][self.grabberIsOpen]
@@ -192,19 +193,11 @@ class FROGbot(MagicRobot):
         #         self.swerveChassis.holonomicController.loadPathPlanner('pp_test1')
         #     self.swerveChassis.autoDrive()
         elif self.btnDriveToCone():
-            self.limelight.findCones()
-            if self.limelight.hasTarget():
-                vT = self.limelight.tx / 40
-                vX = self.limelight.ta * -0.0098 + 1.0293
-                vY = 0
-                self.swerveChassis.robotOrientedDrive(-vX, vY, -vT)
+            self.swerveChassis.driveToObject(0)
+
         elif self.btnDriveToCube():
-            self.limelight.findCubes()
-            if self.limelight.hasTarget():
-                vT = self.limelight.tx / 40
-                vX = self.limelight.ta * -0.0098 + 1.0293
-                vY = 0
-                self.swerveChassis.robotOrientedDrive(-vX, vY, -vT)
+            self.swerveChassis.driveToObject(1)
+            
         else:
             self.swerveChassis.holonomicController.trajectoryType = False
             #self.swerveChassis.disableAuto()

@@ -386,6 +386,8 @@ class SwerveChassis:
     fieldLayout: FROGFieldLayout
     limelight: FROGLimeLightVision
 
+    gyro: FROGGyro
+
     def __init__(self):
         self.enabled = False
         # TODO: Adjust for field placement
@@ -438,7 +440,6 @@ class SwerveChassis:
         self.holonomicController = PPHolonomic(self.kinematics)
         self.holonomicController.logger = self.logger
 
-        self.gyro = FROGGyro()
         self.gyro.resetGyro()
         # self.field =
         # self.logger =
@@ -578,6 +579,14 @@ class SwerveChassis:
 
     def robotOrientedDrive(self, vX, vY, vT):
         self.chassisSpeeds = ChassisSpeeds(vX, vY, vT)
+
+    def driveToObject(self, object):
+        self.limelight.setPipeline(object)
+        if self.limelight.hasTarget():
+            vT = self.limelight.tx / 40
+            vX = self.limelight.ta * -0.0098 + 1.0293
+            vY = 0
+            self.robotOrientedDrive(-vX, vY, -vT)
 
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(

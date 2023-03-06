@@ -29,8 +29,16 @@ class FROGGyro:
         # returns gyro heading +180 to -180 degrees
         # and inverts it to change from bearing to
         # cartesian angles with CCW positive.
-        wpilib.SmartDashboard.putNumber('getYawCCW', -self.gyro.getYaw())
+        
         return -self.gyro.getYaw()
+    
+    def getRoll(self):
+        
+        return self.gyro.getRoll()
+    
+    def getPitch(self):
+        
+        return self.gyro.getPitch()
 
     def setOffset(self, offset):
         self.offset = offset
@@ -55,13 +63,16 @@ class FROGGyro:
         self.gyro.reset()
 
     def execute(self):
-        pass
+        wpilib.SmartDashboard.putNumber('Gyro_Pitch', self.gyro.getPitch())
+        wpilib.SmartDashboard.putNumber('Gyro_YawCCW', -self.gyro.getYaw())
+        wpilib.SmartDashboard.putNumber('Gyro_Roll', self.gyro.getRoll())
+        wpilib.SmartDashboard.putNumber('Gyro_AngleCCW', -self.gyro.getAngle())
 
     def getAngle(self):
         return self.gyro.getAngle()
 
     def getAngleCCW(self):
-        wpilib.SmartDashboard.putNumber('getAngleCCW', -self.gyro.getAngle())
+        
         return -self.gyro.getAngle()
 
     def getAngleConstrained(self):
