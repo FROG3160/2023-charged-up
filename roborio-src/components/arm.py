@@ -34,12 +34,13 @@ class SubArm():
 
     def toPosition(self, position: float):
         self.commandedPosition = position
+        self.atPosition = False
         self.motor.set(ControlMode.MotionMagic, position)
 
     def stop(self):
         self.motor.set(0)
 
-    def atPosition(self):
+    def getPosition(self):
         self.motor.getActiveTrajectoryPosition()
     
     def execute(self):
@@ -49,6 +50,7 @@ class SubArm():
             if abs(self.motor.getActiveTrajectoryPosition() - self.commandedPosition) < 200:
                 self.logger.info(f"SubArm: {self.name} - Stopped at {self.motor.getActiveTrajectoryPosition()} with commanded Position: {self.commandedPosition}")
                 self.commandedPosition = None
+                self.atPosition = True
                 self.stop()
 
 
@@ -62,6 +64,9 @@ class Arm():
     def manual(self, boomSpeed, stickSpeed):
         self.boom.run(boomSpeed)
         self.stick.run(stickSpeed)
+
+    def atPosition(self):
+        return self.boom.atPosition and self.stick.atPosition
 
     def execute(self):
         self.boom.execute()
