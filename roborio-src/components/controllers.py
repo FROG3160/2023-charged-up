@@ -14,6 +14,7 @@ from magicbot import feedback
 from wpilib import SmartDashboard
 import os
 from wpimath.units import inchesToMeters
+from wpilib import Timer
 
 MAX_TRAJECTORY_SPEED = feetToMeters(5)
 MAX_TRAJECTORY_ACCEL = feetToMeters(5)
@@ -170,11 +171,13 @@ class FROGXboxDriver(XboxController):
     
     DEADBAND = 0.045
     ROTATION_DIVISOR = 1
+    DEBOUNCE_PERIOD = 0.5
     
     def __init__(self, channel):
 
         super().__init__(channel)
         self.button_latest = {}
+        self.timer = Timer()
 
     def getFieldRotation(self):
         
@@ -188,11 +191,45 @@ class FROGXboxDriver(XboxController):
 
     def getFieldThrottle(self):
         return wpimath.applyDeadband(self.getRightTriggerAxis(), 0)
+    
+    def getPOVDebounced(self):
+        val = -1
+        now = self.timer.getFPGATimestamp()
+        pov = self.getPOV()
+        if pov > -1:
+            if (now - self.button_latest.get("POV", 0)) > self.DEBOUNCE_PERIOD:
+                self.button_latest["POV"] = now
+                val = pov
+        if (now - self.button_latest.get("POV", 0)) < self.DEBOUNCE_PERIOD:
+            self.setRumble(RIGHT_RUMBLE, 1)
+        else:
+            self.setRumble(RIGHT_RUMBLE, 0)
+        # self.update_nt("button_pov", val)
+        return val
 
 
 class FROGXboxOperator(XboxController):
+
+    DEBOUNCE_PERIOD = 0.5
+
     def __init__(self, channel):
         super().__init__(channel)
+        self.timer = Timer()
+        self.button_latest = {}
+
+    def getPOVDebounced(self):
+        val = -1
+        now = self.timer.getFPGATimestamp()
+        pov = self.getPOV()
+        if pov > -1:
+            if (now - self.button_latest.get("POV", 0)) > self.DEBOUNCE_PERIOD:
+                self.button_latest["POV"] = now
+                val = pov
+        if (now - self.button_latest.get("POV", 0)) < self.DEBOUNCE_PERIOD:
+            self.setRumble(RIGHT_RUMBLE, 1)
+        else:
+            self.setRumble(RIGHT_RUMBLE, 0)
+        return val
 
 
 
