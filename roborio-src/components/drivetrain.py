@@ -580,13 +580,15 @@ class SwerveChassis:
     def robotOrientedDrive(self, vX, vY, vT):
         self.chassisSpeeds = ChassisSpeeds(vX, vY, vT)
 
-    def driveToObject(self, object):
-        self.limelight.setPipeline(object)
+    def driveToObject(self):
         if self.limelight.hasTarget():
-            vT = self.limelight.tx / 40
-            vX = self.limelight.ta * -0.0098 + 1.0293
-            vY = 0
-            self.robotOrientedDrive(-vX, vY, -vT)
+            self.robotOrientedDrive(
+                self.limelight.drive_vX,
+                self.limelight.drive_vY,
+                self.limelight.drive_vRotate
+            )
+        else:
+            self.robotOrientedDrive(0,0,0)
 
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(
