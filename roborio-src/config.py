@@ -198,9 +198,10 @@ ULTRASONIC = {
 
 #Vision Camera config
 PHOTONVISION_CAMERA_NAME = "OV5647"
+# TODO: check these values
 PHOTONVISION_CAMERA_POSE = Transform3d(
-                Translation3d(inchesToMeters(-9), 0, inchesToMeters(49.8)),
-                Rotation3d(0, degreesToRadians(32), degreesToRadians(180))
+    Translation3d(inchesToMeters(-5.5), 0, inchesToMeters(50.375)),
+    Rotation3d(0, degreesToRadians(23.5), degreesToRadians(-178))
 )
 
 
