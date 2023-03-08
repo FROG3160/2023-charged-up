@@ -14,6 +14,7 @@ from components.grabber import FROGGrabber
 from components.arm import Arm
 from components.sensors import FROGColor, FROGGyro
 from wpimath.units import degreesToRadians
+from components.arm_control import GrabberControl, ArmControl
 from ctre import ControlMode
 
 
@@ -26,12 +27,16 @@ class FROGbot(MagicRobot):
     # Any magicbot component needs to be listed here
     # in order for their "execute" method to be run
     # every loop
+    grabberControl: GrabberControl
+    armControl: ArmControl
 
     #Upper leve components first, lower level components last
     swerveChassis: SwerveChassis
     arm: Arm
     limelight: FROGLimeLightVision
     gyro: FROGGyro
+    grabber: FROGGrabber
+    sensor: FROGColor
 
     def createObjects(self) -> None:
         self.moduleFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
@@ -39,8 +44,7 @@ class FROGbot(MagicRobot):
         self.moduleBackLeft = SwerveModule(**config.MODULE_BACK_LEFT)
         self.swerveBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
 
-        self.grabber = FROGGrabber(43, 0)
-        self.sensor = FROGColor()
+        #self.sensor = FROGColor()
 
         self.leds = FROGLED(35)
 
@@ -63,9 +67,11 @@ class FROGbot(MagicRobot):
         self.btnToggleGrabber = self.operatorController.getLeftBumperPressed
         self.btnFloorPickup = self.operatorController.getAButtonPressed
         self.btnFloorManipulate = self.operatorController.getBButtonPressed
-        self.btnHome = self.operatorController.getXButtonPressed
-        self.btnMidPlace = self.operatorController.getYButtonPressed
-        self.btnUpperPlace = self.operatorController.getRightBumperPressed
+        self.btnHome = self.operatorController.getRightBumperPressed
+        self.btnUpperPlace = self.operatorController.getYButtonPressed
+        self.btnMidPlace = self.operatorController.getXButtonPressed
+        self.btnRunArm = self.operatorController.getRightTriggerAxis
+        self.btnRejectObject = self.operatorController.getLeftTriggerAxis
 
         self.positionA = Pose2d( inchesToMeters(98.5), inchesToMeters(70), 0)
         self.positionB = Pose2d( inchesToMeters(203.5), inchesToMeters(174.2), 0)
@@ -95,32 +101,43 @@ class FROGbot(MagicRobot):
         self.swerveChassis.enable()
 
     def teleopPeriodic(self):
+        self.grabberControl.engage()
+        if self.btnRunArm() > 0.5:
+            self.armControl.engage()
+        if self.btnRejectObject() > 0.5:
+            self.grabber.motor.set(-0.5)
         wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
-        wpilib.SmartDashboard.putNumber('Ultrasonic Distance', self.grabber.ultrasonic.getInches())
         if self.btnToggleGrabber():
-            self.grabberIsOpen = [True, False][self.grabberIsOpen]
-            if self.grabberIsOpen:
-                self.grabber.open()
-            else:
-                self.grabber.close()
-        self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
+            self.logger.info("Toggle Grabber pressed")
+            self.logger.info(f"Current state is {self.grabberControl.current_state}")
+            if self.grabberControl.current_state == "holding":
+                self.grabberControl.next_state('dropping')
+            elif self.grabberControl.current_state == "empty":
+                self.grabberControl.next_state('looking')
+
+        #self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
         # self.arm.boom.run(self.operatorController.getRightY())
         # self.arm.stick.run(-self.operatorController.getLeftY())
         if self.btnFloorPickup():
-            self.arm.boom.toPosition(config.BOOM_FLOOR_PICKUP)
-            self.arm.stick.toPosition(config.STICK_FLOOR_PICKUP)
+            self.armControl.setNextState('moveToFloor')
+            # self.arm.boom.toPosition(config.BOOM_FLOOR_PICKUP)
+            # self.arm.stick.toPosition(config.STICK_FLOOR_PICKUP)
         elif self.btnFloorManipulate():
-            self.arm.boom.toPosition(config.BOOM_FLOOR_MANIPULATE)
-            self.arm.stick.toPosition(config.STICK_FLOOR_MANIPULATE)
+            self.armControl.setNextState('moveToManipulate')
+            # self.arm.boom.toPosition(config.BOOM_FLOOR_MANIPULATE)
+            # self.arm.stick.toPosition(config.STICK_FLOOR_MANIPULATE)
         elif self.btnHome():
-            self.arm.boom.toPosition(config.BOOM_HOME)
-            self.arm.stick.toPosition(config.STICK_HOME)
+            self.armControl.setNextState('moveToHome')
+            # self.arm.boom.toPosition(config.BOOM_HOME)
+            # self.arm.stick.toPosition(config.STICK_HOME)
         elif self.btnMidPlace():
-            self.arm.boom.toPosition(config.BOOM_GRID_MID)
-            self.arm.stick.toPosition(config.STICK_GRID_MID)
+            self.armControl.setNextState('moveToShelf')
+            # self.arm.boom.toPosition(config.BOOM_SHELF)
+            # self.arm.stick.toPosition(config.STICK_SHELF)
         elif self.btnUpperPlace():
-            self.arm.boom.toPosition(config.BOOM_GRID_UPPER)
-            self.arm.stick.toPosition(config.STICK_GRID_UPPER)
+            self.armControl.setNextState('moveToUpper')
+            # self.arm.boom.toPosition(config.BOOM_GRID_UPPER)
+            # self.arm.stick.toPosition(config.STICK_GRID_UPPER)
 
 
         if self.btnResetEstimator():
@@ -193,11 +210,13 @@ class FROGbot(MagicRobot):
         #         self.swerveChassis.holonomicController.loadPathPlanner('pp_test1')
         #     self.swerveChassis.autoDrive()
         elif self.btnDriveToCone():
-            self.swerveChassis.driveToObject(0)
+            self.limelight.findCones()
+            self.swerveChassis.driveToObject()
 
         elif self.btnDriveToCube():
-            self.swerveChassis.driveToObject(1)
-            
+            self.limelight.findCubes()
+            self.swerveChassis.driveToObject()
+
         else:
             self.swerveChassis.holonomicController.trajectoryType = False
             #self.swerveChassis.disableAuto()
