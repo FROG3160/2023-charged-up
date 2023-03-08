@@ -1,5 +1,5 @@
 from magicbot.state_machine import StateMachine
-from magicbot import state, timed_state, feedback, tunable
+from magicbot import state, timed_state, feedback, tunable, default_state
 from components.arm import Arm
 from components.grabber import FROGGrabber
 from components.vision import FROGLimeLightVision
@@ -11,11 +11,19 @@ class ArmControl(StateMachine):
     arm: Arm
 
     def __init__(self):
-        self.commandedState = None
+        self.last_state = None
         pass
 
     def setNextState(self, state):
         self.next_state(state)
+
+    def stop(self):
+        self.arm.manual(0, 0)
+
+    @state(must_finish=True)
+    def leaveZero(self):
+        self.arm.leaveZero()
+        self.next_state('atHome')
 
     # first state at Home
     @state()
@@ -40,14 +48,14 @@ class ArmControl(StateMachine):
         if self.arm.atPosition and not block:
             self.next_state("atHome")
 
-    # @state()
-    # def zeroHome(self, initial_call):
-    #     if initial_call:
-    #         self.arm.runToZero()
-    #     if self.arm.atReverseLimit():
-    #         self.next_state('atHome')
+    @state()
+    def zeroHome(self, initial_call):
+        if initial_call:
+            self.arm.runToZero()
+        if self.arm.atReverseLimit():
+            self.next_state('atHome')
 
-    # state moving to floor
+
     @state()
     def moveToFloor(self):
         # If the boom is too far forward, the stick might hit the floor,
@@ -181,7 +189,7 @@ class GrabberControl(StateMachine):
 
     @state()
     def lifting(self, initial_call):
-        if initial_call and not ArmControl.arm.stick.getPosition > config.STICK_FLOOR_PICKUP+ 20480:
+        if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
             self.armControl.next_state('moveToHome')
         else:
             self.next_state("stoppingIntake")

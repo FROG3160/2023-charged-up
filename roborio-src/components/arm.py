@@ -78,7 +78,8 @@ class Arm():
         self.manual(-0.15, -0.15)
 
     def leaveZero(self):
-        self.manual(0.15, 0.15)
+        self.boom.motor.set(ControlMode.Position, 256)
+        self.stick.motor.set(ControlMode.Position, 256)
 
     def runToPosition(self, boomPosition, stickPosition):
         self.boom.toPosition(boomPosition)

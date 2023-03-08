@@ -602,21 +602,9 @@ class SwerveChassis:
                 abs(visionPose.x - self.estimatorPose.x) < 0.5
                 and abs(visionPose.y - self.estimatorPose.y) < 0.5
             ):
-                currentPose = self.estimator.getEstimatedPosition()
-                #self.logger.info(f"Vision Pose used: {visionPose}")
+
                 self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
-                adjustedPose = self.estimator.getEstimatedPosition()
-                # self.logger.info(
-                #     "Vision Update -- initial Pose: %s\n  vision Pose: %s\n final Pose: %s",
-                #     currentPose, visionPose, adjustedPose
-                # )
 
-        # self.odometryPose = self.odometry.update(
-        #     Rotation2d.fromDegrees(self.gyro.getYawCCW()),
-        #     *self.getModulePositions(),
-        # )
-
-        # self.field.setRobotPose(self.odometryPose)
 
         SmartDashboard.putNumber(
             "Estimator_X_Inches", metersToInches(self.estimatorPose.X())

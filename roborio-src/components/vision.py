@@ -49,19 +49,20 @@ class FROGPhotonVision:
         self.currentPose = Pose3d()
         self.previousEstimatedRobotPose = None
         self.poseFilter = MedianFilter(5)
+        self.ambiguity = 10
+        self.targetID = 0
 
 
     def getEstimatedRobotPose(self) -> typing.Tuple[Pose3d, float]:
-        # if self.previousEstimatedRobotPose:
-        #     self.poseEstimator.setReferencePose(self.previousEstimatedRobotPose)
         if not wpilib.RobotBase.isSimulation():
             self.currentPose, visionTime = self.poseEstimator.update()
-            self.periodic()
-            # if self.currentPose:
-            #     self.previousEstimatedRobotPose = self.currentPose
-            return (self.currentPose, visionTime)
-        else:
-            return (None, None)
+            if self.camera.hasTargets():
+                self.bestTarget = self.camera.getLatestResult().getBestTarget()
+                self.ambiguity = self.bestTarget.getPoseAmbiguity()
+                self.targetID = self.bestTarget.getFiducialId()
+                if self.ambiguity < 0.02:
+                    return (self.currentPose, visionTime)
+        return (None, None)
         
     
 
@@ -70,6 +71,7 @@ class FROGPhotonVision:
             result = self.camera.getLatestResult()
             # self.photonEstimatedPose = self.photonEstimator.update(result)
             bestTarget = result.getBestTarget()
+            ambiguity = bestTarget.getPoseAmbiguity()
             bestTgtTransform = bestTarget.getBestCameraToTarget()
             bestTgtID = bestTarget.getFiducialId()
             tagPose = self.fieldLayout.getTagPose(bestTgtID)
@@ -89,17 +91,22 @@ class FROGPhotonVision:
             # SmartDashboard.putNumber("PVRobot_Y", metersToInches(robotOnField.Y()))
             # SmartDashboard.putNumber("PVRobot_Degrees", robotOnField.rotation().degrees())
 
-
-        filteredPose = self.poseFilter.update(self.currentPose)
-        SmartDashboard.putNumber(
-            "PhotonVision_X_Inches", metersToInches(filteredPose.X())
-        )
-        SmartDashboard.putNumber(
-            "PhotonVision_Y_Inches", metersToInches(filteredPose.Y())
-        )
-        SmartDashboard.putNumber(
-            "PhotonVision_T_Degrees", filteredPose.rotation().angle_degrees
-        )
+            if self.ambiguity < 0.02:
+                SmartDashboard.putNumber(
+                    "PhotonVision_X_Inches", metersToInches(self.currentPose.X())
+                )
+                SmartDashboard.putNumber(
+                    "PhotonVision_Y_Inches", metersToInches(self.currentPose.Y())
+                )
+                SmartDashboard.putNumber(
+                    "PhotonVision_T_Degrees", self.currentPose.rotation().angle_degrees
+                )
+                SmartDashboard.putNumber(
+                    "PhotonVision_Ambiguity", self.ambiguity
+                )
+                SmartDashboard.putNumber(
+                    "PhotonVision_TargetID", self.targetID
+                )
 
 
 class FROGLimeLightVision:

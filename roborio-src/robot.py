@@ -72,6 +72,7 @@ class FROGbot(MagicRobot):
         self.btnMidPlace = self.operatorController.getXButtonPressed
         self.btnRunArm = self.operatorController.getRightTriggerAxis
         self.btnRejectObject = self.operatorController.getLeftTriggerAxis
+        self.btnGridSelect = self.operatorController.getPOVDebounced
 
         self.positionA = Pose2d( inchesToMeters(98.5), inchesToMeters(70), 0)
         self.positionB = Pose2d( inchesToMeters(203.5), inchesToMeters(174.2), 0)
@@ -95,10 +96,12 @@ class FROGbot(MagicRobot):
         self.setAlliance()
         self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 2).toPose2d()
         self.swerveChassis.setFieldPosition(self.startingPose2d)
+        self.armControl.next_state('leaveZero')
 
     def teleopInit(self):
         self.setAlliance()
         self.swerveChassis.enable()
+        self.swerveChassis.visionPoseEstimator.camera.setDriverMode(False)
 
     def teleopPeriodic(self):
         self.grabberControl.engage()
@@ -114,6 +117,11 @@ class FROGbot(MagicRobot):
                 self.grabberControl.next_state('dropping')
             elif self.grabberControl.current_state == "empty":
                 self.grabberControl.next_state('looking')
+        pov = self.btnGridSelect()
+        if pov > -1:
+
+            self.logger.info(f'POV is {pov}')
+
 
         #self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
         # self.arm.boom.run(self.operatorController.getRightY())
@@ -142,8 +150,9 @@ class FROGbot(MagicRobot):
 
         if self.btnResetEstimator():
             print("Resetting Estimator to Vision Pose Estimate")
-            self.swerveChassis.setFieldPosition(
-                self.swerveChassis.visionPoseEstimator.getEstimatedRobotPose()[0].toPose2d())
+            visionPose, timestamp = self.swerveChassis.visionPoseEstimator.getEstimatedRobotPose()
+            if visionPose:
+                self.swerveChassis.setFieldPosition(visionPose.toPose2d())
         if self.btnResetGyro():
             self.swerveChassis.gyro.resetGyro()
         if self.btnEnableAutoDrive():
