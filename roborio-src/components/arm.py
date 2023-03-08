@@ -38,8 +38,11 @@ class SubArm():
     def stop(self):
         self.motor.set(0)
 
+    def getTrajectoryPosition(self):
+        return self.motor.getActiveTrajectoryPosition()
+
     def getPosition(self):
-        self.motor.getActiveTrajectoryPosition()
+        return self.motor.getSelectedSensorPosition()
 
     def atRevLimit(self):
         return self.motor.isRevLimitSwitchClosed()
@@ -74,6 +77,13 @@ class Arm():
     def runToZero(self):
         self.manual(-0.15, -0.15)
 
+    def leaveZero(self):
+        self.manual(0.15, 0.15)
+
+    def runToPosition(self, boomPosition, stickPosition):
+        self.boom.toPosition(boomPosition)
+        self.stick.toPosition(stickPosition)
+
     def atPosition(self):
         return self.boom.atPosition and self.stick.atPosition
     
@@ -83,4 +93,3 @@ class Arm():
     def execute(self):
         self.boom.execute()
         self.stick.execute()
-        pass
