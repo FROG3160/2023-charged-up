@@ -83,11 +83,11 @@ class FROGPhotonVision:
             SmartDashboard.putNumber("TgtTransform_X", metersToInches(bestTgtTransform.X()))
             SmartDashboard.putNumber("TgtTransform_Y", metersToInches(bestTgtTransform.Y()))
             SmartDashboard.putNumber("TgtTransform_Degrees", bestTgtTransform.rotation().toRotation2d().degrees())
-            cameraOnField = tagPose.transformBy(bestTgtTransform.inverse())
-            robotOnField = cameraOnField.transformBy(self.cameraTransform3d).toPose2d()
-            SmartDashboard.putNumber("PVRobot_X", metersToInches(robotOnField.X()))
-            SmartDashboard.putNumber("PVRobot_Y", metersToInches(robotOnField.Y()))
-            SmartDashboard.putNumber("PVRobot_Degrees", robotOnField.rotation().degrees())
+            # cameraOnField = tagPose.transformBy(bestTgtTransform.inverse())
+            # robotOnField = cameraOnField.transformBy(self.cameraTransform3d).toPose2d()
+            # SmartDashboard.putNumber("PVRobot_X", metersToInches(robotOnField.X()))
+            # SmartDashboard.putNumber("PVRobot_Y", metersToInches(robotOnField.Y()))
+            # SmartDashboard.putNumber("PVRobot_Degrees", robotOnField.rotation().degrees())
 
 
         filteredPose = self.poseFilter.update(self.currentPose)
@@ -111,6 +111,7 @@ class FROGLimeLightVision:
         self.ntTa = self.limelightTable.getFloatTopic('ta').subscribe(0)
         self.ntTx = self.limelightTable.getFloatTopic('tx').subscribe(-999)
         self.ntTv = self.limelightTable.getIntegerTopic('tv').subscribe(0)
+        self.ntPipe = self.limelightTable.getIntegerTopic('getPipe').subscribe(-1)
 
     def findCubes(self):
         self.setPipeline(LL_CUBE)
@@ -118,19 +119,26 @@ class FROGLimeLightVision:
     def findCones(self):
         self.setPipeline(LL_CONE)
 
+    def getPipeline(self):
+        return self.ntPipe.get()
+
     def getTarget(self):
         if self.ntTv.get():
             self.tClass = self.ntTclass.get()
             self.ta = self.ntTa.get()
             self.tx = self.ntTx.get()
             self.tv = self.ntTv.get()
+            self.drive_vRotate = -(self.tx / 40)
+            self.drive_vX = -(self.ta * -0.0098 + 1.0293)
+            self.drive_vY = 0
         else:
             self.tClass = self.ta = self.tx = self.tv = None
+            self.drive_vRotate = self.drive_vX = self.drive_vY = None
     
     def hasTarget(self):
         return self.tv
     
-    def periodic(self) -> None:
+    def execute(self) -> None:
         self.getTarget()
         if self.hasTarget():
             SmartDashboard.putNumber('LL TGT Area', self.ta)
@@ -141,9 +149,6 @@ class FROGLimeLightVision:
     def setPipeline(self, objectInt: int):
         self.limelightTable.putNumber('pipeline', objectInt)
 
-    def execute(self):
-        self.getTarget()
-        self.periodic()
 
 if __name__ == '__main__':
     pass
