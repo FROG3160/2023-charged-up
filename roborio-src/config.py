@@ -159,7 +159,7 @@ BOOM_GRID_LOW = 95300
 STICK_GRID_LOW = 400
 BOOM_HOME = 0
 STICK_HOME = 0
-BOOM_FLOOR_PICKUP = 153000 #154000 max
+BOOM_FLOOR_PICKUP = 148000 #153000 #154000 max
 STICK_FLOOR_PICKUP = 400
 BOOM_FLOOR_MANIPULATE = 93500
 STICK_FLOOR_MANIPULATE = 400
@@ -200,8 +200,8 @@ ULTRASONIC = {
 PHOTONVISION_CAMERA_NAME = "OV5647"
 # TODO: check these values
 PHOTONVISION_CAMERA_POSE = Transform3d(
-    Translation3d(inchesToMeters(-5.5), 0, inchesToMeters(50.375)),
-    Rotation3d(0, degreesToRadians(23.5), degreesToRadians(-178))
+    Translation3d(inchesToMeters(-8.75), 0, inchesToMeters(50.375)),
+    Rotation3d(0, degreesToRadians(24), degreesToRadians(-178))
 )
 
 
