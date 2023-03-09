@@ -16,6 +16,7 @@ from components.sensors import FROGColor, FROGGyro
 from wpimath.units import degreesToRadians
 from components.arm_control import GrabberControl, ArmControl
 from ctre import ControlMode
+from wpilib import SmartDashboard
 
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
@@ -79,6 +80,9 @@ class FROGbot(MagicRobot):
 
         self.startingPose2d = None
         self.grabberIsOpen = False
+
+        self.gridLevel = 1
+        self.gridPosition = 1
     
     def setAlliance(self):
         self.alliance = wpilib.DriverStation.getAlliance()
@@ -104,6 +108,8 @@ class FROGbot(MagicRobot):
         self.swerveChassis.visionPoseEstimator.camera.setDriverMode(False)
 
     def teleopPeriodic(self):
+        SmartDashboard.putNumber('Grid Position', self.gridPosition)
+        SmartDashboard.putNumber('Grid Level', self.gridLevel)
         self.grabberControl.engage()
         if self.btnRunArm() > 0.5:
             self.armControl.engage()
@@ -119,8 +125,20 @@ class FROGbot(MagicRobot):
                 self.grabberControl.next_state('looking')
         pov = self.btnGridSelect()
         if pov > -1:
+            if pov == 0:
+                if self.gridLevel < 3:
+                    self.gridLevel += 1
+            elif pov == 180:
+                if self.gridLevel > 1:
+                    self.gridLevel -= 1
+            elif pov == 90:
+                if self.gridPosition > 1:
+                    self.gridPosition -= 1
+            elif pov == 270:
+                if self.gridPosition < 9:
+                    self.gridPosition += 1
 
-            self.logger.info(f'POV is {pov}')
+            self.logger.info(f'Grid Level: {self.gridLevel}, Grid Position: {self.gridPosition}')
 
 
         #self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
@@ -155,22 +173,22 @@ class FROGbot(MagicRobot):
                 self.swerveChassis.setFieldPosition(visionPose.toPose2d())
         if self.btnResetGyro():
             self.swerveChassis.gyro.resetGyro()
-        if self.btnEnableAutoDrive():
-            #self.swerveChassis.enableAuto()
-            if not self.swerveChassis.holonomicController.trajectoryType:
-                startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-                endTrajectoryPose = startTrajectoryPose + Transform2d(
-                    feetToMeters(6), 0 , -startTrajectoryPose.rotation().radians()
-                )
-                ##TODO figure out how to calculate heading
-                startPoint = PathPoint(startTrajectoryPose.translation(), startTrajectoryPose.rotation())
-                endPoint = PathPoint(endTrajectoryPose.translation(), endTrajectoryPose.rotation())
-                self.logger.info(f"AUTODRIVE: {startTrajectoryPose} to {endTrajectoryPose}")
-                self.swerveChassis.holonomicController.initSimpleTrajectory(
-                    startPoint, # Starting position
-			        endPoint, # Ending position
-                )
-            self.swerveChassis.autoDrive()
+        # if self.btnEnableAutoDrive():
+        #     #self.swerveChassis.enableAuto()
+        #     if not self.swerveChassis.holonomicController.trajectoryType:
+        #         startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
+        #         endTrajectoryPose = startTrajectoryPose + Transform2d(
+        #             feetToMeters(6), 0 , -startTrajectoryPose.rotation().radians()
+        #         )
+        #         ##TODO figure out how to calculate heading
+        #         startPoint = PathPoint(startTrajectoryPose.translation(), startTrajectoryPose.rotation())
+        #         endPoint = PathPoint(endTrajectoryPose.translation(), endTrajectoryPose.rotation())
+        #         self.logger.info(f"AUTODRIVE: {startTrajectoryPose} to {endTrajectoryPose}")
+        #         self.swerveChassis.holonomicController.initSimpleTrajectory(
+        #             startPoint, # Starting position
+		# 	        endPoint, # Ending position
+        #         )
+        #     self.swerveChassis.autoDrive()
 
         if self.btnEnableAutoRotate():
             #self.swerveChassis.enableAuto()
@@ -194,7 +212,8 @@ class FROGbot(MagicRobot):
                 currentPose = self.swerveChassis.estimator.getEstimatedPosition()
                 ##TODO figure out how to calculate heading
                 startPoint = PathPoint(currentPose.translation(), currentPose.rotation())
-                endPoint = PathPoint(self.positionA.translation(), self.positionA.rotation())
+                gridPosition = self.fieldLayout.getPosition(self.gridPosition).toPose2d()
+                endPoint = PathPoint(gridPosition.translation(), gridPosition.rotation())
                 self.logger.info(f"AUTODRIVE TO A: {currentPose} to {self.positionA}")
                 self.swerveChassis.holonomicController.initSimpleTrajectory(
                     startPoint, # Starting position
@@ -214,10 +233,11 @@ class FROGbot(MagicRobot):
 			        endPoint, # Ending position
                 )
             self.swerveChassis.autoDrive()
-        # elif self.btnDrivePath():
-        #     if not self.swerveChassis.holonomicController.trajectoryType:
-        #         self.swerveChassis.holonomicController.loadPathPlanner('pp_test1')
-        #     self.swerveChassis.autoDrive()
+        elif self.btnEnableAutoDrive():
+            if not self.swerveChassis.holonomicController.trajectoryType:
+                self.swerveChassis.holonomicController.loadPathPlanner('Position8toMidfield')
+            self.swerveChassis.autoDrive()
+            
         elif self.btnDriveToCone():
             self.limelight.findCones()
             self.swerveChassis.driveToObject()
