@@ -23,6 +23,7 @@ class SubArm():
         self.motor.setSensorPhase(sensorPhase)
         self.commandedPosition = None
         self.logger = logger
+        self.atPosition = False
 
     def getEncoderPosition(self) -> float:
         return self.motor.getSelectedSensorPosition()
