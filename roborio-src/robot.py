@@ -98,8 +98,8 @@ class FROGbot(MagicRobot):
   
     def autonomousInit(self):
         self.setAlliance()
-        self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 2).toPose2d()
-        self.swerveChassis.setFieldPosition(self.startingPose2d)
+        #self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 2).toPose2d()
+        #self.swerveChassis.setFieldPosition(self.startingPose2d)
         self.armControl.next_state('leaveZero')
 
     def teleopInit(self):
