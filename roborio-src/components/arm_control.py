@@ -194,6 +194,10 @@ class GrabberControl(StateMachine):
 
     @state()
     def lifting(self, initial_call):
+        # TODO:  set a block when moving the arm to shelf position
+        # remove block when setting to floor position
+        # maybe have block occur UNLESS it's at floor for pickup
+        # have a pickup boolean?
         if initial_call and self.armControl.last_state == 'atFloor':
         #if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
             self.armControl.next_state('moveToHome')
