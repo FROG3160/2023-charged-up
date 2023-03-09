@@ -36,7 +36,7 @@ MODULE_FRONT_LEFT = {
     "drive_motor_id": 11,
     "steer_motor_id": 21,
     "steer_sensor_id": 31,
-    "steer_sensor_offset": -4.13085938,  # 176.484375-180 ,
+    "steer_sensor_offset": -5.185547  #-4.13085938,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, TRACK_WIDTH / 2),
 }
 
@@ -45,15 +45,15 @@ MODULE_FRONT_RIGHT = {
     "drive_motor_id": 12,
     "steer_motor_id": 22,
     "steer_sensor_id": 32,
-    "steer_sensor_offset": -150.292969,  # 29.0917969 - 180,
-    "location": Translation2d.fromFeet(WHEELBASE / 2, -TRACK_WIDTH / 2),
+    "steer_sensor_offset": -150.820313 #-150.292969,  
+    "location": Translation2d.fromFeet(WHEELBASE /  # 2, -TRACK_WIDTH / 2),
 }
 MODULE_BACK_LEFT = {
     "name": "BackLeft",
     "drive_motor_id": 13,
     "steer_motor_id": 23,
     "steer_sensor_id": 33,
-    "steer_sensor_offset": -179.736328,  # 0,
+    "steer_sensor_offset": -179.648438  #-179.736328,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, TRACK_WIDTH / 2),
 }
 MODULE_BACK_RIGHT = {
@@ -61,7 +61,7 @@ MODULE_BACK_RIGHT = {
     "drive_motor_id": 14,
     "steer_motor_id": 24,
     "steer_sensor_id": 34,
-    "steer_sensor_offset": 47.2851563,  # -131.484375+180,
+    "steer_sensor_offset": 45.9667969  ##47.2851563,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, -TRACK_WIDTH / 2),
 }
 
