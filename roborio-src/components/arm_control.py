@@ -28,7 +28,7 @@ class ArmControl(StateMachine):
     # first state at Home
     @state()
     def atHome(self):
-        pass
+        self.last_state = 'atHome'
         # if self.commandedState:
         #     self.arm.leaveZero()
         # if self.arm.boom.getPosition() > 1000 and self.arm.stick.getPosition() > 1000:
@@ -71,7 +71,8 @@ class ArmControl(StateMachine):
 
     # state at floor
     @state()
-    def atFloor():
+    def atFloor(self):
+        self.last_state = 'atFloor'
         pass
 
     @state()
@@ -89,6 +90,7 @@ class ArmControl(StateMachine):
 
     @state()
     def atManipulate(self):
+        self.last_state='atManipulate'
         pass
 
     @state()
@@ -99,6 +101,7 @@ class ArmControl(StateMachine):
 
     @state()
     def atMid(self):
+        self.last_state = 'atMid'
         pass
 
     @state()
@@ -109,6 +112,7 @@ class ArmControl(StateMachine):
 
     @state()
     def atShelf(self):
+        self.last_state = 'atShelf'
         pass
 
     @state()
@@ -124,6 +128,7 @@ class ArmControl(StateMachine):
 
     @state()
     def atUpper(self):
+        self.last_state = 'atUpper'
         pass
 
 
@@ -189,13 +194,17 @@ class GrabberControl(StateMachine):
 
     @state()
     def lifting(self, initial_call):
-        if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
+        if initial_call and self.armControl.last_state == 'atFloor':
+        #if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
             self.armControl.next_state('moveToHome')
+            block = False
         else:
             self.next_state("stoppingIntake")
-        self.armControl.engage()
-        if self.armControl.arm.atPosition:
-            self.next_state("stoppingIntake")
+            block = True
+        if not block:
+            self.armControl.engage()
+            if self.armControl.last_state == 'atHome':
+                self.next_state("stoppingIntake")
 
     @state()
     def stoppingIntake(self):
