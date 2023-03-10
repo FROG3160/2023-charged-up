@@ -201,7 +201,7 @@ PHOTONVISION_CAMERA_NAME = "OV5647"
 # TODO: check these values
 PHOTONVISION_CAMERA_POSE = Transform3d(
     Translation3d(inchesToMeters(-8.75), 0, inchesToMeters(50.375)),
-    Rotation3d(0, degreesToRadians(24), degreesToRadians(-178))
+    Rotation3d(0, degreesToRadians(23), degreesToRadians(-178))
 )
 
 
