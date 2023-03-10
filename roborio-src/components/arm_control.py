@@ -160,7 +160,7 @@ class GrabberControl(StateMachine):
     @state()
     def stopEject(self):
         self.grabber.wheelsOff()
-        self.next_state("empty")
+        self.next_state("looking")
 
     @state()
     def empty(self):
@@ -172,6 +172,9 @@ class GrabberControl(StateMachine):
             self.grabber.open()
         if self.limelight.hasTarget():
             self.next_state("intaking")
+        elif self.grabber.getProximity() > 230:
+            self.grabber.wheelsOn(1)
+            self.next_state("grabbing")
 
     @state()
     def intaking(self):
