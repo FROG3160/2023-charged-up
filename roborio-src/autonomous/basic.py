@@ -15,7 +15,7 @@ class NoAuto(AutonomousStateMachine):
     @state(first=True)
     def doNothing(self):
         pass
-class moveToGridRight(AutonomousStateMachine):
+class placeCone(AutonomousStateMachine):
     MODE_NAME = "Place cone"
 
     swerveChassis: SwerveChassis
@@ -27,21 +27,16 @@ class moveToGridRight(AutonomousStateMachine):
     @state(first=True)
     def raiseArm(self, initial_call):
         if initial_call:
-            self.logger.info(f'Vision Estimate: {self.swerveChassis.visionPoseEstimator.getEstimatedRobotPose()}')
             self.swerveChassis.setFieldPosition(Pose2d(self.startX,0,0))
             self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
             startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-            endTrajectoryPose = startTrajectoryPose.transformBy(
-                Transform2d(self.endX - self.startX, 0 , 0)
-            )
+            endTrajectoryPose = Pose2d(self.endX, 0, 0)
             self.logger.info(f'Starting at {startTrajectoryPose}')
             self.logger.info(f'Ending at: {endTrajectoryPose}')
             ##TODO figure out how to calculate heading
-            startPoint = PathPoint(startTrajectoryPose.translation(), startTrajectoryPose.rotation())
-            endPoint = PathPoint(endTrajectoryPose.translation(), endTrajectoryPose.rotation())
-            self.swerveChassis.holonomicController.initSimpleTrajectory(
-                startPoint, # Starting position
-                endPoint, # Ending position
+            self.swerveChassis.holonomicController.initPoseToPose(
+                startTrajectoryPose, # Starting position
+                endTrajectoryPose, # Ending position
             )
             self.logger.info(f'Raising arm to upper')
             self.armControl.next_state('moveToUpper')
@@ -49,33 +44,32 @@ class moveToGridRight(AutonomousStateMachine):
         if self.armControl.last_state == 'atUpper':
             self.next_state('moveBack')
 
-    @state()
+    @timed_state(duration=2, next_state='dropCone')
     def moveBack(self, initial_call):
-        self.swerveChassis.autoDrive()
-        if self.swerveChassis.holonomicController.atReference():
-            self.next_state("dropCone")
+        self.swerveChassis.fieldOrientedDrive(-0.125, 0, 0)
+        # self.swerveChassis.autoDrive()
+        # if self.swerveChassis.holonomicController.atReference():
+        #     self.next_state("dropCone")
 
     @state()
     def dropCone(self, initial_call):
         if initial_call:
+            self.swerveChassis.fieldOrientedDrive(0,0,0)
             self.logger.info(f'Vision Estimate: {self.swerveChassis.visionPoseEstimator.getEstimatedRobotPose()}')
             self.swerveChassis.setFieldPosition(Pose2d(self.startX,0,0))
             self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
             startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-            endTrajectoryPose = startTrajectoryPose.transformBy(
-                Transform2d(self.startX - self.endX, 0 , 0)
-            )
+            endTrajectoryPose = Pose2d(self.startX, 0 , 0)
             self.logger.info(f'Starting at {startTrajectoryPose}')
             self.logger.info(f'Ending at: {endTrajectoryPose}')
             ##TODO figure out how to calculate heading
-            startPoint = PathPoint(startTrajectoryPose.translation(), startTrajectoryPose.rotation())
-            endPoint = PathPoint(endTrajectoryPose.translation(), endTrajectoryPose.rotation())
-            self.swerveChassis.holonomicController.initSimpleTrajectory(
-                startPoint, # Starting position
-                endPoint, # Ending position
+            self.swerveChassis.holonomicController.initPoseToPose(
+                startTrajectoryPose, # Starting position
+                endTrajectoryPose, # Ending position
             )
             self.grabberControl.next_state('dropping')
         self.grabberControl.engage()
+
         if not self.grabberControl.hasObject:
             self.next_state('moveForward')
     

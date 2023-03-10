@@ -100,6 +100,7 @@ class FROGbot(MagicRobot):
   
     def autonomousInit(self):
         self.setAlliance()
+        self.swerveChassis.enable()
         #self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 2).toPose2d()
         #self.swerveChassis.setFieldPosition(self.startingPose2d)
         self.armControl.next_state('leaveZero')
@@ -216,33 +217,40 @@ class FROGbot(MagicRobot):
 			        endPoint, # Ending position
                 )
             self.swerveChassis.autoDrive()
-        # elif self.btnGoToPositionA():
+        elif self.btnGoToPositionA():
+              #self.swerveChassis.enableAuto()
+            if not self.swerveChassis.holonomicController.trajectoryType:
+                startX = 2.47
+                endX = 1.81
+                self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
+                self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
+                startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
+                endTrajectoryPose = Pose2d(endX, 0 , 0)
+                self.logger.info(f'Starting at {startTrajectoryPose}')
+                self.logger.info(f'Ending at: {endTrajectoryPose}')
+                ##TODO figure out how to calculate heading
+                self.swerveChassis.holonomicController.initPoseToPose(
+                    startTrajectoryPose, # Starting position
+                    endTrajectoryPose, # Ending position
+                )
+            self.swerveChassis.autoDrive()
+        elif self.btnGoToPositionB():
         #     #self.swerveChassis.enableAuto()
-        #     if not self.swerveChassis.holonomicController.trajectoryType:
-        #         currentPose = self.swerveChassis.estimator.getEstimatedPosition()
-        #         ##TODO figure out how to calculate heading
-        #         startPoint = PathPoint(currentPose.translation(), currentPose.rotation())
-        #         gridPosition = self.fieldLayout.getPosition(self.gridPosition).toPose2d()
-        #         endPoint = PathPoint(gridPosition.translation(), gridPosition.rotation())
-        #         self.logger.info(f"AUTODRIVE TO A: {currentPose} to {self.positionA}")
-        #         self.swerveChassis.holonomicController.initSimpleTrajectory(
-        #             startPoint, # Starting position
-		# 	        endPoint, # Ending position
-        #         )
-        #     self.swerveChassis.autoDrive()
-        # elif self.btnGoToPositionB():
-        #     #self.swerveChassis.enableAuto()
-        #     if not self.swerveChassis.holonomicController.trajectoryType:
-        #         currentPose = self.swerveChassis.estimator.getEstimatedPosition()
-        #         ##TODO figure out how to calculate heading
-        #         startPoint = PathPoint(currentPose.translation(), currentPose.rotation())
-        #         endPoint = PathPoint(self.positionB.translation(), self.positionB.rotation())
-        #         self.logger.info(f"AUTODRIVE TO B: {currentPose} to {self.positionB}")
-        #         self.swerveChassis.holonomicController.initSimpleTrajectory(
-        #             startPoint, # Starting position
-		# 	        endPoint, # Ending position
-        #         )
-        #     self.swerveChassis.autoDrive()
+            if not self.swerveChassis.holonomicController.trajectoryType:
+                startX = 1.81
+                endX = 2.47
+                self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
+                self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
+                startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
+                endTrajectoryPose = Pose2d(self.endX, 0 , 0)
+                self.logger.info(f'Starting at {startTrajectoryPose}')
+                self.logger.info(f'Ending at: {endTrajectoryPose}')
+                ##TODO figure out how to calculate heading
+                self.swerveChassis.holonomicController.initPoseToPose(
+                    startTrajectoryPose, # Starting position
+                    endTrajectoryPose, # Ending position
+                )
+            self.swerveChassis.autoDrive()
         # elif self.btnEnableAutoDrive():
         #     if not self.swerveChassis.holonomicController.trajectoryType:
         #         self.swerveChassis.holonomicController.loadPathPlanner('Position8toMidfield')
