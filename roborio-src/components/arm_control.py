@@ -143,6 +143,7 @@ class GrabberControl(StateMachine):
     leds: FROGLED
     last_state = None
     targetPresent = False
+    hasObject = False
 
     def __init__(self):
         pass
@@ -161,6 +162,7 @@ class GrabberControl(StateMachine):
             self.grabber.open()
             if self.grabber.sensor.isCube():
                 self.grabber.wheelsOn(-0.5)
+        #waiting until the object is nearly out
         if self.grabber.getProximity() < 220:
             self.last_state = 'dropping'
             self.next_state("intakeWait")
@@ -174,6 +176,7 @@ class GrabberControl(StateMachine):
     @state()
     def stopEject(self):
         self.grabber.wheelsOff()
+        self.hasObject = False
         self.last_state = 'stopEject'
         self.next_state("looking")
 
@@ -223,6 +226,7 @@ class GrabberControl(StateMachine):
             self.logger.info("Closing grabber")
             self.grabber.close()
             self.last_state = 'grabbing'
+            self.hasObject = True
             self.next_state("lifting")
 
     @state()
