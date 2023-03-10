@@ -568,6 +568,9 @@ class SwerveChassis:
             xSpeed, ySpeed, rotSpeed, self.gyro.getRotation2d()
         )
 
+    def getChassisVelocityFPS(self):
+        return math.sqrt( self.chassisSpeeds.vx_fps**2 + self.chassisSpeeds.vy_fps**2)
+
     def autoDrive(self) -> None:
         # TODO: Remove this call once we have tuned the drivetrain
         #       It allows us to adjust PID values on the fly.

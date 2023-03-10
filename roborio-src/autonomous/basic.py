@@ -8,6 +8,10 @@ from wpimath.units import degreesToRadians, inchesToMeters, feetToMeters
 from pathplannerlib import PathPoint
 
 
+class NoAuto(AutonomousStateMachine):
+    MODE_NAME = "No Auto (default)"
+    DEFAULT = True
+
 class moveToGridRight(AutonomousStateMachine):
     MODE_NAME = "Place cone"
 

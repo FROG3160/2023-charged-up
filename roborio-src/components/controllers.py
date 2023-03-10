@@ -172,6 +172,7 @@ class FROGXboxDriver(XboxController):
     DEADBAND = 0.045
     ROTATION_DIVISOR = 1
     DEBOUNCE_PERIOD = 0.5
+    MODE = 0 #run auto routines
     
     def __init__(self, channel):
 
@@ -216,6 +217,7 @@ class FROGXboxOperator(XboxController):
         super().__init__(channel)
         self.timer = Timer()
         self.button_latest = {}
+        self.manualMode = False
 
     def getPOVDebounced(self):
         val = -1
@@ -230,6 +232,13 @@ class FROGXboxOperator(XboxController):
         else:
             self.setRumble(RIGHT_RUMBLE, 0)
         return val
+    
+    def changeMode(self):
+        return [True, False][self.manualMode]
+    
+    def getManualMode(self):
+        return self.manualMode
+        
 
 
 

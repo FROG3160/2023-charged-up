@@ -17,6 +17,7 @@ from wpimath.units import degreesToRadians
 from components.arm_control import GrabberControl, ArmControl
 from ctre import ControlMode
 from wpilib import SmartDashboard
+from wpilib.interfaces import GenericHID
 
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
@@ -74,6 +75,7 @@ class FROGbot(MagicRobot):
         self.btnRunArm = self.operatorController.getRightTriggerAxis
         self.btnRejectObject = self.operatorController.getLeftTriggerAxis
         self.btnGridSelect = self.operatorController.getPOVDebounced
+        self.btnOperatorManualChange = self.operatorController.getStartButtonPressed
 
         self.positionA = Pose2d( inchesToMeters(98.5), inchesToMeters(70), 0)
         self.positionB = Pose2d( inchesToMeters(203.5), inchesToMeters(174.2), 0)
@@ -110,35 +112,43 @@ class FROGbot(MagicRobot):
     def teleopPeriodic(self):
         SmartDashboard.putNumber('Grid Position', self.gridPosition)
         SmartDashboard.putNumber('Grid Level', self.gridLevel)
-        self.grabberControl.engage()
-        if self.btnRunArm() > 0.5:
-            self.armControl.engage()
-        if self.btnRejectObject() > 0.5:
-            self.grabber.motor.set(-0.5)
-        wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
-        if self.btnToggleGrabber():
-            self.logger.info("Toggle Grabber pressed")
-            self.logger.info(f"Current state is {self.grabberControl.current_state}")
-            if self.grabberControl.current_state == "holding":
-                self.grabberControl.next_state('dropping')
-            elif self.grabberControl.current_state == "empty":
-                self.grabberControl.next_state('looking')
-        pov = self.btnGridSelect()
-        if pov > -1:
-            if pov == 0:
-                if self.gridLevel < 3:
-                    self.gridLevel += 1
-            elif pov == 180:
-                if self.gridLevel > 1:
-                    self.gridLevel -= 1
-            elif pov == 90:
-                if self.gridPosition > 1:
-                    self.gridPosition -= 1
-            elif pov == 270:
-                if self.gridPosition < 9:
-                    self.gridPosition += 1
+        SmartDashboard.putNumber('Operator Manual Mode', self.operatorController.getManualMode())
+        if not self.operatorController.getManualMode():
+                
+            if self.btnOperatorManualChange:
+                self.operatorController.changeMode()
+            self.grabberControl.engage()
+            if self.btnRunArm() > 0.5:
+                self.armControl.engage()
+            if self.btnRejectObject() > 0.5:
+                self.grabber.motor.set(-0.5)
+            wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
+            if self.btnToggleGrabber():
+                self.logger.info("Toggle Grabber pressed")
+                self.logger.info(f"Current state is {self.grabberControl.current_state}")
+                if self.grabberControl.current_state == "holding":
+                    self.grabberControl.next_state('dropping')
+                elif self.grabberControl.current_state == "empty":
+                    self.grabberControl.next_state('looking')
+            pov = self.btnGridSelect()
+            if pov > -1:
+                if pov == 0:
+                    if self.gridLevel < 3:
+                        self.gridLevel += 1
+                elif pov == 180:
+                    if self.gridLevel > 1:
+                        self.gridLevel -= 1
+                elif pov == 90:
+                    if self.gridPosition > 1:
+                        self.gridPosition -= 1
+                elif pov == 270:
+                    if self.gridPosition < 9:
+                        self.gridPosition += 1
 
-            self.logger.info(f'Grid Level: {self.gridLevel}, Grid Position: {self.gridPosition}')
+                self.logger.info(f'Grid Level: {self.gridLevel}, Grid Position: {self.gridPosition}')
+        else:
+            self.arm.boom.run(-self.operatorController.getRightY())
+            self.arm.stick.run(-self.operatorController.getLeftY())
 
 
         #self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
@@ -206,41 +216,43 @@ class FROGbot(MagicRobot):
 			        endPoint, # Ending position
                 )
             self.swerveChassis.autoDrive()
-        elif self.btnGoToPositionA():
-            #self.swerveChassis.enableAuto()
-            if not self.swerveChassis.holonomicController.trajectoryType:
-                currentPose = self.swerveChassis.estimator.getEstimatedPosition()
-                ##TODO figure out how to calculate heading
-                startPoint = PathPoint(currentPose.translation(), currentPose.rotation())
-                gridPosition = self.fieldLayout.getPosition(self.gridPosition).toPose2d()
-                endPoint = PathPoint(gridPosition.translation(), gridPosition.rotation())
-                self.logger.info(f"AUTODRIVE TO A: {currentPose} to {self.positionA}")
-                self.swerveChassis.holonomicController.initSimpleTrajectory(
-                    startPoint, # Starting position
-			        endPoint, # Ending position
-                )
-            self.swerveChassis.autoDrive()
-        elif self.btnGoToPositionB():
-            #self.swerveChassis.enableAuto()
-            if not self.swerveChassis.holonomicController.trajectoryType:
-                currentPose = self.swerveChassis.estimator.getEstimatedPosition()
-                ##TODO figure out how to calculate heading
-                startPoint = PathPoint(currentPose.translation(), currentPose.rotation())
-                endPoint = PathPoint(self.positionB.translation(), self.positionB.rotation())
-                self.logger.info(f"AUTODRIVE TO B: {currentPose} to {self.positionB}")
-                self.swerveChassis.holonomicController.initSimpleTrajectory(
-                    startPoint, # Starting position
-			        endPoint, # Ending position
-                )
-            self.swerveChassis.autoDrive()
-        elif self.btnEnableAutoDrive():
-            if not self.swerveChassis.holonomicController.trajectoryType:
-                self.swerveChassis.holonomicController.loadPathPlanner('Position8toMidfield')
-            self.swerveChassis.autoDrive()
+        # elif self.btnGoToPositionA():
+        #     #self.swerveChassis.enableAuto()
+        #     if not self.swerveChassis.holonomicController.trajectoryType:
+        #         currentPose = self.swerveChassis.estimator.getEstimatedPosition()
+        #         ##TODO figure out how to calculate heading
+        #         startPoint = PathPoint(currentPose.translation(), currentPose.rotation())
+        #         gridPosition = self.fieldLayout.getPosition(self.gridPosition).toPose2d()
+        #         endPoint = PathPoint(gridPosition.translation(), gridPosition.rotation())
+        #         self.logger.info(f"AUTODRIVE TO A: {currentPose} to {self.positionA}")
+        #         self.swerveChassis.holonomicController.initSimpleTrajectory(
+        #             startPoint, # Starting position
+		# 	        endPoint, # Ending position
+        #         )
+        #     self.swerveChassis.autoDrive()
+        # elif self.btnGoToPositionB():
+        #     #self.swerveChassis.enableAuto()
+        #     if not self.swerveChassis.holonomicController.trajectoryType:
+        #         currentPose = self.swerveChassis.estimator.getEstimatedPosition()
+        #         ##TODO figure out how to calculate heading
+        #         startPoint = PathPoint(currentPose.translation(), currentPose.rotation())
+        #         endPoint = PathPoint(self.positionB.translation(), self.positionB.rotation())
+        #         self.logger.info(f"AUTODRIVE TO B: {currentPose} to {self.positionB}")
+        #         self.swerveChassis.holonomicController.initSimpleTrajectory(
+        #             startPoint, # Starting position
+		# 	        endPoint, # Ending position
+        #         )
+        #     self.swerveChassis.autoDrive()
+        # elif self.btnEnableAutoDrive():
+        #     if not self.swerveChassis.holonomicController.trajectoryType:
+        #         self.swerveChassis.holonomicController.loadPathPlanner('Position8toMidfield')
+        #     self.swerveChassis.autoDrive()
             
         elif self.btnDriveToCone():
             self.limelight.findCones()
             self.swerveChassis.driveToObject()
+            if self.grabberControl.targetPresent:
+                self.driverController.setRumble(GenericHID.RumbleType.kRightRumble)
 
         elif self.btnDriveToCube():
             self.limelight.findCubes()
@@ -255,6 +267,10 @@ class FROGbot(MagicRobot):
                 self.driverController.getFieldRotation(),
                 self.driverController.getFieldThrottle(),
             )
+            if self.armControl.current_state == 'atHome' and self.swerveChassis.getChassisVelocityFPS() > 3:
+                self.operatorController.setRumble(GenericHID.RumbleType.kRightRumble)
+                self.driverController.setRumble(GenericHID.RumbleType.kLeftRumble)
+                
         
 
     def testInit(self):

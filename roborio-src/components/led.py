@@ -32,39 +32,44 @@ class FROGLED:
         self.Default()
 
     def Yellow(self):
-        self.candle.setLEDs(235, 229, 52)
+        #self.candle.setLEDs(235, 229, 52)
+        pass
 
     def yellowPocketSlow(self):
-        self.candle.animate(
-            LarsonAnimation(
-                235, 229, 52, 0, 0.25, NUM_STRIP_LEDS, 0, 16, NUM_CANDLE_LEDS
-            )   
-        )
+        # self.candle.animate(
+        #     LarsonAnimation(
+        #         235, 229, 52, 0, 0.25, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
+        #     )   
+        # )
+        pass
 
     def yellowPocketFast(self):
-        self.candle.animate(
-            LarsonAnimation(
-                235, 229, 52, 0, 0.75, NUM_STRIP_LEDS, 0, 16, NUM_CANDLE_LEDS
-            )   
-        )
+        # self.candle.animate(
+        #     LarsonAnimation(
+        #         235, 229, 52, 0, 0.75, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
+        #     )   
+        # )
+        pass
 
     def purplePocketSlow(self):
-        self.candle.animate(
-            LarsonAnimation(
-                107, 27, 125, 0, 0.25, NUM_STRIP_LEDS, 0, 16, NUM_CANDLE_LEDS
-            )   
-        )
+        # self.candle.animate(
+        #     LarsonAnimation(
+        #         107, 27, 125, 0, 0.25, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
+        #     )   
+        # )
+        pass
 
     def purplePocketFast(self):
-        self.candle.animate(
-            LarsonAnimation(
-                107, 27, 125, 0, 0.75, NUM_STRIP_LEDS, 0, 16, NUM_CANDLE_LEDS
-            )   
-        )
-
+        # self.candle.animate(
+        #     LarsonAnimation(
+        #         107, 27, 125, 0, 0.75, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
+        #     )   
+        # )
+        pass
 
     def Purple(self):
-        self.candle.setLEDs(107, 27, 125)
+        #self.candle.setLEDs(107, 27, 125)
+        pass
 
     def Green(self):
         self.candle.setLEDs(0, 255, 0)

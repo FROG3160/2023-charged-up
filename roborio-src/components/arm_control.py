@@ -142,6 +142,7 @@ class GrabberControl(StateMachine):
     swerveChassis: SwerveChassis
     leds: FROGLED
     last_state = None
+    targetPresent = False
 
     def __init__(self):
         pass
@@ -178,7 +179,6 @@ class GrabberControl(StateMachine):
 
     @state()
     def empty(self):
-        self.leds.Fire()
         self.last_state = 'empty'
 
     @state()
@@ -201,6 +201,7 @@ class GrabberControl(StateMachine):
 
         self.logger.info(f"Intaking, area = {self.limelight.ta}")
         if self.limelight.ta is not None:
+            self.targetPresent = True
             if self.limelight.ta >= 30:
                 if self.limelight.getPipeline():
                     self.leds.yellowPocketFast()
@@ -212,6 +213,7 @@ class GrabberControl(StateMachine):
                 self.last_state = 'intaking'
                 self.next_state("grabbing")
         else:
+            self.targetPresent = False
             self.last_state = 'intaking'
             self.next_state("looking")
 
@@ -255,6 +257,7 @@ class GrabberControl(StateMachine):
             self.logger.info("Shutting down intake wheels")
             self.grabber.wheelsOff()
             self.last_state = 'stoppingIntake'
+            self.targetPresent = False
             self.next_state("holding")
 
     @state()
