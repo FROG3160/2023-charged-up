@@ -12,6 +12,9 @@ class NoAuto(AutonomousStateMachine):
     MODE_NAME = "No Auto (default)"
     DEFAULT = True
 
+    @state(first=True)
+    def doNothing(self):
+        pass
 class moveToGridRight(AutonomousStateMachine):
     MODE_NAME = "Place cone"
 
@@ -73,7 +76,7 @@ class moveToGridRight(AutonomousStateMachine):
             )
             self.grabberControl.next_state('dropping')
         self.grabberControl.engage()
-        if self.grabberControl.last_state == 'looking':
+        if not self.grabberControl.hasObject:
             self.next_state('moveForward')
     
     @state()
