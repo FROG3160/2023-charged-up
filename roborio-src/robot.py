@@ -259,8 +259,8 @@ class FROGbot(MagicRobot):
         elif self.btnDriveToCone():
             self.limelight.findCones()
             self.swerveChassis.driveToObject()
-            if self.grabberControl.targetPresent:
-                self.driverController.setRumble(GenericHID.RumbleType.kRightRumble)
+            # if self.grabberControl.targetPresent:
+            #     self.driverController.setRumble(GenericHID.RumbleType.kRightRumble)
 
         elif self.btnDriveToCube():
             self.limelight.findCubes()
@@ -275,9 +275,9 @@ class FROGbot(MagicRobot):
                 self.driverController.getFieldRotation(),
                 self.driverController.getFieldThrottle(),
             )
-            if self.armControl.current_state == 'atHome' and self.swerveChassis.getChassisVelocityFPS() > 3:
-                self.operatorController.setRumble(GenericHID.RumbleType.kRightRumble)
-                self.driverController.setRumble(GenericHID.RumbleType.kLeftRumble)
+            # if self.armControl.current_state == 'atHome' and self.swerveChassis.getChassisVelocityFPS() > 3:
+            #     self.operatorController.setRumble(GenericHID.RumbleType.kRightRumble)
+            #     self.driverController.setRumble(GenericHID.RumbleType.kLeftRumble)
                 
         
 
