@@ -17,7 +17,7 @@ WHEELBASE = 20 / 12
 
 # SwerveDriveSpecialties modules have the following max speeds (in ft/sec):
 # L1 - 13.5, L2 - 16.3, L3 - 18
-MAX_FEET_PER_SEC = 
+MAX_FEET_PER_SEC = 16
 MIN_FEET_PER_SEC = 0.55
 MAX_METERS_PER_SEC = feetToMeters(MAX_FEET_PER_SEC)
 MIN_METERS_PER_SEC = feetToMeters(MIN_FEET_PER_SEC)
