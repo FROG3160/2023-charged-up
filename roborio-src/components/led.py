@@ -31,24 +31,26 @@ class FROGLED:
         self.candle.configBrightnessScalar(BRIGHTNESS)
         self.Default()
 
+    def larsonAnimation(self, r, g, b, speed):
+        self.candle.animate(
+            LarsonAnimation(
+                r, g, b, 0, speed, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
+            )   
+        )
     def Yellow(self):
         #self.candle.setLEDs(235, 229, 52)
         pass
 
     def yellowPocketSlow(self):
-        # self.candle.animate(
-        #     LarsonAnimation(
-        #         235, 229, 52, 0, 0.25, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
-        #     )   
-        # )
+        self.larsonAnimation(
+                235, 229, 52, 0.25
+        )
         pass
 
     def yellowPocketFast(self):
-        # self.candle.animate(
-        #     LarsonAnimation(
-        #         235, 229, 52, 0, 0.75, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
-        #     )   
-        # )
+        self.larsonAnimation(
+                235, 229, 52, 0.75
+        )
         pass
 
     def purplePocketSlow(self):
@@ -97,3 +99,6 @@ class FROGLED:
 
     def LightPink(self):
         self.candle.setLEDs(255, 153, 255)
+
+if __name__ == '__main__':
+    pass
