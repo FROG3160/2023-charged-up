@@ -379,7 +379,7 @@ class SwerveChassis:
     moduleFrontLeft: SwerveModule
     moduleFrontRight: SwerveModule
     moduleBackLeft: SwerveModule
-    swerveBackRight: SwerveModule
+    moduleBackRight: SwerveModule
 
     logger: Logger
 
@@ -402,7 +402,7 @@ class SwerveChassis:
             self.moduleFrontLeft,
             self.moduleFrontRight,
             self.moduleBackLeft,
-            self.swerveBackRight,
+            self.moduleBackRight,
         )
 
         self.moduleStates = (
@@ -479,11 +479,11 @@ class SwerveChassis:
             module.enable()
 
     def lockChassis(self):
-        pass
-        # self.moduleFrontLeft.steer.set()
-        # self.swerveBackRight.steer.set()
-        # self.moduleFrontRight.steer.set()
-        # self.moduleBackLeft.steer.set()
+        self.disable()
+        self.moduleFrontLeft.steer.set(POSITION_MODE, math.pi/4)
+        self.moduleBackRight.steer.set(POSITION_MODE, math.pi/4)
+        self.moduleFrontRight.steer.set(POSITION_MODE, -math.pi/4)
+        self.moduleBackLeft.steer.set(POSITION_MODE, -math.pi/4)
 
     def disableAuto(self):
         self.autoDrive = False
