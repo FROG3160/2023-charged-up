@@ -150,10 +150,10 @@ class GrabberControl(StateMachine):
 
     @state(first=True)
     def holding(self):
-        if self.grabber.sensor.isCube():
-            self.leds.Purple()
-        else:
-            self.leds.Yellow()
+        # if self.grabber.sensor.isCube():
+        #     self.leds.Purple()
+        # else:
+        #     self.leds.Yellow()
         self.last_state = 'holding'
 
     @state()
@@ -195,10 +195,10 @@ class GrabberControl(StateMachine):
     def looking(self, initial_call):
         if initial_call:
             self.grabber.open()
-        if self.limelight.getPipeline():
-            self.leds.yellowPocketSlow()
-        else:
-            self.leds.purplePocketSlow()
+        # if self.limelight.getPipeline():
+        #     self.leds.yellowPocketSlow()
+        # else:
+        #     self.leds.purplePocketSlow()
         if self.limelight.hasTarget():
             self.next_state("intaking")
         elif self.grabber.getProximity() > 230:
@@ -213,10 +213,10 @@ class GrabberControl(StateMachine):
         if self.limelight.ta is not None:
             self.targetPresent = True
             if self.limelight.ta >= 30:
-                if self.limelight.getPipeline():
-                    self.leds.yellowPocketFast()
-                else:
-                    self.leds.purplePocketFast()
+                # if self.limelight.getPipeline():
+                #     self.leds.yellowPocketFast()
+                # else:
+                #     self.leds.purplePocketFast()
                 if self.grabber.getProximity() < 1000:
                     self.logger.info("Turning intake wheels on")
                     self.grabber.wheelsOn(1)
@@ -242,10 +242,10 @@ class GrabberControl(StateMachine):
         # remove block when setting to floor position
         # maybe have block occur UNLESS it's at floor for pickup
         # have a pickup boolean?
-        if self.grabber.sensor.isCube():
-            self.leds.Purple()
-        else:
-            self.leds.Yellow()
+        # if self.grabber.sensor.isCube():
+        #     self.leds.Purple()
+        # else:
+        #     self.leds.Yellow()
         if initial_call and self.armControl.last_state == 'atFloor':
         #if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
             self.last_state = 'lifting'
