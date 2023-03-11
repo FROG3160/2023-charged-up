@@ -56,7 +56,7 @@ class FROGbot(MagicRobot):
         self.fieldLayout = FROGFieldLayout()
 
         # declare buttons for driver
-        self.btnEnableAutoDrive = self.driverController.getRightBumper
+        self.btnLockChassis = self.driverController.getRightBumper
         self.btnEnableAutoRotate = self.driverController.getLeftBumper
         self.btnResetEstimator = self.driverController.getBackButtonPressed
         self.btnResetGyro = self.driverController.getStartButtonPressed
@@ -76,6 +76,7 @@ class FROGbot(MagicRobot):
         self.btnRejectObject = self.operatorController.getLeftTriggerAxis
         self.btnGridSelect = self.operatorController.getPOVDebounced
         self.btnOperatorManualChange = self.operatorController.getStartButtonPressed
+        self.btnGrabberReset = self.operatorController.getBackButtonPressed
 
         self.positionA = Pose2d( inchesToMeters(98.5), inchesToMeters(70), 0)
         self.positionB = Pose2d( inchesToMeters(203.5), inchesToMeters(174.2), 0)
@@ -116,7 +117,9 @@ class FROGbot(MagicRobot):
         SmartDashboard.putNumber('Operator Manual Mode', self.operatorController.getManualMode())
         if not self.operatorController.getManualMode():
                 
-            if self.btnOperatorManualChange:
+            if self.btnGrabberReset():
+                self.grabberControl.next_state('reset')
+            if self.btnOperatorManualChange():
                 self.operatorController.changeMode()
             self.grabberControl.engage()
             if self.btnRunArm() > 0.5:
@@ -200,6 +203,8 @@ class FROGbot(MagicRobot):
 		# 	        endPoint, # Ending position
         #         )
         #     self.swerveChassis.autoDrive()
+        if self.btnLockChassis():
+            self.swerveChassis.lockChassis()
 
         if self.btnEnableAutoRotate():
             #self.swerveChassis.enableAuto()

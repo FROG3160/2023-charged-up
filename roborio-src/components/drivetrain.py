@@ -478,6 +478,13 @@ class SwerveChassis:
         for module in self.modules:
             module.enable()
 
+    def lockChassis(self):
+        pass
+        # self.moduleFrontLeft.steer.set()
+        # self.swerveBackRight.steer.set()
+        # self.moduleFrontRight.steer.set()
+        # self.moduleBackLeft.steer.set()
+
     def disableAuto(self):
         self.autoDrive = False
 

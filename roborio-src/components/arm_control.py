@@ -183,6 +183,13 @@ class GrabberControl(StateMachine):
     @state()
     def empty(self):
         self.last_state = 'empty'
+    
+    @state()
+    def reset(self):
+        self.grabber.wheelsOff()
+        self.grabber.open()
+        self.last_state = 'reset'
+        self.next_state('looking')
 
     @state()
     def looking(self, initial_call):
