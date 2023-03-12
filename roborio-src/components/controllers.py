@@ -351,10 +351,10 @@ class FROGHolonomic(HolonomicDriveController):
                 self.firstCall = False
             # get the pose of the trajectory at the current time
             goalPose = self.getGoalPose()
-            self.logger.info(
-                "Auto Update -- initial Pose: %s\n  goal Pose: %s\n time: %s",
-                currentPose, goalPose, self.timer.get()
-            )
+            # self.logger.info(
+            #     "Auto Update -- initial Pose: %s\n  goal Pose: %s\n time: %s",
+            #     currentPose, goalPose, self.timer.get()
+            # )
             return self.calculate(currentPose, goalPose, goalPose.pose.rotation())
 
 

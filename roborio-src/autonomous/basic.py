@@ -27,17 +27,6 @@ class placeCone(AutonomousStateMachine):
     @state(first=True)
     def raiseArm(self, initial_call):
         if initial_call:
-            self.swerveChassis.setFieldPosition(Pose2d(self.startX,0,0))
-            self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
-            startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-            endTrajectoryPose = Pose2d(self.endX, 0, 0)
-            self.logger.info(f'Starting at {startTrajectoryPose}')
-            self.logger.info(f'Ending at: {endTrajectoryPose}')
-            ##TODO figure out how to calculate heading
-            self.swerveChassis.holonomicController.initPoseToPose(
-                startTrajectoryPose, # Starting position
-                endTrajectoryPose, # Ending position
-            )
             self.logger.info(f'Raising arm to upper')
             self.armControl.next_state('moveToUpper')
         self.armControl.engage()
@@ -54,19 +43,6 @@ class placeCone(AutonomousStateMachine):
     @state()
     def dropCone(self, initial_call):
         if initial_call:
-            self.swerveChassis.fieldOrientedDrive(0,0,0)
-            self.logger.info(f'Vision Estimate: {self.swerveChassis.visionPoseEstimator.getEstimatedRobotPose()}')
-            self.swerveChassis.setFieldPosition(Pose2d(self.startX,0,0))
-            self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
-            startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-            endTrajectoryPose = Pose2d(self.startX, 0 , 0)
-            self.logger.info(f'Starting at {startTrajectoryPose}')
-            self.logger.info(f'Ending at: {endTrajectoryPose}')
-            ##TODO figure out how to calculate heading
-            self.swerveChassis.holonomicController.initPoseToPose(
-                startTrajectoryPose, # Starting position
-                endTrajectoryPose, # Ending position
-            )
             self.grabberControl.next_state('dropping')
         self.grabberControl.engage()
 
@@ -74,8 +50,8 @@ class placeCone(AutonomousStateMachine):
             self.done()
     
 
-class placeConeGetCone(AutonomousStateMachine):
-    MODE_NAME = "Place cone, get cone"
+class placeConeDriveForward(AutonomousStateMachine):
+    MODE_NAME = "Place cone, drive forward"
 
     swerveChassis: SwerveChassis
     armControl: ArmControl
@@ -86,18 +62,6 @@ class placeConeGetCone(AutonomousStateMachine):
     @state(first=True)
     def raiseArm(self, initial_call):
         if initial_call:
-            self.swerveChassis.setFieldPosition(Pose2d(self.startX,0,0))
-            self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
-            startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-            endTrajectoryPose = Pose2d(self.endX, 0, 0)
-            self.logger.info(f'Starting at {startTrajectoryPose}')
-            self.logger.info(f'Ending at: {endTrajectoryPose}')
-            ##TODO figure out how to calculate heading
-            self.swerveChassis.holonomicController.initPoseToPose(
-                startTrajectoryPose, # Starting position
-                endTrajectoryPose, # Ending position
-            )
-            self.logger.info(f'Raising arm to upper')
             self.armControl.next_state('moveToUpper')
         self.armControl.engage()
         if self.armControl.last_state == 'atUpper':
@@ -113,22 +77,8 @@ class placeConeGetCone(AutonomousStateMachine):
     @state()
     def dropCone(self, initial_call):
         if initial_call:
-            self.swerveChassis.fieldOrientedDrive(0,0,0)
-            self.logger.info(f'Vision Estimate: {self.swerveChassis.visionPoseEstimator.getEstimatedRobotPose()}')
-            self.swerveChassis.setFieldPosition(Pose2d(self.startX,0,0))
-            self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
-            startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-            endTrajectoryPose = Pose2d(self.startX, 0 , 0)
-            self.logger.info(f'Starting at {startTrajectoryPose}')
-            self.logger.info(f'Ending at: {endTrajectoryPose}')
-            ##TODO figure out how to calculate heading
-            self.swerveChassis.holonomicController.initPoseToPose(
-                startTrajectoryPose, # Starting position
-                endTrajectoryPose, # Ending position
-            )
             self.grabberControl.next_state('dropping')
         self.grabberControl.engage()
-
         if not self.grabberControl.hasObject:
             self.next_state('moveForward')
 
@@ -136,8 +86,6 @@ class placeConeGetCone(AutonomousStateMachine):
     @timed_state(duration=4, next_state='dropArm')
     def moveForward(self, initial_call):
         self.swerveChassis.fieldOrientedDrive(0.150, 0, 0)
-        if self.swerveChassis.holonomicController.atReference():
-            self.next_state('dropArm')
         
     @state()
     def dropArm(self, initial_call):
@@ -153,3 +101,64 @@ class placeConeGetCone(AutonomousStateMachine):
         self.done()
 
 
+class placeConeDriveToCharge(AutonomousStateMachine):
+    MODE_NAME = "Place cone, drive to Charging"
+
+    swerveChassis: SwerveChassis
+    armControl: ArmControl
+    grabberControl: GrabberControl
+    startX = 2.47
+    endX = 1.81
+
+    @state(first=True)
+    def raiseArm(self, initial_call):
+        if initial_call:
+            self.logger.info(f'Raising arm to upper')
+            self.armControl.next_state('moveToUpper')
+        self.armControl.engage()
+        if self.armControl.last_state == 'atUpper':
+            self.next_state('moveBack')
+
+    @timed_state(duration=2, next_state='dropCone')
+    def moveBack(self, initial_call):
+        self.swerveChassis.fieldOrientedDrive(-0.125, 0, 0)
+        # self.swerveChassis.autoDrive()
+        # if self.swerveChassis.holonomicController.atReference():
+        #     self.next_state("dropCone")
+
+    @state()
+    def dropCone(self, initial_call):
+        if initial_call:
+            self.grabberControl.next_state('dropping')
+        self.grabberControl.engage()
+
+        if not self.grabberControl.hasObject:
+            self.next_state('moveForward')
+
+
+    @timed_state(duration=1, next_state='dropArm')
+    def moveForward(self, initial_call):
+        self.swerveChassis.fieldOrientedDrive(0.125, 0, 0)
+
+    @timed_state(duration=4, next_state='speedUp')
+    def dropArm(self, initial_call):
+        if initial_call:
+            self.armControl.next_state('moveToHome')
+            self.swerveChassis.fieldOrientedDrive(0,0,0)
+        self.armControl.engage()
+
+    @timed_state(duration=0.5, next_state='lockChassis')
+    def speedUp(self):
+        self.swerveChassis.fieldOrientedDrive(0.5, 0, 0)
+
+    @state()
+    def lockChassis(self, initial_call):
+        if initial_call:
+            self.swerveChassis.lockChassis()
+        self.armControl.engage()
+        if self.armControl.last_state == 'atHome':
+            self.next_state('end')
+
+    @state()
+    def end(self):
+        self.done()

@@ -44,7 +44,7 @@ class FROGbot(MagicRobot):
         self.moduleFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
         self.moduleFrontRight = SwerveModule(**config.MODULE_FRONT_RIGHT)
         self.moduleBackLeft = SwerveModule(**config.MODULE_BACK_LEFT)
-        self.swerveBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
+        self.moduleBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
 
         #self.sensor = FROGColor()
 
@@ -57,7 +57,7 @@ class FROGbot(MagicRobot):
 
         # declare buttons for driver
         self.btnLockChassis = self.driverController.getRightBumper
-        self.btnEnableAutoRotate = self.driverController.getLeftBumper
+        self.btnUnlockChassis = self.driverController.getLeftBumper
         self.btnResetEstimator = self.driverController.getBackButtonPressed
         self.btnResetGyro = self.driverController.getStartButtonPressed
         self.btnGoToPositionB = self.driverController.getBButton
@@ -75,7 +75,7 @@ class FROGbot(MagicRobot):
         self.btnRunArm = self.operatorController.getRightTriggerAxis
         self.btnRejectObject = self.operatorController.getLeftTriggerAxis
         self.btnGridSelect = self.operatorController.getPOVDebounced
-        self.btnOperatorManualChange = self.operatorController.getStartButtonPressed
+        # self.btnOperatorManualChange = self.operatorController.getStartButtonPressed
         self.btnGrabberReset = self.operatorController.getBackButtonPressed
 
         self.positionA = Pose2d( inchesToMeters(98.5), inchesToMeters(70), 0)
@@ -114,45 +114,43 @@ class FROGbot(MagicRobot):
     def teleopPeriodic(self):
         SmartDashboard.putNumber('Grid Position', self.gridPosition)
         SmartDashboard.putNumber('Grid Level', self.gridLevel)
-        SmartDashboard.putNumber('Operator Manual Mode', self.operatorController.getManualMode())
-        if not self.operatorController.getManualMode():
+        # SmartDashboard.putNumber('Operator Manual Mode', self.operatorController.getManualMode())
                 
-            if self.btnGrabberReset():
-                self.grabberControl.next_state('reset')
-            if self.btnOperatorManualChange():
-                self.operatorController.changeMode()
-            self.grabberControl.engage()
-            if self.btnRunArm() > 0.5:
-                self.armControl.engage()
-            if self.btnRejectObject() > 0.5:
-                self.grabber.motor.set(-0.5)
-            wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
-            if self.btnToggleGrabber():
-                self.logger.info("Toggle Grabber pressed")
-                self.logger.info(f"Current state is {self.grabberControl.current_state}")
-                if self.grabberControl.current_state in ["holding", "stoppingIntake"]:
-                    self.grabberControl.next_state('dropping')
-                elif self.grabberControl.current_state == "empty":
-                    self.grabberControl.next_state('looking')
-            pov = self.btnGridSelect()
-            if pov > -1:
-                if pov == 0:
-                    if self.gridLevel < 3:
-                        self.gridLevel += 1
-                elif pov == 180:
-                    if self.gridLevel > 1:
-                        self.gridLevel -= 1
-                elif pov == 90:
-                    if self.gridPosition > 1:
-                        self.gridPosition -= 1
-                elif pov == 270:
-                    if self.gridPosition < 9:
-                        self.gridPosition += 1
+        if self.btnGrabberReset():
+            self.grabberControl.next_state('reset')
+        # if self.btnOperatorManualChange():
+        #     self.operatorController.changeMode()
+        self.grabberControl.engage()
+        if self.btnRunArm() > 0.5:
+            self.armControl.engage()
+        if self.btnRejectObject() > 0.5:
+            self.grabber.motor.set(-0.5)
+        wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
+        if self.btnToggleGrabber():
+            self.logger.info(f"Toggle Grabber (LB) pressed, current state is {self.grabberControl.current_state}")
+            if self.grabberControl.current_state in ["holding", "stoppingIntake"]:
+                self.grabberControl.next_state('dropping')
+            elif self.grabberControl.current_state == "empty":
+                self.grabberControl.next_state('looking')
+        pov = self.btnGridSelect()
+        if pov > -1:
+            if pov == 0:
+                if self.gridLevel < 3:
+                    self.gridLevel += 1
+            elif pov == 180:
+                if self.gridLevel > 1:
+                    self.gridLevel -= 1
+            elif pov == 90:
+                if self.gridPosition > 1:
+                    self.gridPosition -= 1
+            elif pov == 270:
+                if self.gridPosition < 9:
+                    self.gridPosition += 1
 
-                self.logger.info(f'Grid Level: {self.gridLevel}, Grid Position: {self.gridPosition}')
-        else:
-            self.arm.boom.run(-self.operatorController.getRightY())
-            self.arm.stick.run(-self.operatorController.getLeftY())
+            self.logger.info(f'Grid Level: {self.gridLevel}, Grid Position: {self.gridPosition}')
+        # else:
+        #     self.arm.boom.run(-self.operatorController.getRightY())
+        #     self.arm.stick.run(-self.operatorController.getLeftY())
 
 
         #self.grabber.motor.set(self.operatorController.getRightTriggerAxis())
@@ -206,23 +204,10 @@ class FROGbot(MagicRobot):
         if self.btnLockChassis():
             self.swerveChassis.lockChassis()
 
-        if self.btnEnableAutoRotate():
-            #self.swerveChassis.enableAuto()
-            if not self.swerveChassis.holonomicController.trajectoryType:
-                startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-                endTrajectoryPose = startTrajectoryPose + Transform2d(
-                    0, 0 , startTrajectoryPose.rotation().radians() + degreesToRadians(90)
-                )
-                ##TODO figure out how to calculate heading
-                startPoint = PathPoint(startTrajectoryPose.translation(), startTrajectoryPose.rotation())
-                endPoint = PathPoint(endTrajectoryPose.translation(), endTrajectoryPose.rotation())
-                self.logger.info(f"AUTOROTATE: {startTrajectoryPose} to {endTrajectoryPose}")
-                self.swerveChassis.holonomicController.initSimpleTrajectory(
-                    startPoint, # Starting position
-			        endPoint, # Ending position
-                )
-            self.swerveChassis.autoDrive()
-        elif self.btnGoToPositionA():
+        if self.btnUnlockChassis():
+            self.swerveChassis.enable()
+
+        if self.btnGoToPositionA():
               #self.swerveChassis.enableAuto()
             if not self.swerveChassis.holonomicController.trajectoryType:
                 startX = 2.47
@@ -265,7 +250,7 @@ class FROGbot(MagicRobot):
             self.limelight.findCones()
             self.swerveChassis.driveToObject()
             # if self.grabberControl.targetPresent:
-            #     self.driverController.setRumble(GenericHID.RumbleType.kRightRumble)
+            #     self.driverController.setRumble(GenericHID.RumbleType.kRightRumble, 0.5 )
 
         elif self.btnDriveToCube():
             self.limelight.findCubes()
@@ -280,9 +265,9 @@ class FROGbot(MagicRobot):
                 self.driverController.getFieldRotation(),
                 self.driverController.getFieldThrottle(),
             )
-            # if self.armControl.current_state == 'atHome' and self.swerveChassis.getChassisVelocityFPS() > 3:
-            #     self.operatorController.setRumble(GenericHID.RumbleType.kRightRumble)
-            #     self.driverController.setRumble(GenericHID.RumbleType.kLeftRumble)
+            # if not self.armControl.last_state == 'atHome' and not self.armControl.is_executing and self.swerveChassis.getChassisVelocityFPS() > 3:
+            #     self.operatorController.setRumble(GenericHID.RumbleType.kRightRumble, 1)
+            #     self.driverController.setRumble(GenericHID.RumbleType.kLeftRumble, 1)
                 
         
 
@@ -290,7 +275,9 @@ class FROGbot(MagicRobot):
         pass
         
     def testPeriodic(self):
-        pass
+        self.arm.boom.run(-self.operatorController.getRightY())
+        self.arm.stick.run(-self.operatorController.getLeftY())
+        # self.leds.yellowPocketFast()
 
 if __name__ == "__main__":
     wpilib.run(FROGbot)

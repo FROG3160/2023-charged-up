@@ -189,7 +189,7 @@ class GrabberControl(StateMachine):
         self.grabber.wheelsOff()
         self.grabber.open()
         self.last_state = 'reset'
-        self.next_state('looking')
+        self.next_state_now('looking')
 
     @state()
     def looking(self, initial_call):
@@ -209,7 +209,7 @@ class GrabberControl(StateMachine):
     @state()
     def intaking(self):
 
-        self.logger.info(f"Intaking, area = {self.limelight.ta}")
+        # self.logger.info(f"Intaking, area = {self.limelight.ta}")
         if self.limelight.ta is not None:
             self.targetPresent = True
             if self.limelight.ta >= 30:

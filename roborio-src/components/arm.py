@@ -52,7 +52,7 @@ class SubArm():
         #Check to see if we are running Motion Magic
         if self.commandedPosition is not None:
             if abs(self.motor.getActiveTrajectoryPosition() - self.commandedPosition) < 200:
-                self.logger.info(f"SubArm: {self.name} - Stopped at {self.motor.getActiveTrajectoryPosition()} with commanded Position: {self.commandedPosition}")
+                # self.logger.info(f"SubArm: {self.name} - Stopped at {self.motor.getActiveTrajectoryPosition()} with commanded Position: {self.commandedPosition}")
                 self.commandedPosition = None
                 self.atPosition = True
                 self.stop()
