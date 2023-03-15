@@ -10,6 +10,7 @@ from wpimath.units import metersToInches, inchesToMeters, radiansToDegrees
 from wpimath.filter import MedianFilter
 from components.field import FROGFieldLayout
 from photonvision import PhotonUtils
+from wpilib.shuffleboard import Shuffleboard
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
 BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
@@ -110,15 +111,36 @@ class FROGPhotonVision:
 
 
 class FROGLimeLightVision:
-    def __init__(self):
+
+    fieldLayout: FROGFieldLayout
+
+    def __init__(self, fieldLayout: FROGFieldLayout, ntTableName):
+        self.fieldLayout = fieldLayout
         self.limelightTable = NetworkTableInstance.getDefault().getTable(
-            key="limelight"
+            key=ntTableName
         )
         self.ntTclass = self.limelightTable.getStringTopic('tclass').subscribe('None')
         self.ntTa = self.limelightTable.getFloatTopic('ta').subscribe(0)
         self.ntTx = self.limelightTable.getFloatTopic('tx').subscribe(-999)
         self.ntTv = self.limelightTable.getIntegerTopic('tv').subscribe(0)
         self.ntPipe = self.limelightTable.getIntegerTopic('getPipe').subscribe(-1)
+
+        self.ntCl = self.limelightTable.getFloatTopic('cl').subscribe(0)
+        self.ntTl = self.limelightTable.getFloatTopic('tl').subscribe(0)
+
+        self.botPose = self.limelightTable.getFloatArrayTopic("botpose").subscribe([-99, -99, -99, 0, 0, 0])
+        
+        self.botPoseBlue = self.limelightTable.getFloatArrayTopic(
+            "botpose_wpiblue"
+        ).subscribe([-99, -99, -99, 0, 0, 0])
+        self.botPoseRed = self.limelightTable.getFloatArrayTopic(
+            "botpose_wpired"
+        ).subscribe([-99, -99, -99, 0, 0, 0])
+        # create the timer that we can use to the the FPGA timestamp
+        self.timer = wpilib.Timer()
+
+    def getLatency(self):
+        return (self.ntCl.get() + self.ntTl.get())/1000
 
     def findCubes(self):
         self.setPipeline(LL_CUBE)
@@ -128,6 +150,24 @@ class FROGLimeLightVision:
 
     def getPipeline(self):
         return self.ntPipe.get()
+    
+    def getBotPoseAlliance(self) -> typing.Tuple[Pose3d, float]:
+        if self.fieldLayout.alliance == RED_ALLIANCE:
+            return (self.getBotPoseRed(), self.timer.getFPGATimestamp()-self.getLatency())
+        elif self.fieldLayout.alliance == BLUE_ALLIANCE:
+            return (self.getBotPoseBlue(), self.timer.getFPGATimestamp()-self.getLatency())
+        
+    def getBotPose(self) -> Pose3d:
+        return arrayToPose3d(self.botPose.get())
+
+    def getBotPoseBlue(self) -> Pose3d:
+        return arrayToPose3d(self.botPoseBlue.get())
+
+    def getBotPoseRed(self) -> Pose3d:
+        return arrayToPose3d(self.botPoseRed.get())
+
+    def getTID(self) -> float:
+        return self.limelightTable.getNumber("tid", -1.0)
 
     def getTarget(self):
         if self.ntTv.get():

@@ -385,6 +385,7 @@ class SwerveChassis:
 
     fieldLayout: FROGFieldLayout
     limelight: FROGLimeLightVision
+    limelight_at: FROGLimeLightVision
 
     gyro: FROGGyro
 
@@ -425,11 +426,11 @@ class SwerveChassis:
             *[m.location for m in self.modules]
         )
 
-        self.visionPoseEstimator = FROGPhotonVision(
-            self.fieldLayout,
-            config.PHOTONVISION_CAMERA_NAME,
-            config.PHOTONVISION_CAMERA_POSE
-        )
+        # self.visionPoseEstimator = FROGPhotonVision(
+        #     self.fieldLayout,
+        #     config.PHOTONVISION_CAMERA_NAME,
+        #     config.PHOTONVISION_CAMERA_POSE
+        # )
 
         self.trajectoryConfig = TrajectoryConfig(
             MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL
@@ -605,14 +606,13 @@ class SwerveChassis:
             Rotation2d.fromDegrees(self.gyro.getYawCCW()),
             tuple(self.getModulePositions()),
         )
-        visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
+        visionPose, visionTime = self.limelight_at.getBotPoseAlliance()
         # # visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
         if visionPose:
             if (
                 abs(visionPose.x - self.estimatorPose.x) < 0.5
                 and abs(visionPose.y - self.estimatorPose.y) < 0.5
             ):
-
                 self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
 
 

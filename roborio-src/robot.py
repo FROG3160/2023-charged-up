@@ -17,6 +17,7 @@ from wpimath.units import degreesToRadians
 from components.arm_control import GrabberControl, ArmControl
 from ctre import ControlMode
 from wpilib import SmartDashboard
+from wpilib.shuffleboard import  Shuffleboard
 from wpilib.interfaces import GenericHID
 
 
@@ -35,7 +36,8 @@ class FROGbot(MagicRobot):
     #Upper leve components first, lower level components last
     swerveChassis: SwerveChassis
     arm: Arm
-    limelight: FROGLimeLightVision
+
+
     gyro: FROGGyro
     grabber: FROGGrabber
     sensor: FROGColor
@@ -50,10 +52,14 @@ class FROGbot(MagicRobot):
 
         self.leds = FROGLED(35)
 
+
         self.driverController = FROGXboxDriver(0)
         self.operatorController = FROGXboxOperator(1)
 
         self.fieldLayout = FROGFieldLayout()
+
+        self.limelight = FROGLimeLightVision(self.fieldLayout, 'limelight')
+        self.limelight_at = FROGLimeLightVision(self.fieldLayout, 'limelight-at')
 
         # declare buttons for driver
         self.btnLockChassis = self.driverController.getRightBumper
@@ -86,13 +92,17 @@ class FROGbot(MagicRobot):
 
         self.gridLevel = 1
         self.gridPosition = 1
+
+        # self.aprilTagsTab = Shuffleboard.getTab('April Tags')
+        # self.aprilTagsTab.add(title='botPoseBlue', defaultValue=self.limelight_at)
     
     def setAlliance(self):
         self.alliance = wpilib.DriverStation.getAlliance()
         self.fieldLayout.setAlliance(self.alliance)
         self.logger.info(f"FROGBot.fieldLayout alliance is {self.fieldLayout.alliance}")
-        self.logger.info(f"SwerveChassis.fieldLayout alliance is {self.swerveChassis.visionPoseEstimator.fieldLayout.alliance}")
-        self.logger.info(f'FROGPhotonVision.fieldlayout alliance is {self.swerveChassis.visionPoseEstimator.poseEstimator.getFieldLayout().alliance}')
+        self.logger.info(f"SwerveChassis.fieldLayout alliance is {self.swerveChassis.fieldLayout.alliance}")
+        self.logger.info(f"FROGLimeLight.fieldlayout alliance is {self.swerveChassis.limelight_at.fieldLayout.alliance}")
+
     
     
     def robotInit(self) -> None:
@@ -109,7 +119,6 @@ class FROGbot(MagicRobot):
     def teleopInit(self):
         self.setAlliance()
         self.swerveChassis.enable()
-        self.swerveChassis.visionPoseEstimator.camera.setDriverMode(False)
 
     def teleopPeriodic(self):
         SmartDashboard.putNumber('Grid Position', self.gridPosition)
