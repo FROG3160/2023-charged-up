@@ -168,13 +168,10 @@ class FROGColor:
         return self.colorSensor.getProximity()
     
     def isCube(self):
-        return self.getBlue() > self.getRed() and self.getBlue() > self.getGreen()
+        color = self.colorSensor.getColor()
+        return color.blue > color.red and color.blue > color.green
 
     def execute(self):
-        SmartDashboard.putNumber('Color Red', self.colorSensor.getColor().red)
-        SmartDashboard.putNumber('Color Blue', self.colorSensor.getColor().blue)
-        SmartDashboard.putNumber('Color Green', self.colorSensor.getColor().green)
-        SmartDashboard.putBoolean('Color Cube', self.isCube())
         pass
 
 
