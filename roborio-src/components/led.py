@@ -37,67 +37,57 @@ class FROGLED:
                 r, g, b, 0, speed, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
             )   
         )
-    def Yellow(self):
-        #self.candle.setLEDs(235, 229, 52)
-        pass
+    def yellow(self):
+        self.candle.setLEDs(250, 129, 7)
 
     def yellowPocketSlow(self):
         self.larsonAnimation(
-                235, 229, 52, 0.25
+                250, 129, 7, 0.25
         )
-        pass
 
     def yellowPocketFast(self):
         self.larsonAnimation(
-                235, 229, 52, 0.75
+                250, 129, 7, 0.75
         )
-        pass
 
     def purplePocketSlow(self):
-        # self.candle.animate(
-        #     LarsonAnimation(
-        #         107, 27, 125, 0, 0.25, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
-        #     )   
-        # )
-        pass
+        self.larsonAnimation(
+                167, 16, 201, 0.25
+        )
 
     def purplePocketFast(self):
-        # self.candle.animate(
-        #     LarsonAnimation(
-        #         107, 27, 125, 0, 0.75, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
-        #     )   
-        # )
-        pass
+        self.larsonAnimation(
+                167, 16, 201, 0.75
+        )
 
-    def Purple(self):
-        #self.candle.setLEDs(107, 27, 125)
-        pass
+    def purple(self):
+        self.candle.setLEDs(167, 16, 201)
 
-    def Green(self):
+    def green(self):
         self.candle.setLEDs(0, 255, 0)
 
-    def Default(self):
+    def default(self):
         self.Magenta()
 
-    def Rainbow(self):
+    def rainbow(self):
         self.candle.animate(RAINBOW)
 
-    def Twinkle(self):
+    def twinkle(self):
         self.candle.animate(TWINKLE)
 
-    def Fire(self):
+    def fire(self):
         self.candle.animate(FIRE)
 
-    def Magenta(self):
+    def magenta(self):
         self.candle.setLEDs(200, 0, 70)
 
-    def LightGreen(self):
+    def lightGreen(self):
         self.candle.setLEDs(51, 255, 51)
 
-    def Mint(self):
+    def mint(self):
         self.candle.setLEDs(153, 255, 255)
 
-    def LightPink(self):
+    def lightPink(self):
         self.candle.setLEDs(255, 153, 255)
 
 if __name__ == '__main__':
