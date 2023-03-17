@@ -317,14 +317,13 @@ class SwerveModule:
         self.drive.setSensorPhase(False)
         self.drive.configClosedloopRamp(0.25)
 
-        SmartDashboard.putNumber("Drive kF", config.cfgDriveMotor.slot0.kF)
+       # SmartDashboard.putNumber("Drive kF", config.cfgDriveMotor.slot0.kF)
 
         # self.current_states = None
         # self.current_speeds = None
 
     def setState(self, state: SwerveModuleState):
         # TODO: Remove the following config change once tuning is done
-        self.setDriveF(SmartDashboard.getNumber("Drive kF", config.cfgDriveMotor.slot0.kF))
         self.requestedState = FROGSwerveModuleState(state.speed, state.angle)
 
         if self.enabled:
@@ -332,7 +331,7 @@ class SwerveModule:
             # using built-in optimize method instead of our custom one from last year
             current_steer_position = self.getSteerPosition()
             self.requestedState.optimize(current_steer_position)
-            self.periodic()
+            # self.periodic()
 
             self.steer.set(
                 POSITION_MODE,
@@ -385,7 +384,6 @@ class SwerveChassis:
 
     fieldLayout: FROGFieldLayout
     limelight: FROGLimeLightVision
-    limelight_at: FROGLimeLightVision
 
     gyro: FROGGyro
 
@@ -592,7 +590,7 @@ class SwerveChassis:
         self.chassisSpeeds = ChassisSpeeds(vX, vY, vT)
 
     def driveToObject(self):
-        if self.limelight.hasTarget():
+        if self.limelight.hasGrabberTarget():
             self.robotOrientedDrive(
                 self.limelight.drive_vX,
                 self.limelight.drive_vY,
@@ -606,8 +604,7 @@ class SwerveChassis:
             Rotation2d.fromDegrees(self.gyro.getYawCCW()),
             tuple(self.getModulePositions()),
         )
-        visionPose, visionTime = self.limelight_at.getBotPoseAlliance()
-        # # visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
+        visionPose, visionTime = self.limelight.getBotPoseEstimateForAlliance()
         if visionPose:
             if (
                 abs(visionPose.x - self.estimatorPose.x) < 0.5

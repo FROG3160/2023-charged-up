@@ -174,27 +174,6 @@ ULTRASONIC = {
     "mvPerInch": metersToInches((4.88 / 5) * 1000 )
 }
 
-# >>> metersToInches((4.88/5) * 1000)
-# 38425.1968503937
-# >>> (4.88/5)
-# 0.976
-# >>> mvPerMM = (4.88/5)
-# >>> mvPerMM
-# 0.976
-# >>> mvPerM = mvPerMM /1000
-# >>> mvPerM
-# 0.000976
-# >>> mvPerInch = metersToInches(mvPerM) 
-# >>> mvPerInch 
-# 0.0384251968503937
-# >>> 4.88 * mvPerInch
-# 0.18751496062992126
-# >>> VPerInch = mvPerInch / 1000
-# >>> .00488 * VPerInch
-# 1.8751496062992126e-07
-# >>> VPerInch
-# 3.8425196850393705e-05
-# >>>
 
 #Vision Camera config
 PHOTONVISION_CAMERA_NAME = "OV5647"
@@ -203,6 +182,9 @@ PHOTONVISION_CAMERA_POSE = Transform3d(
     Translation3d(inchesToMeters(-8.75), 0, inchesToMeters(50.375)),
     Rotation3d(0, degreesToRadians(23), degreesToRadians(-178))
 )
+
+LIMELIGHT_GRABBER = 'limelight'
+LIMELIGHT_UPPER = 'limelight-at'
 
 
 pass
