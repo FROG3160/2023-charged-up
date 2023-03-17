@@ -317,14 +317,13 @@ class SwerveModule:
         self.drive.setSensorPhase(False)
         self.drive.configClosedloopRamp(0.25)
 
-        SmartDashboard.putNumber("Drive kF", config.cfgDriveMotor.slot0.kF)
+       # SmartDashboard.putNumber("Drive kF", config.cfgDriveMotor.slot0.kF)
 
         # self.current_states = None
         # self.current_speeds = None
 
     def setState(self, state: SwerveModuleState):
         # TODO: Remove the following config change once tuning is done
-        self.setDriveF(SmartDashboard.getNumber("Drive kF", config.cfgDriveMotor.slot0.kF))
         self.requestedState = FROGSwerveModuleState(state.speed, state.angle)
 
         if self.enabled:
@@ -332,7 +331,7 @@ class SwerveModule:
             # using built-in optimize method instead of our custom one from last year
             current_steer_position = self.getSteerPosition()
             self.requestedState.optimize(current_steer_position)
-            self.periodic()
+            # self.periodic()
 
             self.steer.set(
                 POSITION_MODE,
@@ -379,7 +378,7 @@ class SwerveChassis:
     moduleFrontLeft: SwerveModule
     moduleFrontRight: SwerveModule
     moduleBackLeft: SwerveModule
-    swerveBackRight: SwerveModule
+    moduleBackRight: SwerveModule
 
     logger: Logger
 
@@ -402,7 +401,7 @@ class SwerveChassis:
             self.moduleFrontLeft,
             self.moduleFrontRight,
             self.moduleBackLeft,
-            self.swerveBackRight,
+            self.moduleBackRight,
         )
 
         self.moduleStates = (
@@ -425,11 +424,11 @@ class SwerveChassis:
             *[m.location for m in self.modules]
         )
 
-        self.visionPoseEstimator = FROGPhotonVision(
-            self.fieldLayout,
-            config.PHOTONVISION_CAMERA_NAME,
-            config.PHOTONVISION_CAMERA_POSE
-        )
+        # self.visionPoseEstimator = FROGPhotonVision(
+        #     self.fieldLayout,
+        #     config.PHOTONVISION_CAMERA_NAME,
+        #     config.PHOTONVISION_CAMERA_POSE
+        # )
 
         self.trajectoryConfig = TrajectoryConfig(
             MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL
@@ -477,6 +476,13 @@ class SwerveChassis:
         self.enabled = True
         for module in self.modules:
             module.enable()
+
+    def lockChassis(self):
+        self.disable()
+        self.moduleFrontLeft.steer.set(POSITION_MODE, math.pi/4)
+        self.moduleBackRight.steer.set(POSITION_MODE, math.pi/4)
+        self.moduleFrontRight.steer.set(POSITION_MODE, -math.pi/4)
+        self.moduleBackLeft.steer.set(POSITION_MODE, -math.pi/4)
 
     def disableAuto(self):
         self.autoDrive = False
@@ -568,6 +574,9 @@ class SwerveChassis:
             xSpeed, ySpeed, rotSpeed, self.gyro.getRotation2d()
         )
 
+    def getChassisVelocityFPS(self):
+        return math.sqrt( self.chassisSpeeds.vx_fps**2 + self.chassisSpeeds.vy_fps**2)
+
     def autoDrive(self) -> None:
         # TODO: Remove this call once we have tuned the drivetrain
         #       It allows us to adjust PID values on the fly.
@@ -580,41 +589,29 @@ class SwerveChassis:
     def robotOrientedDrive(self, vX, vY, vT):
         self.chassisSpeeds = ChassisSpeeds(vX, vY, vT)
 
-    def driveToObject(self, object):
-        self.limelight.setPipeline(object)
-        if self.limelight.hasTarget():
-            vT = self.limelight.tx / 40
-            vX = self.limelight.ta * -0.0098 + 1.0293
-            vY = 0
-            self.robotOrientedDrive(-vX, vY, -vT)
+    def driveToObject(self):
+        if self.limelight.hasGrabberTarget():
+            self.robotOrientedDrive(
+                self.limelight.drive_vX,
+                self.limelight.drive_vY,
+                self.limelight.drive_vRotate
+            )
+        else:
+            self.robotOrientedDrive(0,0,0)
 
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(
             Rotation2d.fromDegrees(self.gyro.getYawCCW()),
             tuple(self.getModulePositions()),
         )
-        visionPose, visionTime = self.visionPoseEstimator.getEstimatedRobotPose()
-        # # visionPose, visionTime = self.limelightPoseEstimator.getBotPoseAlliance()
+        visionPose, visionTime = self.limelight.getBotPoseEstimateForAlliance()
         if visionPose:
             if (
                 abs(visionPose.x - self.estimatorPose.x) < 0.5
                 and abs(visionPose.y - self.estimatorPose.y) < 0.5
             ):
-                currentPose = self.estimator.getEstimatedPosition()
-                #self.logger.info(f"Vision Pose used: {visionPose}")
                 self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
-                adjustedPose = self.estimator.getEstimatedPosition()
-                # self.logger.info(
-                #     "Vision Update -- initial Pose: %s\n  vision Pose: %s\n final Pose: %s",
-                #     currentPose, visionPose, adjustedPose
-                # )
 
-        # self.odometryPose = self.odometry.update(
-        #     Rotation2d.fromDegrees(self.gyro.getYawCCW()),
-        #     *self.getModulePositions(),
-        # )
-
-        # self.field.setRobotPose(self.odometryPose)
 
         SmartDashboard.putNumber(
             "Estimator_X_Inches", metersToInches(self.estimatorPose.X())

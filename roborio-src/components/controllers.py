@@ -14,6 +14,7 @@ from magicbot import feedback
 from wpilib import SmartDashboard
 import os
 from wpimath.units import inchesToMeters
+from wpilib import Timer
 
 MAX_TRAJECTORY_SPEED = feetToMeters(5)
 MAX_TRAJECTORY_ACCEL = feetToMeters(5)
@@ -170,11 +171,14 @@ class FROGXboxDriver(XboxController):
     
     DEADBAND = 0.045
     ROTATION_DIVISOR = 1
+    DEBOUNCE_PERIOD = 0.5
+    MODE = 0 #run auto routines
     
     def __init__(self, channel):
 
         super().__init__(channel)
         self.button_latest = {}
+        self.timer = Timer()
 
     def getFieldRotation(self):
         
@@ -188,11 +192,53 @@ class FROGXboxDriver(XboxController):
 
     def getFieldThrottle(self):
         return wpimath.applyDeadband(self.getRightTriggerAxis(), 0)
+    
+    def getPOVDebounced(self):
+        val = -1
+        now = self.timer.getFPGATimestamp()
+        pov = self.getPOV()
+        if pov > -1:
+            if (now - self.button_latest.get("POV", 0)) > self.DEBOUNCE_PERIOD:
+                self.button_latest["POV"] = now
+                val = pov
+        if (now - self.button_latest.get("POV", 0)) < self.DEBOUNCE_PERIOD:
+            self.setRumble(RIGHT_RUMBLE, 1)
+        else:
+            self.setRumble(RIGHT_RUMBLE, 0)
+        # self.update_nt("button_pov", val)
+        return val
 
 
 class FROGXboxOperator(XboxController):
+
+    DEBOUNCE_PERIOD = 0.5
+
     def __init__(self, channel):
         super().__init__(channel)
+        self.timer = Timer()
+        self.button_latest = {}
+        self.manualMode = False
+
+    def getPOVDebounced(self):
+        val = -1
+        now = self.timer.getFPGATimestamp()
+        pov = self.getPOV()
+        if pov > -1:
+            if (now - self.button_latest.get("POV", 0)) > self.DEBOUNCE_PERIOD:
+                self.button_latest["POV"] = now
+                val = pov
+        if (now - self.button_latest.get("POV", 0)) < self.DEBOUNCE_PERIOD:
+            self.setRumble(RIGHT_RUMBLE, 1)
+        else:
+            self.setRumble(RIGHT_RUMBLE, 0)
+        return val
+    
+    def changeMode(self):
+        return [True, False][self.manualMode]
+    
+    def getManualMode(self):
+        return self.manualMode
+        
 
 
 
@@ -305,10 +351,10 @@ class FROGHolonomic(HolonomicDriveController):
                 self.firstCall = False
             # get the pose of the trajectory at the current time
             goalPose = self.getGoalPose()
-            self.logger.info(
-                "Auto Update -- initial Pose: %s\n  goal Pose: %s\n time: %s",
-                currentPose, goalPose, self.timer.get()
-            )
+            # self.logger.info(
+            #     "Auto Update -- initial Pose: %s\n  goal Pose: %s\n time: %s",
+            #     currentPose, goalPose, self.timer.get()
+            # )
             return self.calculate(currentPose, goalPose, goalPose.pose.rotation())
 
 
@@ -341,6 +387,10 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.yController.setP(SmartDashboard.getNumber('ControllerP', self.yController.getP()))
         self.rotationController.setP(SmartDashboard.getNumber('angleControllerP', self.rotationController.getP()))
 
+    def initPoseToPose(self, startPose, endPose):
+        startPoint = PathPoint(startPose.translation(), startPose.rotation())
+        endPoint = PathPoint(endPose.translation(), endPose.rotation())
+        self.initSimpleTrajectory(startPoint, endPoint)
 
     def initSimpleTrajectory(self, startPoint: PathPoint, endPoint: PathPoint):
         """Initializes a PathPlanner trajectory"""

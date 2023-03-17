@@ -17,7 +17,7 @@ WHEELBASE = 20 / 12
 
 # SwerveDriveSpecialties modules have the following max speeds (in ft/sec):
 # L1 - 13.5, L2 - 16.3, L3 - 18
-MAX_FEET_PER_SEC = 8
+MAX_FEET_PER_SEC = 16
 MIN_FEET_PER_SEC = 0.55
 MAX_METERS_PER_SEC = feetToMeters(MAX_FEET_PER_SEC)
 MIN_METERS_PER_SEC = feetToMeters(MIN_FEET_PER_SEC)
@@ -36,7 +36,7 @@ MODULE_FRONT_LEFT = {
     "drive_motor_id": 11,
     "steer_motor_id": 21,
     "steer_sensor_id": 31,
-    "steer_sensor_offset": -4.13085938,  # 176.484375-180 ,
+    "steer_sensor_offset": -5.185547,  #-4.13085938,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, TRACK_WIDTH / 2),
 }
 
@@ -45,7 +45,7 @@ MODULE_FRONT_RIGHT = {
     "drive_motor_id": 12,
     "steer_motor_id": 22,
     "steer_sensor_id": 32,
-    "steer_sensor_offset": -150.292969,  # 29.0917969 - 180,
+    "steer_sensor_offset": -150.820313, #-150.292969,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, -TRACK_WIDTH / 2),
 }
 MODULE_BACK_LEFT = {
@@ -53,7 +53,7 @@ MODULE_BACK_LEFT = {
     "drive_motor_id": 13,
     "steer_motor_id": 23,
     "steer_sensor_id": 33,
-    "steer_sensor_offset": -179.736328,  # 0,
+    "steer_sensor_offset": -179.648438,  #-179.736328,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, TRACK_WIDTH / 2),
 }
 MODULE_BACK_RIGHT = {
@@ -61,7 +61,7 @@ MODULE_BACK_RIGHT = {
     "drive_motor_id": 14,
     "steer_motor_id": 24,
     "steer_sensor_id": 34,
-    "steer_sensor_offset": 47.2851563,  # -131.484375+180,
+    "steer_sensor_offset": 45.9667969,  ##47.2851563,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, -TRACK_WIDTH / 2),
 }
 
@@ -125,10 +125,10 @@ CANCODER_TICKS_PER_RADIAN = CANCODER_TICKS_PER_ROTATION / math.tau
 BOOM_MOTOR_ID = 41
 cfgBoomMotor = TalonFXConfiguration()
 cfgBoomMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
-cfgBoomMotor.slot0.kP = 0.24 #0.16
+cfgBoomMotor.slot0.kP = 0.128#0.24 #0.16
 cfgBoomMotor.slot0.kI = 0.0
 cfgBoomMotor.slot0.kD = 0.0
-cfgBoomMotor.slot0.kF = 0.0
+cfgBoomMotor.slot0.kF = 0.05115
 cfgBoomMotor.clearPositionOnLimitR = True
 cfgBoomMotor.motionAcceleration = 40000
 cfgBoomMotor.motionCruiseVelocity = 20000
@@ -140,10 +140,10 @@ cfgBoomMotor.neutralDeadband = 0.02
 STICK_MOTOR_ID = 42
 cfgStickMotor = TalonFXConfiguration()
 cfgStickMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
-cfgStickMotor.slot0.kP = 0.30 #0.096
+cfgStickMotor.slot0.kP = 0.128#0.30 #0.096
 cfgStickMotor.slot0.kI = 0.0
 cfgStickMotor.slot0.kD = 0.0
-cfgStickMotor.slot0.kF = 0.0
+cfgStickMotor.slot0.kF = 0.05115
 cfgStickMotor.clearPositionOnLimitR = True
 cfgStickMotor.motionAcceleration = 30000
 cfgStickMotor.motionCruiseVelocity = 20000
@@ -151,18 +151,20 @@ cfgStickMotor.motionCurveStrength = 2
 cfgStickMotor.slot0.allowableClosedloopError = 0
 cfgStickMotor.neutralDeadband = 0.02
 
-BOOM_GRID_UPPER = 150400
-STICK_GRID_UPPER = 319500
-BOOM_GRID_MID = 43000
-STICK_GRID_MID = 246000
+BOOM_GRID_UPPER = 149505 #145000 #150400
+STICK_GRID_UPPER = 320500
+BOOM_GRID_MID = 4500
+STICK_GRID_MID = 262000
 BOOM_GRID_LOW = 95300
 STICK_GRID_LOW = 400
-BOOM_HOME = 0
-STICK_HOME = 0
-BOOM_FLOOR_PICKUP = 145600
+BOOM_HOME = -20000
+STICK_HOME = -20000
+BOOM_FLOOR_PICKUP = 152639 #150000 #148000 #153000 #154000 max
 STICK_FLOOR_PICKUP = 400
-BOOM_FLOOR_MANIPULATE = 93500
+BOOM_FLOOR_MANIPULATE = 106000
 STICK_FLOOR_MANIPULATE = 400
+BOOM_SHELF = 4500
+STICK_SHELF = 262000
 
 #
 #  MaxBotix MB1043-000 config
@@ -172,34 +174,17 @@ ULTRASONIC = {
     "mvPerInch": metersToInches((4.88 / 5) * 1000 )
 }
 
-# >>> metersToInches((4.88/5) * 1000)
-# 38425.1968503937
-# >>> (4.88/5)
-# 0.976
-# >>> mvPerMM = (4.88/5)
-# >>> mvPerMM
-# 0.976
-# >>> mvPerM = mvPerMM /1000
-# >>> mvPerM
-# 0.000976
-# >>> mvPerInch = metersToInches(mvPerM) 
-# >>> mvPerInch 
-# 0.0384251968503937
-# >>> 4.88 * mvPerInch
-# 0.18751496062992126
-# >>> VPerInch = mvPerInch / 1000
-# >>> .00488 * VPerInch
-# 1.8751496062992126e-07
-# >>> VPerInch
-# 3.8425196850393705e-05
-# >>>
 
 #Vision Camera config
 PHOTONVISION_CAMERA_NAME = "OV5647"
+# TODO: check these values
 PHOTONVISION_CAMERA_POSE = Transform3d(
-                Translation3d(inchesToMeters(-9), 0, inchesToMeters(49.8)),
-                Rotation3d(0, degreesToRadians(32), degreesToRadians(180))
+    Translation3d(inchesToMeters(-8.75), 0, inchesToMeters(50.375)),
+    Rotation3d(0, degreesToRadians(23), degreesToRadians(-178))
 )
+
+LIMELIGHT_GRABBER = 'limelight'
+LIMELIGHT_UPPER = 'limelight-at'
 
 
 pass

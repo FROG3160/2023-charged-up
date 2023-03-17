@@ -6,6 +6,7 @@ from rev import ColorSensorV3
 import math
 from wpimath.geometry import Rotation2d
 from magicbot import feedback
+from wpilib import SmartDashboard
 
 BUFFERLEN = 50
 
@@ -159,9 +160,16 @@ class FROGColor:
 
     def getBlue(self):
         return self.colorSensor.getColor().blue
+    
+    def getGreen(self):
+        return self.colorSensor.getColor().green
 
     def getProximity(self):
         return self.colorSensor.getProximity()
+    
+    def isCube(self):
+        color = self.colorSensor.getColor()
+        return color.blue > color.red and color.blue > color.green
 
     def execute(self):
         pass

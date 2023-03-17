@@ -80,6 +80,15 @@ class FROGFieldLayout(AprilTagFieldLayout):
         return self.getTagRelativePosition( self.tagList[gridNum-1], position )
     
     def getPosition(self, position: int) -> Pose3d:
+        """Returns the field pose for the robot to use to be in front
+        of the given grid position
+
+        Args:
+            position (int): Grid position, from 1 to 9 with 1 being the furthest right
+
+        Returns:
+            Pose3d: Field pose
+        """
         return self.getTagRelativePosition(*self.gridPositions[position])
     
     # set alliance/change origin

@@ -6,7 +6,9 @@ from ctre.led import (
     ColorFlowAnimation,
     FireAnimation,
     SingleFadeAnimation,
-    StrobeAnimation
+    StrobeAnimation,
+    BaseTwoSizeAnimation,
+    LarsonAnimation
 )
 
 BRIGHTNESS = 0.4
@@ -29,13 +31,49 @@ class FROGLED:
         self.candle.configBrightnessScalar(BRIGHTNESS)
         self.Default()
 
-    def ColorChangeYellow(self):
-        self.candle.setLEDs(235, 229, 52)
+    def larsonAnimation(self, r, g, b, speed):
+        self.candle.animate(
+            LarsonAnimation(
+                r, g, b, 0, speed, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
+            )   
+        )
+    def Yellow(self):
+        #self.candle.setLEDs(235, 229, 52)
+        pass
 
-    def ColorChangePurple(self):
-        self.candle.setLEDs(107, 27, 125)
+    def yellowPocketSlow(self):
+        self.larsonAnimation(
+                235, 229, 52, 0.25
+        )
+        pass
 
-    def ColorChangeGreen(self):
+    def yellowPocketFast(self):
+        self.larsonAnimation(
+                235, 229, 52, 0.75
+        )
+        pass
+
+    def purplePocketSlow(self):
+        # self.candle.animate(
+        #     LarsonAnimation(
+        #         107, 27, 125, 0, 0.25, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
+        #     )   
+        # )
+        pass
+
+    def purplePocketFast(self):
+        # self.candle.animate(
+        #     LarsonAnimation(
+        #         107, 27, 125, 0, 0.75, NUM_STRIP_LEDS, LarsonAnimation.BounceMode.Front, 7, NUM_CANDLE_LEDS
+        #     )   
+        # )
+        pass
+
+    def Purple(self):
+        #self.candle.setLEDs(107, 27, 125)
+        pass
+
+    def Green(self):
         self.candle.setLEDs(0, 255, 0)
 
     def Default(self):
@@ -61,3 +99,6 @@ class FROGLED:
 
     def LightPink(self):
         self.candle.setLEDs(255, 153, 255)
+
+if __name__ == '__main__':
+    pass

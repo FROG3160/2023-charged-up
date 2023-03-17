@@ -23,13 +23,12 @@ class SubArm():
         self.motor.setSensorPhase(sensorPhase)
         self.commandedPosition = None
         self.logger = logger
+        self.atPosition = False
 
     def getEncoderPosition(self) -> float:
         return self.motor.getSelectedSensorPosition()
 
     def run(self, speed: float):
-        # TODO: Determine the actual position the arm is moving in based on
-        # running the motor forward and backward.
         self.motor.set(speed)
 
     def toPosition(self, position: float):
@@ -40,18 +39,29 @@ class SubArm():
     def stop(self):
         self.motor.set(0)
 
+    def getTrajectoryPosition(self):
+        return self.motor.getActiveTrajectoryPosition()
+
     def getPosition(self):
-        self.motor.getActiveTrajectoryPosition()
+        return self.motor.getSelectedSensorPosition()
+
+    def atRevLimit(self):
+        return self.motor.isRevLimitSwitchClosed()
     
     def execute(self):
         #Check to see if we are running Motion Magic
-
         if self.commandedPosition is not None:
             if abs(self.motor.getActiveTrajectoryPosition() - self.commandedPosition) < 200:
-                self.logger.info(f"SubArm: {self.name} - Stopped at {self.motor.getActiveTrajectoryPosition()} with commanded Position: {self.commandedPosition}")
+                # self.logger.info(f"SubArm: {self.name} - Stopped at {self.motor.getActiveTrajectoryPosition()} with commanded Position: {self.commandedPosition}")
                 self.commandedPosition = None
                 self.atPosition = True
                 self.stop()
+        if self.atRevLimit() and self.motor.get() < 0 and self.motor.getControlMode() == ControlMode.PercentOutput:
+            self.stop()
+            
+
+        
+            
 
 
 class Arm():
@@ -64,11 +74,24 @@ class Arm():
     def manual(self, boomSpeed, stickSpeed):
         self.boom.run(boomSpeed)
         self.stick.run(stickSpeed)
+    
+    def runToZero(self):
+        self.manual(-0.15, -0.15)
+
+    def leaveZero(self):
+        self.boom.motor.set(ControlMode.Position, 256)
+        self.stick.motor.set(ControlMode.Position, 256)
+
+    def runToPosition(self, boomPosition, stickPosition):
+        self.boom.toPosition(boomPosition)
+        self.stick.toPosition(stickPosition)
 
     def atPosition(self):
         return self.boom.atPosition and self.stick.atPosition
+    
+    def atReverseLimit(self):
+        return self.boom.atRevLimit() and self.stick.atRevLimit()
 
     def execute(self):
         self.boom.execute()
         self.stick.execute()
-        pass
