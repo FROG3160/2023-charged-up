@@ -199,7 +199,7 @@ class GrabberControl(StateMachine):
         #     self.leds.yellowPocketSlow()
         # else:
         #     self.leds.purplePocketSlow()
-        if self.limelight.hasTarget():
+        if self.limelight.hasGrabberTarget():
             self.next_state("intaking")
         elif self.grabber.getProximity() > 230:
             self.grabber.wheelsOn(1)

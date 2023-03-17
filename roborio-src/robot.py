@@ -17,6 +17,7 @@ from wpimath.units import degreesToRadians
 from components.arm_control import GrabberControl, ArmControl
 from ctre import ControlMode
 from wpilib import SmartDashboard
+from wpilib.shuffleboard import  Shuffleboard
 from wpilib.interfaces import GenericHID
 
 
@@ -35,10 +36,12 @@ class FROGbot(MagicRobot):
     #Upper leve components first, lower level components last
     swerveChassis: SwerveChassis
     arm: Arm
-    limelight: FROGLimeLightVision
+
+
     gyro: FROGGyro
     grabber: FROGGrabber
     sensor: FROGColor
+    limelight: FROGLimeLightVision
 
     def createObjects(self) -> None:
         self.moduleFrontLeft = SwerveModule(**config.MODULE_FRONT_LEFT)
@@ -78,38 +81,50 @@ class FROGbot(MagicRobot):
         # self.btnOperatorManualChange = self.operatorController.getStartButtonPressed
         self.btnGrabberReset = self.operatorController.getBackButtonPressed
 
-        self.positionA = Pose2d( inchesToMeters(98.5), inchesToMeters(70), 0)
-        self.positionB = Pose2d( inchesToMeters(203.5), inchesToMeters(174.2), 0)
+        self.positionA = Pose2d( 1.85, 4.43, 0)
+        self.positionB = Pose2d( 7.1, 4.58, 0)
 
-        self.startingPose2d = None
+        self.startingPose2d = Pose2d(0,0,0)
         self.grabberIsOpen = False
 
         self.gridLevel = 1
         self.gridPosition = 1
+
+        # self.aprilTagsTab = Shuffleboard.getTab('April Tags')
+        # self.aprilTagsTab.add(title='botPoseBlue', defaultValue=self.limelight_at)
     
     def setAlliance(self):
         self.alliance = wpilib.DriverStation.getAlliance()
         self.fieldLayout.setAlliance(self.alliance)
         self.logger.info(f"FROGBot.fieldLayout alliance is {self.fieldLayout.alliance}")
-        self.logger.info(f"SwerveChassis.fieldLayout alliance is {self.swerveChassis.visionPoseEstimator.fieldLayout.alliance}")
-        self.logger.info(f'FROGPhotonVision.fieldlayout alliance is {self.swerveChassis.visionPoseEstimator.poseEstimator.getFieldLayout().alliance}')
+        self.logger.info(f"SwerveChassis.fieldLayout alliance is {self.swerveChassis.fieldLayout.alliance}")
+        self.logger.info(f"FROGLimeLight.fieldlayout alliance is {self.swerveChassis.limelight.fieldLayout.alliance}")
+
     
     
     def robotInit(self) -> None:
+        """Runs at the startup of the robot code.  Anything that needs to be set
+        before running Autonomous or Teleop modes should be added here"""
         super().robotInit()  #calls createObjects()
+        #TODO: test if we can place the robot position setting here from AutonomousInit
         self.leds.Fire()
   
     def autonomousInit(self):
+        """Runs at the beginning autonomous mode.  Add anything that is needed
+        to put the robot in a known state to start Autonomous mode.
+        """
         self.setAlliance()
         self.swerveChassis.enable()
-        #self.startingPose2d = self.fieldLayout.getTagRelativePosition(7, 2).toPose2d()
-        #self.swerveChassis.setFieldPosition(self.startingPose2d)
+        # TODO: Test and change this to use the initial bot post from vision?
+        # this call gets the pose3d from the tuple returned by getBotPoseEstimateForAlliance
+        # and then converts to a Pose2d for the setFieldPosition
+        self.startingPose2d = self.limelight.getBotPoseEstimateForAlliance()[0].toPose2d()
+        self.swerveChassis.setFieldPosition(self.startingPose2d)
         self.armControl.next_state('leaveZero')
 
     def teleopInit(self):
         self.setAlliance()
         self.swerveChassis.enable()
-        self.swerveChassis.visionPoseEstimator.camera.setDriverMode(False)
 
     def teleopPeriodic(self):
         SmartDashboard.putNumber('Grid Position', self.gridPosition)
@@ -180,7 +195,7 @@ class FROGbot(MagicRobot):
 
         if self.btnResetEstimator():
             print("Resetting Estimator to Vision Pose Estimate")
-            visionPose, timestamp = self.swerveChassis.visionPoseEstimator.getEstimatedRobotPose()
+            visionPose, timestamp = self.limelight.getBotPoseEstimateForAlliance()
             if visionPose:
                 self.swerveChassis.setFieldPosition(visionPose.toPose2d())
         if self.btnResetGyro():
@@ -210,12 +225,12 @@ class FROGbot(MagicRobot):
         if self.btnGoToPositionA():
               #self.swerveChassis.enableAuto()
             if not self.swerveChassis.holonomicController.trajectoryType:
-                startX = 2.47
-                endX = 1.81
-                self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
+                # startX = 2.47
+                # endX = 1.81
+                # self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
                 self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
                 startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-                endTrajectoryPose = Pose2d(endX, 0 , 0)
+                endTrajectoryPose = self.positionA
                 self.logger.info(f'Starting at {startTrajectoryPose}')
                 self.logger.info(f'Ending at: {endTrajectoryPose}')
                 ##TODO figure out how to calculate heading
@@ -227,12 +242,12 @@ class FROGbot(MagicRobot):
         elif self.btnGoToPositionB():
         #     #self.swerveChassis.enableAuto()
             if not self.swerveChassis.holonomicController.trajectoryType:
-                startX = 1.81
-                endX = 2.47
-                self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
+                # startX = 1.81
+                # endX = 2.47
+                # self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
                 self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
                 startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-                endTrajectoryPose = Pose2d(self.endX, 0 , 0)
+                endTrajectoryPose = self.positionB
                 self.logger.info(f'Starting at {startTrajectoryPose}')
                 self.logger.info(f'Ending at: {endTrajectoryPose}')
                 ##TODO figure out how to calculate heading
