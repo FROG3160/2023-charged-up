@@ -230,7 +230,7 @@ class FROGbot(MagicRobot):
                 # self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
                 self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
                 startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-                endTrajectoryPose = self.positionA
+                endTrajectoryPose = self.fieldLayout.getPosition(self.gridPosition).toPose2d()
                 self.logger.info(f'Starting at {startTrajectoryPose}')
                 self.logger.info(f'Ending at: {endTrajectoryPose}')
                 ##TODO figure out how to calculate heading
