@@ -4,7 +4,6 @@ import wpilib, logging
 from photonvision import PhotonCamera, PoseStrategy, RobotPoseEstimator
 from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Translation3d
-from wpilib import SmartDashboard
 from ntcore import NetworkTableInstance, NetworkTable
 from wpimath.units import metersToInches, inchesToMeters, radiansToDegrees
 from wpimath.filter import MedianFilter
@@ -87,37 +86,8 @@ class FROGPhotonVision:
             # robotPose = PhotonUtils.estimateFieldToRobotAprilTag(bestTarget.getBestCameraToTarget(), self.fieldLayout.getTagPose(bestTarget.getFiducialId()), self.cameraTransform3d);
             # photonEstimatedPose = self.photonEstimatedPose.estimatedPose
             # timestamp = self.photonEstimatedPose.timestamp
-            # SmartDashboard.putNumber("PEP_X", metersToInches(photonEstimatedPose.X()))
-            # SmartDashboard.putNumber("PEP_Y", metersToInches(photonEstimatedPose.Y()))
-            # SmartDashboard.putNumber("PEP_Degrees", metersToInches(photonEstimatedPose.rotation().toRotation2d().degrees()))
-            SmartDashboard.putNumber(
-                "TgtTransform_X", metersToInches(bestTgtTransform.X())
-            )
-            SmartDashboard.putNumber(
-                "TgtTransform_Y", metersToInches(bestTgtTransform.Y())
-            )
-            SmartDashboard.putNumber(
-                "TgtTransform_Degrees",
-                bestTgtTransform.rotation().toRotation2d().degrees(),
-            )
             # cameraOnField = tagPose.transformBy(bestTgtTransform.inverse())
             # robotOnField = cameraOnField.transformBy(self.cameraTransform3d).toPose2d()
-            # SmartDashboard.putNumber("PVRobot_X", metersToInches(robotOnField.X()))
-            # SmartDashboard.putNumber("PVRobot_Y", metersToInches(robotOnField.Y()))
-            # SmartDashboard.putNumber("PVRobot_Degrees", robotOnField.rotation().degrees())
-
-            if self.ambiguity < 0.02:
-                SmartDashboard.putNumber(
-                    "PhotonVision_X_Inches", metersToInches(self.currentPose.X())
-                )
-                SmartDashboard.putNumber(
-                    "PhotonVision_Y_Inches", metersToInches(self.currentPose.Y())
-                )
-                SmartDashboard.putNumber(
-                    "PhotonVision_T_Degrees", self.currentPose.rotation().angle_degrees
-                )
-                SmartDashboard.putNumber("PhotonVision_Ambiguity", self.ambiguity)
-                SmartDashboard.putNumber("PhotonVision_TargetID", self.targetID)
 
 
 class FROGLimeLightVision:
@@ -166,7 +136,7 @@ class FROGLimeLightVision:
 
     def getGrabberPipeline(self):
         return self.grabberPipe.get()
-    
+
     def getUpperPipeline(self):
         return self.upperPipe.get()
 
@@ -212,11 +182,6 @@ class FROGLimeLightVision:
 
     def execute(self) -> None:
         self.getTarget()
-        if self.hasGrabberTarget():
-            SmartDashboard.putNumber("LL TGT Area", self.ta)
-            SmartDashboard.putNumber("LL TGT X", self.tx)
-            SmartDashboard.putNumber("LL TGT Valid", self.tv)
-            SmartDashboard.putString("LL TGT Class", self.tClass)
 
     def setGrabberPipeline(self, objectInt: int):
         self.ll_grabberTable.putNumber("pipeline", objectInt)

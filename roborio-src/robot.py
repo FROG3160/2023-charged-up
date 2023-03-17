@@ -129,7 +129,7 @@ class FROGbot(MagicRobot):
     def teleopPeriodic(self):
         SmartDashboard.putNumber('Grid Position', self.gridPosition)
         SmartDashboard.putNumber('Grid Level', self.gridLevel)
-        # SmartDashboard.putNumber('Operator Manual Mode', self.operatorController.getManualMode())
+        
                 
         if self.btnGrabberReset():
             self.grabberControl.next_state('reset')
@@ -140,7 +140,7 @@ class FROGbot(MagicRobot):
             self.armControl.engage()
         if self.btnRejectObject() > 0.5:
             self.grabber.motor.set(-0.5)
-        wpilib.SmartDashboard.putNumber('Proximity', self.sensor.getProximity())
+        
         if self.btnToggleGrabber():
             self.logger.info(f"Toggle Grabber (LB) pressed, current state is {self.grabberControl.current_state}")
             if self.grabberControl.current_state in ["holding", "stoppingIntake"]:
