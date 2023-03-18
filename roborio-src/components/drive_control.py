@@ -5,7 +5,7 @@ from pathplannerlib import PathPoint
 from wpimath.geometry import Pose2d, Rotation2d, Transform2d
 import math
 
-class driveControl(StateMachine):
+class DriveControl(StateMachine):
     
     swerveChassis: SwerveChassis
     VERBOSE_LOGGING = True
