@@ -464,7 +464,7 @@ class SwerveChassis:
             self.startingPose2d,
         )
         # TODO: Adjust the stdDevs
-        self.estimator.setVisionMeasurementStdDevs((0.1, 0.1, 0.1))
+        self.estimator.setVisionMeasurementStdDevs((0.1, 0.1, 1))
         self.field = Field2d()
 
     def disable(self):
@@ -567,6 +567,10 @@ class SwerveChassis:
         self.moduleStates = states
 
     def fieldOrientedDrive(self, vX: float, vY: float, vT: float, throttle=1.0):
+        SmartDashboard.putNumber('joystick_vX', vX*throttle)
+        SmartDashboard.putNumber('joystick_vY', vY*throttle)
+        SmartDashboard.putNumber('joystick_vT', vT*throttle)
+        SmartDashboard.putNumber('joystick_throttleOnly', throttle)
         xSpeed = vX * config.MAX_METERS_PER_SEC * throttle
         ySpeed = vY * config.MAX_METERS_PER_SEC * throttle
         rotSpeed = vT * config.MAX_CHASSIS_RADIANS_SEC * throttle
