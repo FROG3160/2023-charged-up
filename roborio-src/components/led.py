@@ -29,7 +29,7 @@ class FROGLED:
         self.candle = CANdle(canID)
         self.candle.configLEDType(LEDStripType.GRB)
         self.candle.configBrightnessScalar(BRIGHTNESS)
-        self.Default()
+        self.default()
 
     def larsonAnimation(self, r, g, b, speed):
         self.candle.animate(
@@ -67,7 +67,7 @@ class FROGLED:
         self.candle.setLEDs(0, 255, 0)
 
     def default(self):
-        self.Magenta()
+        self.magenta()
 
     def rainbow(self):
         self.candle.animate(RAINBOW)

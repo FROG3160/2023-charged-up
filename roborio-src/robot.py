@@ -7,6 +7,7 @@ from components.field import FROGFieldLayout
 from components.led import FROGLED
 from components.vision import FROGLimeLightVision
 from wpimath.geometry import Pose2d, Translation2d, Transform2d, Rotation2d
+from wpimath import applyDeadband
 from wpimath.units import feetToMeters
 from pathplannerlib import PathPoint
 from wpimath.units import inchesToMeters
@@ -107,7 +108,7 @@ class FROGbot(MagicRobot):
         before running Autonomous or Teleop modes should be added here"""
         super().robotInit()  #calls createObjects()
         #TODO: test if we can place the robot position setting here from AutonomousInit
-        self.leds.Fire()
+        self.leds.fire()
   
     def autonomousInit(self):
         """Runs at the beginning autonomous mode.  Add anything that is needed
@@ -291,8 +292,8 @@ class FROGbot(MagicRobot):
         pass
         
     def testPeriodic(self):
-        self.arm.boom.run(-self.operatorController.getRightY())
-        self.arm.stick.run(-self.operatorController.getLeftY())
+        self.arm.boom.run(applyDeadband(-self.operatorController.getRightY(), 0.15))
+        self.arm.stick.run(applyDeadband(-self.operatorController.getLeftY(), 0.15))
         # self.leds.yellowPocketFast()
 
 if __name__ == "__main__":
