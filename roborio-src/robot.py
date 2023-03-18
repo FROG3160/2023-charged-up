@@ -2,7 +2,7 @@ import wpilib
 import config
 from magicbot import MagicRobot, tunable, feedback
 from components.drivetrain import SwerveChassis, SwerveModule
-from components.controllers import FROGStickDriver, FROGXboxDriver, FROGXboxOperator, FROGHolonomic
+from components.controllers import FROGXboxDriver, FROGXboxOperator
 from components.field import FROGFieldLayout
 from components.led import FROGLED
 from components.vision import FROGLimeLightVision
@@ -228,6 +228,7 @@ class FROGbot(MagicRobot):
                 # startX = 2.47
                 # endX = 1.81
                 # self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
+                # self.swerveChassis.holonomicController.loadPID()
                 self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
                 startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
                 endTrajectoryPose = self.fieldLayout.getPosition(self.gridPosition).toPose2d()

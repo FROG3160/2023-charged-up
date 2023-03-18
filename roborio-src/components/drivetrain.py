@@ -50,7 +50,7 @@ from wpimath.controller import (
     ProfiledPIDControllerRadians,
     HolonomicDriveController,
 )
-from components.controllers import FROGHolonomic, PPHolonomic
+from components.controllers import PPHolonomic
 from magicbot import feedback
 from components.field import FROGFieldLayout
 

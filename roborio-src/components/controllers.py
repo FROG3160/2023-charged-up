@@ -243,112 +243,112 @@ class FROGXboxOperator(XboxController):
         return self.manualMode
 
 
-class FROGHolonomic(HolonomicDriveController):
-    max_trajectory_speed = config.MAX_TRAJECTORY_SPEED
-    max_trajectory_accel = config.MAX_TRAJECTORY_ACCEL
+# class FROGHolonomic(HolonomicDriveController):
+#     max_trajectory_speed = config.MAX_TRAJECTORY_SPEED
+#     max_trajectory_accel = config.MAX_TRAJECTORY_ACCEL
 
-    def __init__(self, kinematics):
-        # the holonomic controller
-        self.xController = config.holonomicTranslationPIDController
-        self.yController = config.holonomicTranslationPIDController
-        self.angleController = config.holonomicAnglePIDController
-        self.angleController.enableContinuousInput(-1 * math.pi, math.pi)
-        super().__init__(self.xController, self.yController, self.angleController)
-        self.timer = Timer()
-        self.trajectoryType = False
-        self.kinematics = kinematics
+#     def __init__(self, kinematics):
+#         # the holonomic controller
+#         self.xController = config.holonomicTranslationPIDController
+#         self.yController = config.holonomicTranslationPIDController
+#         self.angleController = config.holonomicAnglePIDController
+#         self.angleController.enableContinuousInput(-1 * math.pi, math.pi)
+#         super().__init__(self.xController, self.yController, self.angleController)
+#         self.timer = Timer()
+#         self.trajectoryType = False
+#         self.kinematics = kinematics
 
-    def initialize(self, trajectoryType):
-        self.firstCall = True
-        self.trajectoryType = trajectoryType
+#     def initialize(self, trajectoryType):
+#         self.firstCall = True
+#         self.trajectoryType = trajectoryType
 
-    def loadPID(self):
-        pass
+#     def loadPID(self):
+#         pass
 
-    def initTrajectory(
-        self, startPose: Pose2d, wayPoints: list[Translation2d], endPose: Pose2d
-    ):
-        # the trajectory setup
-        trajectoryConfig = TrajectoryConfig(
-            self.max_trajectory_speed, self.max_trajectory_accel
-        )
-        trajectoryConfig.setKinematics(self.kinematics)
-        self.trajectory = TrajectoryGenerator.generateTrajectory(
-            startPose,  # Starting position
-            wayPoints,  # Pass through these points
-            endPose,  # Ending position
-            trajectoryConfig,
-        )
-        # Pose2d(0, 0, Rotation2d.fromDegrees(0)), # Starting position
-        # [Translation2d(1,1), Translation2d(2,-1)], # Pass through these points
-        # Pose2d(3, 0, Rotation2d.fromDegrees(0)), # Ending position
-        self.initialize("wpilib")
+#     def initTrajectory(
+#         self, startPose: Pose2d, wayPoints: list[Translation2d], endPose: Pose2d
+#     ):
+#         # the trajectory setup
+#         trajectoryConfig = TrajectoryConfig(
+#             self.max_trajectory_speed, self.max_trajectory_accel
+#         )
+#         trajectoryConfig.setKinematics(self.kinematics)
+#         self.trajectory = TrajectoryGenerator.generateTrajectory(
+#             startPose,  # Starting position
+#             wayPoints,  # Pass through these points
+#             endPose,  # Ending position
+#             trajectoryConfig,
+#         )
+#         # Pose2d(0, 0, Rotation2d.fromDegrees(0)), # Starting position
+#         # [Translation2d(1,1), Translation2d(2,-1)], # Pass through these points
+#         # Pose2d(3, 0, Rotation2d.fromDegrees(0)), # Ending position
+#         self.initialize("wpilib")
 
-    def initSimpleTrajectory(self, startPoint: PathPoint, endPoint: PathPoint):
-        """Initializes a PathPlanner trajectory"""
-        self.trajectory = PathPlanner.generatePath(
-            PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
-            [
-                # PathPoint(
-                #     Translation2d(2.6, 4.6),
-                #     Rotation2d.fromDegrees(90),
-                #     Rotation2d.fromDegrees(0),
-                # ),  # position, heading(direction of travel), holonomic rotation
-                # PathPoint(
-                #     Translation2d(9, 7),
-                #     Rotation2d.fromDegrees(0),
-                #     Rotation2d.fromDegrees(-90),
-                # ),  # position, heading(direction of travel), holonomic rotation
-                startPoint,
-                endPoint,
-            ],
-        )
-        self.initialize("pathPlanner")
+#     def initSimpleTrajectory(self, startPoint: PathPoint, endPoint: PathPoint):
+#         """Initializes a PathPlanner trajectory"""
+#         self.trajectory = PathPlanner.generatePath(
+#             PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
+#             [
+#                 # PathPoint(
+#                 #     Translation2d(2.6, 4.6),
+#                 #     Rotation2d.fromDegrees(90),
+#                 #     Rotation2d.fromDegrees(0),
+#                 # ),  # position, heading(direction of travel), holonomic rotation
+#                 # PathPoint(
+#                 #     Translation2d(9, 7),
+#                 #     Rotation2d.fromDegrees(0),
+#                 #     Rotation2d.fromDegrees(-90),
+#                 # ),  # position, heading(direction of travel), holonomic rotation
+#                 startPoint,
+#                 endPoint,
+#             ],
+#         )
+#         self.initialize("pathPlanner")
 
-    def loadPathPlanner(self, pathName):
-        """Loads a PathPlanner trajectory from a preconfigured path.
+#     def loadPathPlanner(self, pathName):
+#         """Loads a PathPlanner trajectory from a preconfigured path.
 
-        Args:
-            pathName (_type_): The name of the path, without the .path extension.
-        """
-        self.trajectory = PathPlanner.loadPath(
-            os.path.join(os.path.dirname(__file__), r"..", r"paths", pathName),
-            PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
-            False,
-        )
-        self.initialize("pathPlanner")
+#         Args:
+#             pathName (_type_): The name of the path, without the .path extension.
+#         """
+#         self.trajectory = PathPlanner.loadPath(
+#             os.path.join(os.path.dirname(__file__), r"..", r"paths", pathName),
+#             PathConstraints(self.max_trajectory_speed, self.max_trajectory_accel),
+#             False,
+#         )
+#         self.initialize("pathPlanner")
 
-    def loadPathWeaver(self):
-        self.trajectory = TrajectoryUtil.fromPathweaverJson(pathWeaverPath)
-        self.initialize("pathWeaver")
+#     def loadPathWeaver(self):
+#         self.trajectory = TrajectoryUtil.fromPathweaverJson(pathWeaverPath)
+#         self.initialize("pathWeaver")
 
-    @feedback
-    def getGoalPose(self):
-        if type(self.trajectory) == PathPlannerTrajectory:
-            return self.trajectory.sample(self.timer.get()).asWPILibState()
-        else:
-            return self.trajectory.sample(self.timer.get())
+#     @feedback
+#     def getGoalPose(self):
+#         if type(self.trajectory) == PathPlannerTrajectory:
+#             return self.trajectory.sample(self.timer.get()).asWPILibState()
+#         else:
+#             return self.trajectory.sample(self.timer.get())
 
-    def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
-        """Calculates the chassis speeds of the trajectory at the current time.
+#     def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
+#         """Calculates the chassis speeds of the trajectory at the current time.
 
-        Args:
-            currentPose (Pose2d): current pose of the Robot
+#         Args:
+#             currentPose (Pose2d): current pose of the Robot
 
-        Returns:
-            ChassisSpeeds: translation and rotational vectors desired
-        """
-        if not self.trajectoryType is None:
-            if self.firstCall:
-                self.timer.start()
-                self.firstCall = False
-            # get the pose of the trajectory at the current time
-            goalPose = self.getGoalPose()
-            # self.logger.info(
-            #     "Auto Update -- initial Pose: %s\n  goal Pose: %s\n time: %s",
-            #     currentPose, goalPose, self.timer.get()
-            # )
-            return self.calculate(currentPose, goalPose, goalPose.pose.rotation())
+#         Returns:
+#             ChassisSpeeds: translation and rotational vectors desired
+#         """
+#         if not self.trajectoryType is None:
+#             if self.firstCall:
+#                 self.timer.start()
+#                 self.firstCall = False
+#             # get the pose of the trajectory at the current time
+#             goalPose = self.getGoalPose()
+#             # self.logger.info(
+#             #     "Auto Update -- initial Pose: %s\n  goal Pose: %s\n time: %s",
+#             #     currentPose, goalPose, self.timer.get()
+#             # )
+#             return self.calculate(currentPose, goalPose, goalPose.pose.rotation())
 
 
 class PPHolonomic(controllers.PPHolonomicDriveController):
@@ -366,23 +366,25 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.trajectoryType = False
         self.kinematics = kinematics
         self.setTolerance(
-            Pose2d(inchesToMeters(5), inchesToMeters(5), Rotation2d(0.05))
+            Pose2d(inchesToMeters(1), inchesToMeters(1), Rotation2d(0.05))
         )
+        # SmartDashboard.putNumber('TranslationControllerP', config.ppTranslationPIDController.getP())
+        # SmartDashboard.putNumber("RotationControllerP", config.ppRotationPIDController.getP())
 
     def initialize(self, trajectoryType):
         self.firstCall = True
         self.trajectoryType = trajectoryType
 
-    def loadPID(self):
-        self.xController.setP(
-            SmartDashboard.getNumber("ControllerP", self.xController.getP())
-        )
-        self.yController.setP(
-            SmartDashboard.getNumber("ControllerP", self.yController.getP())
-        )
-        self.rotationController.setP(
-            SmartDashboard.getNumber("angleControllerP", self.rotationController.getP())
-        )
+    # def loadPID(self):
+    #     self.xController.setP(
+    #         SmartDashboard.getNumber("TranslationControllerP", self.xController.getP())
+    #     )
+    #     self.yController.setP(
+    #         SmartDashboard.getNumber("TranslationControllerP", self.yController.getP())
+    #     )
+    #     self.rotationController.setP(
+    #         SmartDashboard.getNumber("RotationControllerP", self.rotationController.getP())
+    #     )
 
     def initPoseToPose(self, startPose, endPose):
         startPoint = PathPoint(startPose.translation(), startPose.rotation())
