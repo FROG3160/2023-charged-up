@@ -72,8 +72,8 @@ holonomicTranslationPIDController = PIDController(1.5, 0, 0)
 holonomicAnglePIDController = ProfiledPIDControllerRadians(
     2.5, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
 )
-ppTranslationPIDController = PIDController(1,0,0)
-ppRotationPIDController = PIDController(2,0,0)
+ppTranslationPIDController = PIDController(0.5,0,0)
+ppRotationPIDController = PIDController(4,0,0)
 
 #
 # **Swerve Module Drive Motor Config
