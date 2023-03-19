@@ -485,10 +485,10 @@ class SwerveChassis:
         self.moduleBackLeft.steer.set(POSITION_MODE, -math.pi/4)
 
     def disableAuto(self):
-        self.autoDrive = False
+        self.holonomicDrive = False
 
     def enableAuto(self):
-        self.autoDrive = True
+        self.holonomicDrive = True
 
     def setModuleStates(self, states):
         self.moduleStates = states
@@ -577,7 +577,7 @@ class SwerveChassis:
     def getChassisVelocityFPS(self):
         return math.sqrt( self.chassisSpeeds.vx_fps**2 + self.chassisSpeeds.vy_fps**2)
 
-    def autoDrive(self) -> None:
+    def holonomicDrive(self) -> None:
         # TODO: Remove this call once we have tuned the drivetrain
         #       It allows us to adjust PID values on the fly.
         #self.holonomicController.loadPID()

@@ -241,7 +241,7 @@ class FROGbot(MagicRobot):
                     startTrajectoryPose, # Starting position
                     endTrajectoryPose, # Ending position
                 )
-            self.swerveChassis.autoDrive()
+            self.swerveChassis.holonomicDrive()
         elif self.btnGoToPositionB():
         #     #self.swerveChassis.enableAuto()
             if not self.swerveChassis.holonomicController.trajectoryType:
@@ -258,7 +258,7 @@ class FROGbot(MagicRobot):
                     startTrajectoryPose, # Starting position
                     endTrajectoryPose, # Ending position
                 )
-            self.swerveChassis.autoDrive()
+            self.swerveChassis.holonomicDrive()
         # elif self.btnEnableAutoDrive():
         #     if not self.swerveChassis.holonomicController.trajectoryType:
         #         self.swerveChassis.holonomicController.loadPathPlanner('Position8toMidfield')
@@ -266,27 +266,14 @@ class FROGbot(MagicRobot):
             
         elif self.btnDriveToCone():
             self.limelight.findCones()
-            #self.swerveChassis.driveToObject()
             # if self.grabberControl.targetPresent:
             #     self.driverController.setRumble(GenericHID.RumbleType.kRightRumble, 0.5 )
-            if self.limelight.hasGrabberTarget():
-                self.driveControl.setVelocities(
-                    self.limelight.drive_vX,
-                    self.limelight.drive_vY,
-                    self.limelight.drive_vRotate
-                )
-                self.driveControl.engage(initial_state='robotOriented')
+            self.driveControl.engage(initial_state='driveToObject')
 
 
         elif self.btnDriveToCube():
             self.limelight.findCubes()
-            if self.limelight.hasGrabberTarget():
-                self.driveControl.setVelocities(
-                    self.limelight.drive_vX,
-                    self.limelight.drive_vY,
-                    self.limelight.drive_vRotate
-                )
-                self.driveControl.engage(initial_state='robotOriented')
+            self.driveControl.engage(initial_state='driveToObject')
 
         else:
             self.swerveChassis.holonomicController.trajectoryType = False
@@ -300,8 +287,6 @@ class FROGbot(MagicRobot):
             # if not self.armControl.last_state == 'atHome' and not self.armControl.is_executing and self.swerveChassis.getChassisVelocityFPS() > 3:
             #     self.operatorController.setRumble(GenericHID.RumbleType.kRightRumble, 1)
             #     self.driverController.setRumble(GenericHID.RumbleType.kLeftRumble, 1)
-                
-        
 
     def testInit(self):
         pass
