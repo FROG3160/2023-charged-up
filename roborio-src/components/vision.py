@@ -1,14 +1,10 @@
-import os
-import typing
-import wpilib, logging
-from robotpy_apriltag import AprilTagFieldLayout
-from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Translation3d
-from ntcore import NetworkTableInstance, NetworkTable
-from wpimath.units import metersToInches, inchesToMeters, radiansToDegrees
-from wpimath.filter import MedianFilter
-from components.field import FROGFieldLayout
-from wpilib.shuffleboard import Shuffleboard
+from typing import Tuple
+
 import config
+import wpilib
+from components.field import FROGFieldLayout
+from ntcore import NetworkTableInstance
+from wpimath.geometry import Pose3d, Rotation3d, Translation3d
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
 BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
@@ -74,7 +70,7 @@ class FROGLimeLightVision:
     def getUpperPipeline(self):
         return self.upperPipe.get()
 
-    def getBotPoseEstimateForAlliance(self) -> typing.Tuple[Pose3d, float]:
+    def getBotPoseEstimateForAlliance(self) -> Tuple[Pose3d, float]:
         if self.fieldLayout.alliance == RED_ALLIANCE:
             return (
                 self.getBotPoseRed(),
@@ -156,7 +152,3 @@ class FROGLimeLightVision:
 
     def setUpperPipeline(self, pipeNum: int):
         self.ll_upperTable.putNumber("pipeline", pipeNum)
-
-
-if __name__ == "__main__":
-    pass
