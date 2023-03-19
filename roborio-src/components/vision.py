@@ -1,14 +1,12 @@
 import os
 import typing
 import wpilib, logging
-from photonvision import PhotonCamera, PoseStrategy, RobotPoseEstimator
 from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Quaternion, Rotation3d, Transform3d, Translation3d
 from ntcore import NetworkTableInstance, NetworkTable
 from wpimath.units import metersToInches, inchesToMeters, radiansToDegrees
 from wpimath.filter import MedianFilter
 from components.field import FROGFieldLayout
-from photonvision import PhotonUtils
 from wpilib.shuffleboard import Shuffleboard
 import config
 
@@ -26,68 +24,7 @@ def arrayToPose3d(poseArray) -> Pose3d:
     )
 
 
-class FROGPhotonVision:
-    def __init__(
-        self,
-        fieldLayout: FROGFieldLayout,
-        cameraName: str,
-        cameraTransform3d: Transform3d,
-    ):
-        self.logger = logging.getLogger("FROGPhotonVision")
-        self.camera = PhotonCamera(cameraName=cameraName)
-        self.camera.setDriverMode(False)
-        self.fieldLayout = fieldLayout
-        self.cameraTransform3d = cameraTransform3d
-        self.logger.info(
-            f"Initializing with fieldlayout origin: {self.fieldLayout.alliance}"
-        )
-        self.poseEstimator = RobotPoseEstimator(
-            self.fieldLayout,
-            PoseStrategy.LOWEST_AMBIGUITY,
-            [
-                (
-                    self.camera,
-                    self.cameraTransform3d,
-                ),
-            ],
-        )
-        # self.photonEstimator = PhotonPoseEstimator(
-        #     self.fieldLayout,
-        #     PoseStrategy.LOWEST_AMBIGUITY,
-        #     self.cameraTransform3d
-        # )
-        self.currentPose = Pose3d()
-        self.previousEstimatedRobotPose = None
-        self.poseFilter = MedianFilter(5)
-        self.ambiguity = 10
-        self.targetID = 0
 
-    def getEstimatedRobotPose(self) -> typing.Tuple[Pose3d, float]:
-        if not wpilib.RobotBase.isSimulation():
-            self.currentPose, visionTime = self.poseEstimator.update()
-            if self.camera.hasTargets():
-                self.bestTarget = self.camera.getLatestResult().getBestTarget()
-                self.ambiguity = self.bestTarget.getPoseAmbiguity()
-                self.targetID = self.bestTarget.getFiducialId()
-                if self.ambiguity < 0.02:
-                    return (self.currentPose, visionTime)
-        return (None, None)
-
-    def periodic(self) -> None:
-        if self.camera.hasTargets():
-            result = self.camera.getLatestResult()
-            # self.photonEstimatedPose = self.photonEstimator.update(result)
-            bestTarget = result.getBestTarget()
-            ambiguity = bestTarget.getPoseAmbiguity()
-            bestTgtTransform = bestTarget.getBestCameraToTarget()
-            bestTgtID = bestTarget.getFiducialId()
-            tagPose = self.fieldLayout.getTagPose(bestTgtID)
-            # PhotonUtils.estimateFieldToRobot
-            # robotPose = PhotonUtils.estimateFieldToRobotAprilTag(bestTarget.getBestCameraToTarget(), self.fieldLayout.getTagPose(bestTarget.getFiducialId()), self.cameraTransform3d);
-            # photonEstimatedPose = self.photonEstimatedPose.estimatedPose
-            # timestamp = self.photonEstimatedPose.timestamp
-            # cameraOnField = tagPose.transformBy(bestTgtTransform.inverse())
-            # robotOnField = cameraOnField.transformBy(self.cameraTransform3d).toPose2d()
 
 
 class FROGLimeLightVision:
@@ -175,7 +112,15 @@ class FROGLimeLightVision:
             self.drive_vY = 0
         else:
             self.tClass = self.ta = self.tx = self.tv = None
-            self.drive_vRotate = self.drive_vX = self.drive_vY = None
+            self.drive_vRotate = self.drive_vX = self.drive_vY = 0
+
+    def getVelocities(self):
+        """Get calculated velocities from vision target data
+
+        Returns:
+            Tuple(vX, vY, vT): X, Y, and rotation velocities as a tuple.
+        """
+        return (self.drive_vX, self.drive_vY, self.drive_vRotate)
 
     def hasGrabberTarget(self):
         return self.tv
