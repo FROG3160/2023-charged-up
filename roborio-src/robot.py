@@ -109,7 +109,7 @@ class FROGbot(MagicRobot):
         before running Autonomous or Teleop modes should be added here"""
         super().robotInit()  #calls createObjects()
         #TODO: test if we can place the robot position setting here from AutonomousInit
-        self.leds.Fire()
+        self.leds.fire()
   
     def autonomousInit(self):
         """Runs at the beginning autonomous mode.  Add anything that is needed

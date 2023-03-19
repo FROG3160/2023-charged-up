@@ -5,7 +5,7 @@ from pathplannerlib import PathPoint
 from wpimath.geometry import Pose2d, Rotation2d, Transform2d
 import math
 
-class driveControl(StateMachine):
+class DriveControl(StateMachine):
     
     swerveChassis: SwerveChassis
     VERBOSE_LOGGING = True
@@ -19,7 +19,7 @@ class driveControl(StateMachine):
         pass
 
     # State fieldOriented (as the default state) This will be the first state.
-    @default_state()
+    @default_state
     def fieldOriented(self):
         self.swerveChassis.fieldOrientedDrive(self._vX, self._vY, self._vT, self._throttle)
 
@@ -33,7 +33,7 @@ class driveControl(StateMachine):
     def locked(self):
         self.swerveChassis.lockChassis()
 
-    @state()
+    @state(first=True)
     def driveToWayPoint(self, initial_call):
         if initial_call:
             self.logger.info(f'Initializing trajectory to {self._endpoint}')
@@ -53,11 +53,11 @@ class driveControl(StateMachine):
                 )
             else:
                 self.logger.warning('driveToWayPoint called without endpoint')
-                self.next_state_now('fieldOrientedDrive')
+                self.next_state_now('fieldOriented')
         self.swerveChassis.autoDrive()
         if self.swerveChassis.holonomicController.atReference():
             self._endpoint = Pose2d(math.inf, math.inf, math.inf)
-            self.next_state('fieldOrientedDrive')
+            self.next_state('fieldOriented')
 
     def createPathPoint(self, pose: Pose2d):
         return PathPoint(pose.translation(), pose.rotation())
