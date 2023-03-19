@@ -20,6 +20,7 @@ from ctre import ControlMode
 from wpilib import SmartDashboard
 from wpilib.shuffleboard import  Shuffleboard
 from wpilib.interfaces import GenericHID
+from components.drive_control import DriveControl
 
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
@@ -33,6 +34,7 @@ class FROGbot(MagicRobot):
     # every loop
     grabberControl: GrabberControl
     armControl: ArmControl
+    driveControl: DriveControl
 
     #Upper leve components first, lower level components last
     swerveChassis: SwerveChassis
@@ -240,7 +242,7 @@ class FROGbot(MagicRobot):
                     startTrajectoryPose, # Starting position
                     endTrajectoryPose, # Ending position
                 )
-            self.swerveChassis.autoDrive()
+            self.swerveChassis.holonomicDrive()
         elif self.btnGoToPositionB():
         #     #self.swerveChassis.enableAuto()
             if not self.swerveChassis.holonomicController.trajectoryType:
@@ -257,7 +259,7 @@ class FROGbot(MagicRobot):
                     startTrajectoryPose, # Starting position
                     endTrajectoryPose, # Ending position
                 )
-            self.swerveChassis.autoDrive()
+            self.swerveChassis.holonomicDrive()
         # elif self.btnEnableAutoDrive():
         #     if not self.swerveChassis.holonomicController.trajectoryType:
         #         self.swerveChassis.holonomicController.loadPathPlanner('Position8toMidfield')
@@ -265,18 +267,19 @@ class FROGbot(MagicRobot):
             
         elif self.btnDriveToCone():
             self.limelight.findCones()
-            self.swerveChassis.driveToObject()
             # if self.grabberControl.targetPresent:
             #     self.driverController.setRumble(GenericHID.RumbleType.kRightRumble, 0.5 )
+            self.driveControl.engage(initial_state='driveToObject')
+
 
         elif self.btnDriveToCube():
             self.limelight.findCubes()
-            self.swerveChassis.driveToObject()
+            self.driveControl.engage(initial_state='driveToObject')
 
         else:
             self.swerveChassis.holonomicController.trajectoryType = False
             #self.swerveChassis.disableAuto()
-            self.swerveChassis.fieldOrientedDrive(
+            self.driveControl.setVelocities(
                 self.driverController.getFieldForward(),
                 self.driverController.getFieldLeft(),
                 self.driverController.getFieldRotation(),
@@ -285,8 +288,6 @@ class FROGbot(MagicRobot):
             # if not self.armControl.last_state == 'atHome' and not self.armControl.is_executing and self.swerveChassis.getChassisVelocityFPS() > 3:
             #     self.operatorController.setRumble(GenericHID.RumbleType.kRightRumble, 1)
             #     self.driverController.setRumble(GenericHID.RumbleType.kLeftRumble, 1)
-                
-        
 
     def testInit(self):
         pass
