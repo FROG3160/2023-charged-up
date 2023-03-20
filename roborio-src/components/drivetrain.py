@@ -435,12 +435,6 @@ class SwerveChassis:
         self.moduleFrontRight.steer.set(POSITION_MODE, -math.pi/4)
         self.moduleBackLeft.steer.set(POSITION_MODE, -math.pi/4)
 
-    def disableAuto(self):
-        self.holonomicDrive = False
-
-    def enableAuto(self):
-        self.holonomicDrive = True
-
     def setModuleStates(self, states):
         self.moduleStates = states
 
@@ -520,14 +514,15 @@ class SwerveChassis:
     def getHeadingRadians(self):
         return math.atan2( self.chassisSpeeds.vy, self.chassisSpeeds.vx )
 
-    def holonomicDrive(self) -> None:
+    def holonomicDrive(self, chassisSpeeds) -> None:
         # TODO: Remove this call once we have tuned the drivetrain
         #       It allows us to adjust PID values on the fly.
         #self.holonomicController.loadPID()
         """Sets ChassisSpeeds from return of the holonomic controller."""
-        self.chassisSpeeds = self.holonomicController.getChassisSpeeds(
-            self.estimator.getEstimatedPosition()
-        )
+        # self.chassisSpeeds = self.holonomicController.getChassisSpeeds(
+        #     self.estimator.getEstimatedPosition()
+        # )
+        self.chassisSpeeds = chassisSpeeds
 
     def robotOrientedDrive(self, vX, vY, vT):
         self.chassisSpeeds = ChassisSpeeds(vX, vY, vT)
