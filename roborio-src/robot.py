@@ -34,10 +34,10 @@ class FROGbot(MagicRobot):
     # every loop
     grabberControl: GrabberControl
     armControl: ArmControl
-    driveControl: DriveControl
 
     #Upper leve components first, lower level components last
     swerveChassis: SwerveChassis
+    driveControl: DriveControl
     arm: Arm
 
 
@@ -52,7 +52,7 @@ class FROGbot(MagicRobot):
         self.moduleBackLeft = SwerveModule(**config.MODULE_BACK_LEFT)
         self.moduleBackRight = SwerveModule(**config.MODULE_BACK_RIGHT)
 
-        #self.sensor = FROGColor()
+        #self.sensor = FROGColor
 
         self.leds = FROGLED(35)
 
@@ -226,68 +226,25 @@ class FROGbot(MagicRobot):
             self.swerveChassis.enable()
 
         if self.btnGoToPositionA():
-              #self.swerveChassis.enableAuto()
-            if not self.swerveChassis.holonomicController.trajectoryType:
-                # startX = 2.47
-                # endX = 1.81
-                # self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
-                # self.swerveChassis.holonomicController.loadPID()
-                self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
-                startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-                endTrajectoryPose = self.fieldLayout.getPosition(self.gridPosition).toPose2d()
-                self.logger.info(f'Starting at {startTrajectoryPose}')
-                self.logger.info(f'Ending at: {endTrajectoryPose}')
-                ##TODO figure out how to calculate heading
-                self.swerveChassis.holonomicController.initPoseToPose(
-                    startTrajectoryPose, # Starting position
-                    endTrajectoryPose, # Ending position
-                )
-            self.swerveChassis.holonomicDrive()
+            self.driveControl.holonomicDriveToWaypoint(
+                self.fieldLayout.getPosition(self.gridPosition).toPose2d()
+            )
+
         elif self.btnGoToPositionB():
-        #     #self.swerveChassis.enableAuto()
-            if not self.swerveChassis.holonomicController.trajectoryType:
-                # startX = 1.81
-                # endX = 2.47
-                # self.swerveChassis.setFieldPosition(Pose2d(startX,0,0))
-                self.logger.info(f'Estimator Field Position is: {self.swerveChassis.estimator.getEstimatedPosition()}')
-                startTrajectoryPose = self.swerveChassis.estimator.getEstimatedPosition()
-                endTrajectoryPose = self.positionB
-                self.logger.info(f'Starting at {startTrajectoryPose}')
-                self.logger.info(f'Ending at: {endTrajectoryPose}')
-                ##TODO figure out how to calculate heading
-                self.swerveChassis.holonomicController.initPoseToPose(
-                    startTrajectoryPose, # Starting position
-                    endTrajectoryPose, # Ending position
-                )
-            self.swerveChassis.holonomicDrive()
-        # elif self.btnEnableAutoDrive():
-        #     if not self.swerveChassis.holonomicController.trajectoryType:
-        #         self.swerveChassis.holonomicController.loadPathPlanner('Position8toMidfield')
-        #     self.swerveChassis.autoDrive()
+            self.driveControl.holonomicDriveToWaypoint(
+                self.positionB
+            )
             
         elif self.btnDriveToCone():
-            self.limelight.findCones()
-            # if self.grabberControl.targetPresent:
-            #     self.driverController.setRumble(GenericHID.RumbleType.kRightRumble, 0.5 )
-            self.driveControl.engage(initial_state='driveToObject')
+            self.driveControl.autoDriveToCone()
 
 
         elif self.btnDriveToCube():
-            self.limelight.findCubes()
-            self.driveControl.engage(initial_state='driveToObject')
+            self.driveControl.autoDriveToCube()
 
         else:
-            self.swerveChassis.holonomicController.trajectoryType = False
-            #self.swerveChassis.disableAuto()
-            self.driveControl.setVelocities(
-                self.driverController.getFieldForward(),
-                self.driverController.getFieldLeft(),
-                self.driverController.getFieldRotation(),
-                self.driverController.getFieldThrottle(),
-            )
-            # if not self.armControl.last_state == 'atHome' and not self.armControl.is_executing and self.swerveChassis.getChassisVelocityFPS() > 3:
-            #     self.operatorController.setRumble(GenericHID.RumbleType.kRightRumble, 1)
-            #     self.driverController.setRumble(GenericHID.RumbleType.kLeftRumble, 1)
+            pass
+
 
     def testInit(self):
         pass

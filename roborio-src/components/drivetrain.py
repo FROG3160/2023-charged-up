@@ -398,8 +398,8 @@ class SwerveChassis:
         self.trajectoryConfig.setKinematics(self.kinematics)
 
         #self.holonomicController = FROGHolonomic(self.kinematics)
-        self.holonomicController = PPHolonomic(self.kinematics)
-        self.holonomicController.logger = self.logger
+        # self.holonomicController = PPHolonomic(self.kinematics)
+        # self.holonomicController.logger = self.logger
 
         self.gyro.resetGyro()
 
@@ -415,7 +415,7 @@ class SwerveChassis:
             self.startingPose2d,
         )
         # TODO: Adjust the stdDevs
-        self.estimator.setVisionMeasurementStdDevs((0.1, 0.1, 1))
+        self.estimator.setVisionMeasurementStdDevs((0.05, 0.05, math.pi/2))
         self.field = Field2d()
 
     def disable(self):
@@ -451,22 +451,22 @@ class SwerveChassis:
         # )
 
 
-    def getSimpleTrajectory(self):
-        self.startTrajectoryPose = self.estimator.getEstimatedPosition()
-        self.endTrajectoryPose = self.startTrajectoryPose + Transform2d(
-            feetToMeters(6), feetToMeters(3), 0
-        )
-        self.logger.info(
-            "Auto Drive - Start Pose: %s\n End Pose:%s",
-            self.startTrajectoryPose,
-            self.endTrajectoryPose,
-        )
-        return TrajectoryGenerator.generateTrajectory(
-            self.startTrajectoryPose,  # Starting position
-            [],  # Pass through these points
-            self.endTrajectoryPose,  # Ending position
-            self.trajectoryConfig,
-        )
+    # def getSimpleTrajectory(self):
+    #     self.startTrajectoryPose = self.estimator.getEstimatedPosition()
+    #     self.endTrajectoryPose = self.startTrajectoryPose + Transform2d(
+    #         feetToMeters(6), feetToMeters(3), 0
+    #     )
+    #     self.logger.info(
+    #         "Auto Drive - Start Pose: %s\n End Pose:%s",
+    #         self.startTrajectoryPose,
+    #         self.endTrajectoryPose,
+    #     )
+    #     return TrajectoryGenerator.generateTrajectory(
+    #         self.startTrajectoryPose,  # Starting position
+    #         [],  # Pass through these points
+    #         self.endTrajectoryPose,  # Ending position
+    #         self.trajectoryConfig,
+    #     )
 
     # def getSwerveCommand(self):
     #     self.xController = PIDController(1, 0, 0)

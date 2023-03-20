@@ -366,7 +366,7 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.trajectoryType = False
         self.kinematics = kinematics
         self.setTolerance(
-            Pose2d(inchesToMeters(1), inchesToMeters(1), Rotation2d(0.05))
+            Pose2d(inchesToMeters(.5), inchesToMeters(.5), Rotation2d.fromDegrees(5))
         )
         # SmartDashboard.putNumber('TranslationControllerP', config.ppTranslationPIDController.getP())
         # SmartDashboard.putNumber("RotationControllerP", config.ppRotationPIDController.getP())
