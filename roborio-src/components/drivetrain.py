@@ -1,58 +1,26 @@
 import math
+from logging import Logger
 
 import config
-from ctre import (
-    AbsoluteSensorRange,
-    ControlMode,
-    FeedbackDevice,
-    NeutralMode,
-    RemoteSensorSource,
-    SensorInitializationStrategy,
-    StatusFrameEnhanced,
-    TalonFXInvertType,
-    WPI_CANCoder,
-    WPI_TalonFX,
-)
-from wpimath.trajectory import (
-    TrajectoryGenerator,
-    TrajectoryConfig,
-    TrapezoidProfileRadians,
-)
+from components.controllers import PPHolonomic
+from components.field import FROGFieldLayout
 from components.sensors import FROGGyro
-from components.vision import FROGPhotonVision, FROGLimeLightVision
-from utils.utils import DriveUnit
+from components.vision import FROGLimeLightVision
+from ctre import (AbsoluteSensorRange, ControlMode, FeedbackDevice,
+                  NeutralMode, RemoteSensorSource,
+                  SensorInitializationStrategy, StatusFrameEnhanced,
+                  TalonFXInvertType, WPI_CANCoder, WPI_TalonFX)
+from magicbot import feedback
+from utils.utils import DriveUnit, remap
 from wpilib import Field2d, SmartDashboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
-from wpimath.geometry import (
-    Pose2d,
-    Rotation2d,
-    Translation2d,
-    Transform3d,
-    Translation3d,
-    Rotation3d,
-    Transform2d,
-)
-from wpimath.kinematics import (
-    ChassisSpeeds,
-    SwerveDrive4Kinematics,
-    SwerveDrive4Odometry,
-    SwerveModulePosition,
-    SwerveModuleState,
-)
+from wpimath.geometry import Pose2d, Rotation2d, Transform2d, Translation2d
+from wpimath.kinematics import (ChassisSpeeds, SwerveDrive4Kinematics,
+                                SwerveModulePosition, SwerveModuleState)
+from wpimath.trajectory import TrajectoryConfig, TrajectoryGenerator
+from wpimath.units import feetToMeters, metersToInches
 
 from .sensors import FROGGyro
-from utils.utils import DriveUnit, remap
-from wpimath.units import metersToInches, inchesToMeters, feetToMeters, degreesToRadians
-from logging import Logger
-import config
-from wpimath.controller import (
-    PIDController,
-    ProfiledPIDControllerRadians,
-    HolonomicDriveController,
-)
-from components.controllers import PPHolonomic
-from magicbot import feedback
-from components.field import FROGFieldLayout
 
 # Motor Control modes
 VELOCITY_MODE = ControlMode.Velocity
@@ -424,12 +392,6 @@ class SwerveChassis:
             *[m.location for m in self.modules]
         )
 
-        # self.visionPoseEstimator = FROGPhotonVision(
-        #     self.fieldLayout,
-        #     config.PHOTONVISION_CAMERA_NAME,
-        #     config.PHOTONVISION_CAMERA_POSE
-        # )
-
         self.trajectoryConfig = TrajectoryConfig(
             MAX_TRAJECTORY_SPEED, MAX_TRAJECTORY_ACCEL
         )
@@ -440,21 +402,10 @@ class SwerveChassis:
         self.holonomicController.logger = self.logger
 
         self.gyro.resetGyro()
-        # self.field =
-        # self.logger =
-        #
-        # initialize the drivetrain with zero movement
+
         self.chassisSpeeds = ChassisSpeeds(0, 0, 0)
         self.startingPose2d = Pose2d()
-        # TODO: set values for pose depending on starting field position
-        # self.odometry = SwerveDrive4Odometry(
-        #     self.kinematics,
-        #     self.gyro.getRotation2d(),
-        #     tuple(
-        #         [SwerveModulePosition(0, x.getCurrentRotation()) for x in self.modules]
-        #     ),
-        #     self.startingPose2d,
-        # )
+
         self.estimator = SwerveDrive4PoseEstimator(
             self.kinematics,
             self.gyro.getRotation2d(),
@@ -505,17 +456,6 @@ class SwerveChassis:
         #     *self.getModulePositions()
         # )
 
-    def execute(self):
-        if self.enabled:
-            # if self.autoDrive:
-            #     #apply holonomic states
-            #     pass
-            # else:
-            self.setStatesFromSpeeds()#apply chassis Speeds
-
-            for module, state in zip(self.modules, self.moduleStates):
-                module.setState(state)
-        self.periodic()
 
     def getSimpleTrajectory(self):
         self.startTrajectoryPose = self.estimator.getEstimatedPosition()
@@ -567,10 +507,6 @@ class SwerveChassis:
         self.moduleStates = states
 
     def fieldOrientedDrive(self, vX: float, vY: float, vT: float, throttle=1.0):
-        SmartDashboard.putNumber('joystick_vX', vX*throttle)
-        SmartDashboard.putNumber('joystick_vY', vY*throttle)
-        SmartDashboard.putNumber('joystick_vT', vT*throttle)
-        SmartDashboard.putNumber('joystick_throttleOnly', throttle)
         xSpeed = vX * config.MAX_METERS_PER_SEC * throttle
         ySpeed = vY * config.MAX_METERS_PER_SEC * throttle
         rotSpeed = vT * config.MAX_CHASSIS_RADIANS_SEC * throttle
@@ -580,6 +516,9 @@ class SwerveChassis:
 
     def getChassisVelocityFPS(self):
         return math.sqrt( self.chassisSpeeds.vx_fps**2 + self.chassisSpeeds.vy_fps**2)
+    
+    def getHeadingRadians(self):
+        return math.atan2( self.chassisSpeeds.vy, self.chassisSpeeds.vx )
 
     def holonomicDrive(self) -> None:
         # TODO: Remove this call once we have tuned the drivetrain
@@ -603,6 +542,14 @@ class SwerveChassis:
         else:
             self.robotOrientedDrive(0,0,0)
 
+    def execute(self):
+        if self.enabled:
+            self.setStatesFromSpeeds()#apply chassis Speeds
+
+            for module, state in zip(self.modules, self.moduleStates):
+                module.setState(state)
+        self.periodic()
+
     def periodic(self) -> None:
         self.estimatorPose = self.estimator.update(
             Rotation2d.fromDegrees(self.gyro.getYawCCW()),
@@ -614,6 +561,7 @@ class SwerveChassis:
                 abs(visionPose.x - self.estimatorPose.x) < 0.5
                 and abs(visionPose.y - self.estimatorPose.y) < 0.5
             ):
+                
                 self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
 
 
