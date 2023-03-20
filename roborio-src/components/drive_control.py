@@ -1,9 +1,8 @@
-from magicbot import state, timed_state, feedback, tunable, default_state
+from magicbot import state, default_state
 from magicbot.state_machine import StateMachine
 from components.drivetrain import SwerveChassis
 from pathplannerlib import PathPoint
-from wpimath.geometry import Pose2d, Rotation2d, Transform2d
-import math
+from wpimath.geometry import Pose2d
 from components.vision import FROGLimeLightVision
 
 class DriveControl(StateMachine):
@@ -18,7 +17,6 @@ class DriveControl(StateMachine):
         self._vT = 0
         self._throttle = 0
         self._endPose: Pose2d = None
-        pass
 
     def autoDrive(self):
         self.engage()
