@@ -21,6 +21,7 @@ from wpilib import SmartDashboard
 from wpilib.shuffleboard import  Shuffleboard
 from wpilib.interfaces import GenericHID
 from components.drive_control import DriveControl
+from components.led_control import LedControl
 
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
@@ -34,6 +35,7 @@ class FROGbot(MagicRobot):
     # every loop
     grabberControl: GrabberControl
     armControl: ArmControl
+    ledControl: LedControl
 
     #Upper leve components first, lower level components last
     swerveChassis: SwerveChassis
@@ -226,14 +228,13 @@ class FROGbot(MagicRobot):
             self.swerveChassis.enable()
 
         if self.btnGoToPositionA():
+            self.logger.info(f'Driving to position {self.gridPosition}')
             self.driveControl.holonomicDriveToWaypoint(
                 self.fieldLayout.getPosition(self.gridPosition).toPose2d()
             )
 
         elif self.btnGoToPositionB():
-            self.driveControl.holonomicDriveToWaypoint(
-                self.positionB
-            )
+            self.driveControl.holonomicDrivePath()
             
         elif self.btnDriveToCone():
             self.driveControl.autoDriveToCone()

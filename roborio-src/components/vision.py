@@ -37,7 +37,7 @@ class FROGLimeLightVision:
         self.grabberTa = self.ll_grabberTable.getFloatTopic("ta").subscribe(0)
         self.grabberTx = self.ll_grabberTable.getFloatTopic("tx").subscribe(-999)
         self.grabberTv = self.ll_grabberTable.getIntegerTopic("tv").subscribe(0)
-        self.grabberPipe = self.ll_grabberTable.getIntegerTopic("getPipe").subscribe(-1)
+        self.grabberPipe = self.ll_grabberTable.getIntegerTopic("getpipe").subscribe(-1)
 
         self.grabberCl = self.ll_grabberTable.getFloatTopic("cl").subscribe(0)
         self.grabberTl = self.ll_grabberTable.getFloatTopic("tl").subscribe(0)
@@ -51,7 +51,7 @@ class FROGLimeLightVision:
         self.upperPoseRed = self.ll_upperTable.getFloatArrayTopic(
             "botpose_wpired"
         ).subscribe([-99, -99, -99, 0, 0, 0])
-        self.upperPipe = self.ll_upperTable.getIntegerTopic("getPipe").subscribe(-1)
+        self.upperPipe = self.ll_upperTable.getIntegerTopic("getpipe").subscribe(-1)
         # create the timer that we can use to the the FPGA timestamp
         self.timer = wpilib.Timer()
 

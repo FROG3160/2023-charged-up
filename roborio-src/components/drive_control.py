@@ -6,6 +6,9 @@ from wpimath.geometry import Pose2d
 from components.vision import FROGLimeLightVision, LL_CONE, LL_CUBE
 from components.controllers import PPHolonomic, FROGXboxDriver
 from components.field import FROGFieldLayout
+from ntcore.util import ChooserControl
+from wpilib import SendableChooser, SmartDashboard
+import os
 
 
 class DriveControl(StateMachine):
@@ -22,6 +25,12 @@ class DriveControl(StateMachine):
         self._throttle = 0
         self._endPose: Pose2d = None
         self._pathName = None
+        self._object = None
+        self.pathChooser = SendableChooser()
+        for path in [n.rsplit('.', 1)[0] for n in os.listdir(os.path.join(os.path.dirname(__file__), '..', r"paths"))]:
+            self.pathChooser.addOption(path, path)
+
+        SmartDashboard.putData("Path", self.pathChooser)
 
     def setup(self):
         self.holonomic = PPHolonomic(self.swerveChassis.kinematics)
@@ -30,21 +39,20 @@ class DriveControl(StateMachine):
         self.engage()
 
     def autoDriveToCone(self):
-        if self.limelight.getGrabberPipeline == LL_CUBE:
-            self.limelight.setGrabberPipeline(LL_CONE)
-        self.engage(initial_state="driveToObject", force=True)
+        self._object = LL_CONE
+        self.engage(initial_state="driveToObject")
 
     def autoDriveToCube(self):
-        if self.limelight.getGrabberPipeline == LL_CONE:
-            self.limelight.setGrabberPipeline(LL_CUBE)
-        self.engage(initial_state="driveToObject", force=True)
+        self._object = LL_CUBE
+        self.engage(initial_state="driveToObject")
 
     def holonomicDriveToWaypoint(self, waypoint:Pose2d):
         self._endPose = waypoint
-        self.engage(initial_state='driveToWayPoint', force=True)
+        self.engage(initial_state='driveToWayPoint')
 
-    def holonomicDrivePath(self, pathName:str):
-        self._pathName = pathName
+    def holonomicDrivePath(self):
+        self._pathName = self.pathChooser.getSelected()
+        self.engage(initial_state='drivePath')
         
 
 
@@ -65,7 +73,9 @@ class DriveControl(StateMachine):
         self.swerveChassis.robotOrientedDrive(self._vX, self._vY, self._vT)
 
     @state()
-    def driveToObject(self):
+    def driveToObject(self, initial_call):
+        if initial_call:
+            self.limelight.setGrabberPipeline(self._object)
         velocities = self.limelight.getVelocities()
         self.swerveChassis.robotOrientedDrive(*velocities)
 
@@ -73,12 +83,11 @@ class DriveControl(StateMachine):
     def drivePath(self, initial_call):
         if initial_call:
             self.holonomic.loadPathPlanner(self._pathName)
-        if not self.holonomic.atReference():
-            self.swerveChassis.holonomicDrive(
-                self.holonomic.getChassisSpeeds(
-                    self.swerveChassis.estimator.getEstimatedPosition()
-                )
+        self.swerveChassis.holonomicDrive(
+            self.holonomic.getChassisSpeeds(
+                self.swerveChassis.estimator.getEstimatedPosition()
             )
+        )
 
     # State locked (for turning the wheels in to keep it from moving).
     @state()
@@ -95,19 +104,18 @@ class DriveControl(StateMachine):
             )
             ##TODO figure out how to calculate heading
             endPoint = self.createPathPoint(self._endPose)
-            self.logger.info(f"AUTODRIVE TO WAYPOINT: {startPoint} to {endPoint}")
             self.holonomic.initSimpleTrajectory(
                 startPoint,  # Starting position
                 endPoint,  # Ending position
             )
-        if not self.holonomic.atReference():
-            newSpeeds = self.holonomic.getChassisSpeeds(
-                self.swerveChassis.estimator.getEstimatedPosition()
-            )
-            self.logger.info(f'Speeds: {newSpeeds}')
-            self.swerveChassis.holonomicDrive(
-                newSpeeds
-            )
+        self.logger.info(f"Holonomic atReference: {self.holonomic.atReference()}")
+        newSpeeds = self.holonomic.getChassisSpeeds(
+            self.swerveChassis.estimator.getEstimatedPosition()
+        )
+        self.logger.info(f'Speeds: {newSpeeds}')
+        self.swerveChassis.holonomicDrive(
+            newSpeeds
+        )
 
     def createPathPoint(self, pose: Pose2d):
         return PathPoint(pose.translation(), pose.rotation())

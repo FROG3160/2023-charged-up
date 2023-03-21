@@ -4,7 +4,7 @@ from components.led import FROGLED
 
 class LedControl(StateMachine):
 
-    Led: FROGLED
+    leds: FROGLED
 
     def __init__(self):
         self.last_state = None
@@ -12,34 +12,38 @@ class LedControl(StateMachine):
     #Default State
     @state
     def default(self):
-        self.Led.fire()
+        self.leds.fire()
+
+    @state(first=True)
+    def nothing(self):
+        pass
 
     # Seeking Cone - Larson Yellow Slow
     @state
     def seeking_cone(self):
-        self.Led.yellowPocketSlow()        
+        self.leds.yellowPocketSlow()        
 
     # Seeking Cube - Larson Purple Slow
     @state
     def seeking_cube(self):
-        self.Led.purplePocketSlow()
+        self.leds.purplePocketSlow()
 
     # Found Cone - Larson Animation Yellow Fast
     @state
     def found_cone(self):
-        self.Led.yellowPocketFast()
+        self.leds.yellowPocketFast()
 
     #Found Cube - Larson Animation Purple Fast
     @state
     def found_cube(self):
-        self.Led.purplePocketFast()
+        self.leds.purplePocketFast()
 
     # Holding Cone - Solid Yellow
     @state
     def holding_cone(self):
-        self.Led.yellow()
+        self.leds.yellow()
 
     # Holding Cube - Solid Purple
     @state
     def holding_cube(self):
-        self.Led.purple()
+        self.leds.purple()

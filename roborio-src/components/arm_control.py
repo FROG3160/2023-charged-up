@@ -2,10 +2,11 @@ from magicbot.state_machine import StateMachine
 from magicbot import state, timed_state, feedback, tunable, default_state
 from components.arm import Arm
 from components.grabber import FROGGrabber
-from components.vision import FROGLimeLightVision
+from components.vision import FROGLimeLightVision, LL_CONE, LL_CUBE
 from components.drivetrain import SwerveChassis
 from wpimath.geometry import Rotation2d, Transform2d, Pose2d
 from components.led import FROGLED
+from components.led_control import LedControl
 import config
 
 
@@ -139,6 +140,7 @@ class GrabberControl(StateMachine):
     grabber: FROGGrabber
     limelight: FROGLimeLightVision
     armControl: ArmControl
+    ledControl: LedControl
     swerveChassis: SwerveChassis
     leds: FROGLED
     last_state = None
@@ -150,10 +152,7 @@ class GrabberControl(StateMachine):
 
     @state(first=True)
     def holding(self):
-        # if self.grabber.sensor.isCube():
-        #     self.leds.Purple()
-        # else:
-        #     self.leds.Yellow()
+        self.checkHeldObject()
         self.last_state = 'holding'
 
     @state()
@@ -195,10 +194,10 @@ class GrabberControl(StateMachine):
     def looking(self, initial_call):
         if initial_call:
             self.grabber.open()
-        # if self.limelight.getPipeline():
-        #     self.leds.yellowPocketSlow()
-        # else:
-        #     self.leds.purplePocketSlow()
+        if self.limelight.getGrabberPipeline() == LL_CONE:
+            self.ledControl.engage(initial_state='seeking_cone')
+        else:
+            self.ledControl.engage(initial_state='seeking_cube')
         if self.limelight.hasGrabberTarget():
             self.next_state("intaking")
         elif self.grabber.getProximity() > 230:
@@ -211,12 +210,12 @@ class GrabberControl(StateMachine):
 
         # self.logger.info(f"Intaking, area = {self.limelight.ta}")
         if self.limelight.ta is not None:
+            if self.limelight.getGrabberPipeline() == LL_CONE:
+                self.ledControl.engage(initial_state='found_cone')
+            else:
+                self.ledControl.engage(initial_state='found_cube')
             self.targetPresent = True
             if self.limelight.ta >= 30:
-                # if self.limelight.getPipeline():
-                #     self.leds.yellowPocketFast()
-                # else:
-                #     self.leds.purplePocketFast()
                 if self.grabber.getProximity() < 1000:
                     self.logger.info("Turning intake wheels on")
                     self.grabber.wheelsOn(1)
@@ -242,10 +241,7 @@ class GrabberControl(StateMachine):
         # remove block when setting to floor position
         # maybe have block occur UNLESS it's at floor for pickup
         # have a pickup boolean?
-        # if self.grabber.sensor.isCube():
-        #     self.leds.Purple()
-        # else:
-        #     self.leds.Yellow()
+        self.checkHeldObject()
         if initial_call and self.armControl.last_state == 'atFloor':
         #if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
             self.last_state = 'lifting'
@@ -263,6 +259,7 @@ class GrabberControl(StateMachine):
 
     @state()
     def stoppingIntake(self):
+        self.checkHeldObject()
         if self.grabber.getProximity() > 1000:
             self.logger.info(f'Checking object: isCube = {self.grabber.sensor.isCube()}')
             self.logger.info("Shutting down intake wheels")
@@ -284,5 +281,9 @@ class GrabberControl(StateMachine):
         #now we need to keep getting the change from the startPose and once it's good enough
         # drop arm
         
-
+    def checkHeldObject(self):
+        if self.grabber.sensor.isCube():
+            self.ledControl.engage(initial_state='holding_cube')
+        else:
+            self.ledControl.engage(initial_state='holding_cone')
         
