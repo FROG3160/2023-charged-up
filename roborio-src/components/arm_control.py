@@ -13,6 +13,7 @@ import config
 class ArmControl(StateMachine):
     # need arm
     arm: Arm
+    grabber: FROGGrabber
 
     def __init__(self):
         self.last_state = None
@@ -64,6 +65,7 @@ class ArmControl(StateMachine):
     def moveToFloor(self):
         # If the boom is too far forward, the stick might hit the floor,
         # so make sure it's back to the "mid" position before completing.
+        self.checkFromHome()
         if self.arm.boom.getPosition() > config.BOOM_FLOOR_PICKUP:
             self.arm.boom.toPosition(config.BOOM_GRID_MID)
             block = True
@@ -81,6 +83,7 @@ class ArmControl(StateMachine):
 
     @state()
     def moveToManipulate(self):
+        self.checkFromHome()
         if self.arm.boom.getPosition() > config.BOOM_FLOOR_PICKUP:
             self.arm.boom.toPosition(config.BOOM_GRID_MID)
             block = True
@@ -99,6 +102,7 @@ class ArmControl(StateMachine):
 
     @state()
     def moveToMid(self, initial_call):
+        self.checkFromHome()
         self.arm.runToPosition(config.BOOM_GRID_MID, config.STICK_GRID_MID)
         if self.arm.atPosition():
             self.next_state("atMid")
@@ -110,6 +114,7 @@ class ArmControl(StateMachine):
 
     @state()
     def moveToShelf(self, initial_call):
+        self.checkFromHome()
         self.arm.runToPosition(config.BOOM_SHELF, config.STICK_SHELF)
         if self.arm.atPosition():
             self.next_state("atShelf")
@@ -121,6 +126,7 @@ class ArmControl(StateMachine):
 
     @state()
     def moveToUpper(self):
+        self.checkFromHome()
         if self.arm.stick.getPosition() < config.STICK_GRID_MID - 20480:
             self.arm.runToPosition(config.BOOM_GRID_MID, config.STICK_GRID_MID)
             block = True
@@ -134,6 +140,10 @@ class ArmControl(StateMachine):
     def atUpper(self):
         self.last_state = 'atUpper'
         pass
+
+    def checkFromHome(self):
+        if self.last_state == 'atHome':
+            self.grabber.plateDown()
 
 
 class GrabberControl(StateMachine):
@@ -152,13 +162,14 @@ class GrabberControl(StateMachine):
 
     @state(first=True)
     def holding(self):
+        self.grabber.closeJaws()
         self.checkHeldObject()
         self.last_state = 'holding'
 
     @state()
     def dropping(self, initial_call):
         if initial_call:
-            self.grabber.open()
+            self.grabber.openJaws()
             if self.grabber.sensor.isCube():
                 self.grabber.wheelsOn(-0.5)
         #waiting until the object is nearly out
@@ -186,14 +197,15 @@ class GrabberControl(StateMachine):
     @state()
     def reset(self):
         self.grabber.wheelsOff()
-        self.grabber.open()
+        self.grabber.openJaws()
         self.last_state = 'reset'
         self.next_state_now('looking')
 
     @state()
     def looking(self, initial_call):
         if initial_call:
-            self.grabber.open()
+            self.grabber.openJaws()
+        self.logger.info(f'Looking -- pipeline is: {self.limelight.getGrabberPipeline()}')
         if self.limelight.getGrabberPipeline() == LL_CONE:
             self.ledControl.engage(initial_state='seeking_cone')
         else:
@@ -210,6 +222,8 @@ class GrabberControl(StateMachine):
 
         # self.logger.info(f"Intaking, area = {self.limelight.ta}")
         if self.limelight.ta is not None:
+            self.logger.info(f'Intaking -- pipeline is: {self.limelight.getGrabberPipeline()}')
+       
             if self.limelight.getGrabberPipeline() == LL_CONE:
                 self.ledControl.engage(initial_state='found_cone')
             else:
@@ -230,7 +244,7 @@ class GrabberControl(StateMachine):
     def grabbing(self):
         if self.grabber.getProximity() > 230:
             self.logger.info("Closing grabber")
-            self.grabber.close()
+            self.grabber.closeJaws()
             self.last_state = 'grabbing'
             self.hasObject = True
             self.next_state("lifting")
@@ -261,12 +275,28 @@ class GrabberControl(StateMachine):
     def stoppingIntake(self):
         self.checkHeldObject()
         if self.grabber.getProximity() > 1000:
-            self.logger.info(f'Checking object: isCube = {self.grabber.sensor.isCube()}')
-            self.logger.info("Shutting down intake wheels")
+            self.logger.info(f'stoppingIntake: Checking object: isCube = {self.grabber.sensor.isCube()}')
+            self.logger.info("stoppingIntake: Shutting down intake wheels")
             self.grabber.wheelsOff()
             self.last_state = 'stoppingIntake'
             self.targetPresent = False
             self.next_state("holding")
+            # if self.grabber.sensor.isCube():
+            #     self.next_state("holding")
+            #     self.logger.info('stoppingIntake: Cube found')
+            # if not self.grabber.sensor.isCube() and self.armControl.last_state == 'atHome':
+            #     self.next_state('supportCone')
+            #     self.logger.info('stoppingIntake: Cone found, arm at home')
+    
+    @state()
+    def supportCone(self):
+        self.grabber.plateUp()
+        self.next_state('releaseCone')
+
+    @timed_state(duration=0.5, next_state = 'holding')
+    def releaseCone(self):
+        self.grabber.openJaws()
+
 
     @state()
     def waitForMove(self, initial_call):
