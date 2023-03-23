@@ -16,8 +16,6 @@ class DriveControl(StateMachine):
     limelight: FROGLimeLightVision
     driverController: FROGXboxDriver
 
-    VERBOSE_LOGGING = True
-
     def __init__(self) -> None:
         self._vX = 0
         self._vY = 0
