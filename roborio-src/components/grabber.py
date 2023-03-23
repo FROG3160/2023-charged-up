@@ -19,25 +19,29 @@ class FROGGrabber:
             solenoidID (int): Solenoid ID for the grabber pneumatics.
         """
         self.motor = WPI_TalonSRX(43)
-        self.pneumatics = Solenoid(PneumaticsModuleType.REVPH, 0)
+        self.jaws = Solenoid(PneumaticsModuleType.REVPH, 0)
+        self.plate = Solenoid(PneumaticsModuleType.REVPH, 1)
         self.grabberOpen = False
         self.speed = 0
         # motors and stuff
 
-    def open(self):
-        self.logger.info(f"Opening grabber.")
+    def openJaws(self):
         self.grabberOpen = True
         # pnumatics for this
         # open it to get ready to grab the cone/cube or
         # ungrab the cone/cube use same button to open/turn off
 
     def isClosed(self):
-        return self.pneumatics.get()
+        return self.jaws.get()
 
-    def close(self):
+    def closeJaws(self):
         self.grabberOpen = False
-        # pnumatics for this
-        # grab the cone/cube probably set a button to close
+
+    def plateUp(self):
+        self.plate.set(True)
+    
+    def plateDown(self):
+        self.plate.set(False)
 
     def wheelsOn(self, speed):
         self.speed = speed
@@ -54,7 +58,7 @@ class FROGGrabber:
         return self.limelight.ta >= 75
     
     def execute(self):
-        self.pneumatics.set(self.grabberOpen)
+        self.jaws.set(self.grabberOpen)
         self.motor.set(self.speed)
         # if self.intake == 'Intake':
         #     self.logger.info("Checking Intake target")
