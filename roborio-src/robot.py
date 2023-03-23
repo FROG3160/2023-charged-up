@@ -112,7 +112,7 @@ class FROGbot(MagicRobot):
         before running Autonomous or Teleop modes should be added here"""
         super().robotInit()  #calls createObjects()
         #TODO: test if we can place the robot position setting here from AutonomousInit
-        self.leds.fire()
+        # self.leds.fire()
   
     def autonomousInit(self):
         """Runs at the beginning autonomous mode.  Add anything that is needed
@@ -253,6 +253,14 @@ class FROGbot(MagicRobot):
     def testPeriodic(self):
         self.arm.boom.run(applyDeadband(-self.operatorController.getRightY(), 0.15))
         self.arm.stick.run(applyDeadband(-self.operatorController.getLeftY(), 0.15))
+
+        if self.operatorController.getAButton():
+            self.grabber.plateUp()
+        else:
+            self.grabber.plateDown()
+
+        SmartDashboard.putNumber('Boom Position', self.arm.boom.getPosition())
+        SmartDashboard.putNumber('Stick Position', self.arm.stick.getPosition())
         # self.leds.yellowPocketFast()
 
 if __name__ == "__main__":
