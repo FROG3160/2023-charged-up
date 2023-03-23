@@ -29,7 +29,7 @@ class FROGLED:
         self.candle = CANdle(canID)
         self.candle.configLEDType(LEDStripType.GRB)
         self.candle.configBrightnessScalar(BRIGHTNESS)
-        self.default()
+        # self.default()
 
     def larsonAnimation(self, r, g, b, speed):
         self.candle.animate(
@@ -42,22 +42,22 @@ class FROGLED:
 
     def yellowPocketSlow(self):
         self.larsonAnimation(
-                250, 129, 7, 0.25
+                250, 129, 7, 0.5
         )
 
     def yellowPocketFast(self):
         self.larsonAnimation(
-                250, 129, 7, 0.75
+                250, 129, 7, 1.0
         )
 
     def purplePocketSlow(self):
         self.larsonAnimation(
-                167, 16, 201, 0.25
+                167, 16, 201, 0.5
         )
 
     def purplePocketFast(self):
         self.larsonAnimation(
-                167, 16, 201, 0.75
+                167, 16, 201, 1.0
         )
 
     def purple(self):
@@ -65,9 +65,6 @@ class FROGLED:
 
     def green(self):
         self.candle.setLEDs(0, 255, 0)
-
-    def default(self):
-        self.magenta()
 
     def rainbow(self):
         self.candle.animate(RAINBOW)
