@@ -72,6 +72,7 @@ class FROGbot(MagicRobot):
         self.btnGoToPositionA = self.driverController.getAButton
         self.btnDriveToCube = self.driverController.getXButton
         self.btnDriveToCone = self.driverController.getYButton
+        self.btnDriveToCharging = self.driverController.getLeftTriggerAxis
 
         # declare buttons for operator
         self.btnToggleGrabber = self.operatorController.getLeftBumperPressed
@@ -86,7 +87,7 @@ class FROGbot(MagicRobot):
         # self.btnOperatorManualChange = self.operatorController.getStartButtonPressed
         self.btnGrabberReset = self.operatorController.getBackButtonPressed
 
-        self.positionA = Pose2d( 1.85, 4.43, 0)
+        self.positionGrid = Pose2d( 3.9, 2.1, 0)
         self.positionB = Pose2d( 7.1, 4.58, 0)
 
         self.startingPose2d = Pose2d(0,0,0)
@@ -125,7 +126,7 @@ class FROGbot(MagicRobot):
         # and then converts to a Pose2d for the setFieldPosition
         self.startingPose2d = self.limelight.getBotPoseEstimateForAlliance()[0].toPose2d()
         self.swerveChassis.setFieldPosition(self.startingPose2d)
-        self.armControl.next_state('leaveZero')
+        # self.armControl.next_state('leaveZero')
 
     def teleopInit(self):
         self.setAlliance()
@@ -242,6 +243,9 @@ class FROGbot(MagicRobot):
 
         elif self.btnDriveToCube():
             self.driveControl.autoDriveToCube()
+
+        elif self.btnDriveToCharging() > 0.5:
+            self.driveControl.holonomicDriveToWaypoint(self.positionGrid)
 
         else:
             pass
