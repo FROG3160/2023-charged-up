@@ -175,7 +175,7 @@ class FROGStickDriver(Joystick):
 
 
 class FROGXboxDriver(XboxController):
-    DEADBAND = 0.045
+    DEADBAND = 0.15
     ROTATION_DIVISOR = 1
     DEBOUNCE_PERIOD = 0.5
     MODE = 0  # run auto routines
