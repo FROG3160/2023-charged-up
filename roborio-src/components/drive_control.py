@@ -2,19 +2,34 @@ from magicbot import state, default_state
 from magicbot.state_machine import StateMachine
 from components.drivetrain import SwerveChassis
 from pathplannerlib import PathPoint
+from wpimath.controller import ProfiledPIDControllerRadians
 from wpimath.geometry import Pose2d
+from wpimath.trajectory import TrapezoidProfileRadians
 from components.vision import FROGLimeLightVision, LL_CONE, LL_CUBE
 from components.controllers import PPHolonomic, FROGXboxDriver
 from components.field import FROGFieldLayout
 from ntcore.util import ChooserControl
 from wpilib import SendableChooser, SmartDashboard
-import os
+from wpilib.shuffleboard import Shuffleboard
+import os, math, config
+from components.sensors import FROGGyro
 
-
+povSpeed = 0.1
+povSpeeds = {
+    0: (povSpeed, 0),
+    45: (povSpeed, -povSpeed),
+    90: (0, -povSpeed),
+    135: (-povSpeed, -povSpeed),
+    180: (-povSpeed, 0),
+    225: (-povSpeed, povSpeed),
+    270: (0, povSpeed),
+    315: (povSpeed, povSpeed)
+}
 class DriveControl(StateMachine):
     swerveChassis: SwerveChassis
     limelight: FROGLimeLightVision
     driverController: FROGXboxDriver
+    gyro: FROGGyro
 
     def __init__(self) -> None:
         self._vX = 0
@@ -28,10 +43,28 @@ class DriveControl(StateMachine):
         for path in [n.rsplit('.', 1)[0] for n in os.listdir(os.path.join(os.path.dirname(__file__), '..', r"paths"))]:
             self.pathChooser.addOption(path, path)
 
+        profiledRotationConstraints = TrapezoidProfileRadians.Constraints(
+            config.cfgProfiledMaxVelocity, config.cfgProfiledMaxAccel
+        )
+        self.profiledRotationController = ProfiledPIDControllerRadians(
+            config.cfgProfiledP,
+            config.cfgProfiledI,
+            config.cfgProfiledD,
+            profiledRotationConstraints,
+        )
+        self.profiledRotationController.enableContinuousInput(-math.pi, math.pi)
+
+        rotationControllerTab = Shuffleboard.getTab("Rotation Controller")
+        rotationControllerTab.add(title="profiledRotationController", defaultValue=self.profiledRotationController)
+
         SmartDashboard.putData("Path", self.pathChooser)
 
     def setup(self):
         self.holonomic = PPHolonomic(self.swerveChassis.kinematics)
+        self.resetRotationController()
+
+    def resetRotationController(self):
+        self.profiledRotationController.reset(math.radians(self.gyro.getYawCCW()), self.gyro.getRadiansPerSecCCW())
 
     def autoDrive(self):
         self.engage()
@@ -53,16 +86,47 @@ class DriveControl(StateMachine):
         self.engage(initial_state='drivePath')
         
 
+    def angleErrorToRotation(error):
+    #return math.copysign(math.exp(0.0352*abs(error))*0.0496, error)
+    # 0.0001*(B2^2) + 0.0024 *B2 - 0.0039
+        abs_error = abs(error)
+        vT = (abs_error**2) * 0.0001 + abs_error * 0.0024 - 0.0039
+        if vT < 0:
+            return 0
+        else:
+            return math.copysign(vT, error)
 
     # State fieldOriented (as the default state) This will be the first state.
     @default_state
     def fieldOriented(self):
+        rightStickY = self.driverController.getRightY()
+        if rightStickY > 0.5:
+            #Rotate to 0 degrees, point downfield
+            vT = self.profiledRotationController.calculate(
+                math.radians(self.gyro.getYawCCW()), math.radians(0)
+            )
+        elif rightStickY < -0.5:
+            #Rotate to 180 degrees
+            vT = self.profiledRotationController.calculate(
+                math.radians(self.gyro.getYawCCW()), math.radians(180)
+            )            
+        else:
+            vT = self.driverController.getFieldRotation()
+        pov = self.driverController.getPOV()
+        if pov != -1:
+            vX, vY = povSpeeds[pov]
+        else:
+            vX = self.driverController.getFieldForward()
+            vY = self.driverController.getFieldLeft()
+
+        
+
         self.swerveChassis.fieldOrientedDrive(
             #self._vX, self._vY, self._vT, self._throttle
-        self.driverController.getFieldForward(),
-        self.driverController.getFieldLeft(),
-        self.driverController.getFieldRotation(),
-        self.driverController.getFieldThrottle(),
+            vX,
+            vY,
+            vT,
+            self.driverController.getFieldThrottle(),
         )
 
     # State robotOriented (for driving to cones, cubes and posts).
