@@ -34,18 +34,19 @@ class FROGGyro:
         return -self.gyro.getAngle()
     
     def getRoll(self):
-        
         return self.gyro.getRoll()
     
     def getPitch(self):
-        
         return self.gyro.getPitch()
 
     def setOffset(self, offset):
         self.offset = offset
 
-    def getRotationDPS(self):
-        return self.gyro.getRate()
+    def getDegreesPerSecCCW(self):
+        return -self.gyro.getRate()
+    
+    def getRadiansPerSecCCW(self):
+        return math.radians(self.getDegreesPerSecCCW())
 
     def getRotation2d(self):
         return Rotation2d.fromDegrees(self.getAngleCCW())
@@ -73,7 +74,6 @@ class FROGGyro:
         return self.gyro.getAngle()
 
     def getAngleCCW(self):
-        
         return -self.gyro.getAngle()
 
     def getAngleConstrained(self):
