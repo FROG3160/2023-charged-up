@@ -108,6 +108,12 @@ cfgSteerEncoder.initializationStrategy = (
 )
 cfgSteerEncoder.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180
 
+cfgProfiledMaxVelocity = math.pi*2
+cfgProfiledMaxAccel = math.pi*2
+cfgProfiledP = 1.0
+cfgProfiledI = 0.0
+cfgProfiledD = 0.0
+
 #
 # Sweve Drive Constants
 #
@@ -166,6 +172,14 @@ BOOM_FLOOR_MANIPULATE = 82600 #99000 #106000
 STICK_FLOOR_MANIPULATE = 0 #400
 BOOM_SHELF = 8700 #4500
 STICK_SHELF = 204600 #207000 #208400 #262000
+
+armPositions = {
+    'upper': (BOOM_GRID_UPPER, STICK_GRID_UPPER),
+    'shelf': (BOOM_SHELF, STICK_SHELF),
+    'manipulate': (BOOM_FLOOR_MANIPULATE, STICK_FLOOR_MANIPULATE),
+    'floor': (BOOM_FLOOR_PICKUP, STICK_FLOOR_PICKUP),
+    'home': (BOOM_HOME, STICK_HOME)
+}
 
 #
 #  MaxBotix MB1043-000 config
