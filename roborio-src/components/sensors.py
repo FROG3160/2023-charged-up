@@ -30,8 +30,8 @@ class FROGGyro:
         # returns gyro heading +180 to -180 degrees
         # and inverts it to change from bearing to
         # cartesian angles with CCW positive.
-        
-        return -self.gyro.getYaw()
+        # return -self.gyro.getYaw()
+        return -self.gyro.getAngle()
     
     def getRoll(self):
         
