@@ -21,7 +21,7 @@ from wpilib import SmartDashboard
 from wpilib.shuffleboard import  Shuffleboard
 from wpilib.interfaces import GenericHID
 from components.drive_control import DriveControl
-from components.led_control import LedControl
+# from components.led_control import LedControl
 
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
@@ -35,7 +35,7 @@ class FROGbot(MagicRobot):
     # every loop
     grabberControl: GrabberControl
     armControl: ArmControl
-    ledControl: LedControl
+    # ledControl: LedControl
 
     #Upper leve components first, lower level components last
     swerveChassis: SwerveChassis

@@ -6,7 +6,7 @@ from components.vision import FROGLimeLightVision, LL_CONE, LL_CUBE
 from components.drivetrain import SwerveChassis
 from wpimath.geometry import Rotation2d, Transform2d, Pose2d
 from components.led import FROGLED
-from components.led_control import LedControl
+# from components.led_control import LedControl
 import config
 from wpilib.shuffleboard import Shuffleboard
 
@@ -160,7 +160,6 @@ class GrabberControl(StateMachine):
     grabber: FROGGrabber
     limelight: FROGLimeLightVision
     armControl: ArmControl
-    ledControl: LedControl
     swerveChassis: SwerveChassis
     leds: FROGLED
     last_state = None
@@ -218,9 +217,9 @@ class GrabberControl(StateMachine):
             self.grabber.openJaws()
         self.logger.info(f'Looking -- pipeline is: {self.limelight.getGrabberPipeline()}')
         if self.limelight.getGrabberPipeline() == LL_CONE:
-            self.ledControl.engage(initial_state='seeking_cone')
+            self.leds.yellowPocketSlow()
         else:
-            self.ledControl.engage(initial_state='seeking_cube')
+            self.leds.purplePocketSlow()
         if self.limelight.hasGrabberTarget():
             self.next_state("intaking")
         elif self.grabber.getProximity() > 230:
@@ -236,9 +235,9 @@ class GrabberControl(StateMachine):
             self.logger.info(f'Intaking -- pipeline is: {self.limelight.getGrabberPipeline()}')
        
             if self.limelight.getGrabberPipeline() == LL_CONE:
-                self.ledControl.engage(initial_state='found_cone')
+                self.leds.yellowPocketFast()
             else:
-                self.ledControl.engage(initial_state='found_cube')
+                self.leds.purplePocketFast()
             self.targetPresent = True
             if self.limelight.ta >= 30:
                 if self.grabber.getProximity() < 1000:
@@ -324,7 +323,7 @@ class GrabberControl(StateMachine):
         
     def checkHeldObject(self):
         if self.grabber.sensor.isCube():
-            self.ledControl.engage(initial_state='holding_cube')
+            self.leds.purple()
         else:
-            self.ledControl.engage(initial_state='holding_cone')
+            self.leds.yellow()
         
