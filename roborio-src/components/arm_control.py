@@ -8,6 +8,7 @@ from wpimath.geometry import Rotation2d, Transform2d, Pose2d
 from components.led import FROGLED
 from components.led_control import LedControl
 import config
+from wpilib.shuffleboard import Shuffleboard
 
 
 class ArmControl(StateMachine):
@@ -19,16 +20,21 @@ class ArmControl(StateMachine):
         self.last_state = None
         pass
 
+    def setup(self):
+        armTab = Shuffleboard.getTab("Arm")
+        armTab.add(title="Boom Motor", defaultValue=self.arm.boom.motor)
+        armTab.add(title="Stick Motor", defaultValue=self.arm.stick.motor)
+
     def setNextState(self, state):
         self.next_state(state)
 
     def stop(self):
         self.arm.manual(0, 0)
 
-    @state(must_finish=True)
-    def leaveZero(self):
-        self.arm.leaveZero()
-        self.next_state('atHome')
+    # @state(must_finish=True)
+    # def leaveZero(self):
+    #     self.arm.leaveZero()
+    #     self.next_state('atHome')
 
     # first state at Home
     @state()
@@ -39,16 +45,20 @@ class ArmControl(StateMachine):
         # if self.arm.boom.getPosition() > 1000 and self.arm.stick.getPosition() > 1000:
         #     self.next_state(self.commandedState)
 
+    @feedback
+    def isAtHome(self) -> bool:
+        return self.arm.getArmPosition == 'home' and self.arm.atPosition == True
+
     # state moving to Home
     # need to clear mid post move boom until X
     # then allow stick to move down
     @state(first=True)
     def moveToHome(self, initial_call):
-        if self.arm.boom.getPosition() > config.BOOM_FLOOR_PICKUP:
-            self.arm.boom.toPosition(config.BOOM_GRID_MID)
+        if self.arm.boomExtended():
+            self.arm.retractBoom()
             block = True
         else:
-            self.arm.runToPosition(config.BOOM_HOME, config.STICK_HOME)
+            self.arm.runToPosition('home')
             block = False
         if self.arm.atPosition and not block:
             self.next_state("atHome")
@@ -66,11 +76,11 @@ class ArmControl(StateMachine):
         # If the boom is too far forward, the stick might hit the floor,
         # so make sure it's back to the "mid" position before completing.
         self.checkFromHome()
-        if self.arm.boom.getPosition() > config.BOOM_FLOOR_PICKUP:
-            self.arm.boom.toPosition(config.BOOM_GRID_MID)
+        if self.arm.boomExtended():
+            self.arm.retractBoom()
             block = True
         else:
-            self.arm.runToPosition(config.BOOM_FLOOR_PICKUP, config.STICK_FLOOR_PICKUP)
+            self.arm.runToPosition('floor')
             block = False
         if self.arm.atPosition and not block:
             self.next_state("atFloor")
@@ -84,12 +94,12 @@ class ArmControl(StateMachine):
     @state()
     def moveToManipulate(self):
         self.checkFromHome()
-        if self.arm.boom.getPosition() > config.BOOM_FLOOR_PICKUP:
-            self.arm.boom.toPosition(config.BOOM_GRID_MID)
+        if self.arm.boomExtended():
+            self.arm.retractBoom()
             block = True
         else:
             self.arm.runToPosition(
-                config.BOOM_FLOOR_MANIPULATE, config.STICK_FLOOR_MANIPULATE
+                'manipulate'
             )
             block = False
         if self.arm.atPosition and not block:
@@ -103,7 +113,7 @@ class ArmControl(StateMachine):
     @state()
     def moveToMid(self, initial_call):
         self.checkFromHome()
-        self.arm.runToPosition(config.BOOM_GRID_MID, config.STICK_GRID_MID)
+        self.arm.runToPosition('shelf')
         if self.arm.atPosition():
             self.next_state("atMid")
 
@@ -115,7 +125,7 @@ class ArmControl(StateMachine):
     @state()
     def moveToShelf(self, initial_call):
         self.checkFromHome()
-        self.arm.runToPosition(config.BOOM_SHELF, config.STICK_SHELF)
+        self.arm.runToPosition('shelf')
         if self.arm.atPosition():
             self.next_state("atShelf")
 
@@ -127,11 +137,11 @@ class ArmControl(StateMachine):
     @state()
     def moveToUpper(self):
         self.checkFromHome()
-        if self.arm.stick.getPosition() < config.STICK_GRID_MID - 20480:
-            self.arm.runToPosition(config.BOOM_GRID_MID, config.STICK_GRID_MID)
+        if not self.arm.stickRaised():
+            self.arm.runToPosition('shelf')
             block = True
         else:
-            self.arm.runToPosition(config.BOOM_GRID_UPPER, config.STICK_GRID_UPPER)
+            self.arm.runToPosition('upper')
             block = False
         if self.arm.atPosition and not block:
             self.next_state("atUpper")
@@ -156,6 +166,7 @@ class GrabberControl(StateMachine):
     last_state = None
     targetPresent = False
     hasObject = False
+    deploySize = tunable(20.0)
 
     def __init__(self):
         pass
@@ -280,13 +291,13 @@ class GrabberControl(StateMachine):
             self.grabber.wheelsOff()
             self.last_state = 'stoppingIntake'
             self.targetPresent = False
-            self.next_state("holding")
-            # if self.grabber.sensor.isCube():
-            #     self.next_state("holding")
-            #     self.logger.info('stoppingIntake: Cube found')
-            # if not self.grabber.sensor.isCube() and self.armControl.last_state == 'atHome':
-            #     self.next_state('supportCone')
-            #     self.logger.info('stoppingIntake: Cone found, arm at home')
+            # self.next_state("holding")
+            if self.grabber.sensor.isCube():
+                self.next_state("holding")
+                self.logger.info('stoppingIntake: Cube found')
+            elif self.armControl.isAtHome():
+                self.next_state('supportCone')
+                self.logger.info('stoppingIntake: Cone found, arm at home')
     
     @state()
     def supportCone(self):

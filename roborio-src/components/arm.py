@@ -1,6 +1,7 @@
 from ctre import WPI_TalonFX, ControlMode, NeutralMode, TalonFXConfiguration
 import config
 import logging
+from magicbot import tunable, feedback
 
 
 class SubArm():
@@ -24,6 +25,7 @@ class SubArm():
         self.commandedPosition = None
         self.logger = logger
         self.atPosition = False
+        self.positionName = None
 
     def getEncoderPosition(self) -> float:
         return self.motor.getSelectedSensorPosition()
@@ -31,10 +33,10 @@ class SubArm():
     def run(self, speed: float):
         self.motor.set(speed)
 
-    def toPosition(self, position: float):
-        self.commandedPosition = position
+    def toPosition(self, position):
+        self.positionName, self.commandedPosition = position
         self.atPosition = False
-        self.motor.set(ControlMode.MotionMagic, position)
+        self.motor.set(ControlMode.MotionMagic, self.commandedPosition)
 
     def stop(self):
         self.motor.set(0)
@@ -65,6 +67,9 @@ class SubArm():
 
 
 class Arm():
+
+    stickRaisedOffset = tunable(40000)
+
     def __init__(self) -> None:
 
         self.logger = logging.getLogger("FROGArm")
@@ -78,19 +83,44 @@ class Arm():
     def runToZero(self):
         self.manual(-0.15, -0.15)
 
-    def leaveZero(self):
-        self.boom.motor.set(ControlMode.Position, 256)
-        self.stick.motor.set(ControlMode.Position, 256)
+    # def leaveZero(self):
+    #     self.boom.motor.set(ControlMode.Position, 256)
+    #     self.stick.motor.set(ControlMode.Position, 256)
 
-    def runToPosition(self, boomPosition, stickPosition):
-        self.boom.toPosition(boomPosition)
-        self.stick.toPosition(stickPosition)
+    def runToPosition(self, position: str):
+        boomPosition, stickPosition = config.armPositions[position]
+        self.boom.toPosition((position, boomPosition))
+        self.stick.toPosition((position, stickPosition))
 
+    def retractBoom(self):
+        self.boom.toPosition(('retract', config.BOOM_SHELF))
+
+    @feedback
+    def getArmPosition(self):
+        if self.boom.positionName == self.stick.positionName:
+            return self.boom.positionName
+        else:
+            return 'unknown'
+
+    @feedback
     def atPosition(self):
         return self.boom.atPosition and self.stick.atPosition
     
+    @feedback
     def atReverseLimit(self):
         return self.boom.atRevLimit() and self.stick.atRevLimit()
+    
+    @feedback
+    def boomExtended(self):
+        # check to see if the boom is extended too far to bring
+        # the stick down
+        return self.boom.getPosition() > config.BOOM_FLOOR_PICKUP
+    
+    @feedback
+    def stickRaised(self):
+        # check to see if the stick is up high enough to extend
+        # boom without hitting the grid
+        return self.stick.getPosition() > config.STICK_SHELF - self.stickRaisedOffset
 
     def execute(self):
         self.boom.execute()
