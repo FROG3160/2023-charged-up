@@ -1,4 +1,4 @@
-from magicbot import state, default_state
+from magicbot import state, default_state, tunable
 from magicbot.state_machine import StateMachine
 from components.drivetrain import SwerveChassis
 from pathplannerlib import PathPoint
@@ -39,6 +39,7 @@ class DriveControl(StateMachine):
         self._endPose: Pose2d = None
         self._pathName = None
         self._object = None
+        self.resetController = True
         self.pathChooser = SendableChooser()
         for path in [n.rsplit('.', 1)[0] for n in os.listdir(os.path.join(os.path.dirname(__file__), '..', r"paths"))]:
             self.pathChooser.addOption(path, path)
@@ -101,16 +102,31 @@ class DriveControl(StateMachine):
     def fieldOriented(self):
         rightStickY = self.driverController.getRightY()
         if rightStickY > 0.5:
+            if self.resetController:
+                # this is the first time we hit this conditional, so 
+                # reset the controller
+                self.logger.info('Resetting profiledRotationController')
+                self.resetController = False
+                self.resetRotationController()
             #Rotate to 0 degrees, point downfield
             vT = self.profiledRotationController.calculate(
                 math.radians(self.gyro.getYawCCW()), math.radians(0)
             )
         elif rightStickY < -0.5:
+            if self.resetController:
+                # this is the first time we hit this conditional, so 
+                # reset the controller
+                self.logger.info('Resetting profiledRotationController')
+                self.resetController = False
+                self.resetRotationController()
             #Rotate to 180 degrees
             vT = self.profiledRotationController.calculate(
                 math.radians(self.gyro.getYawCCW()), math.radians(180)
             )            
         else:
+            # set to true so the first time the other if conditionals evaluate true
+            # the controller will be reset
+            self.resetController = True
             vT = self.driverController.getFieldRotation()
         pov = self.driverController.getPOV()
         if pov != -1:
