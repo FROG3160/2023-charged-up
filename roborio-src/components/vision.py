@@ -117,9 +117,9 @@ class FROGLimeLightVision:
         Returns:
             Float: Velocity in the X direction (robot oriented)
         """
-        #return -(targetArea * -0.0098 + 1.0293)
-        calcX = -(-0.0002*(targetArea**2) + 0.0093*targetArea+1)
-        return max(-1, calcX)
+        return min(-0.2, -(targetArea * -0.0098 + 1.0293))
+        # calcX = -(-0.0002*(targetArea**2) + 0.0093*targetArea+1)
+        # return max(-1, calcX)
 
     def calculateRotation(self, targetX):
         """Calculate the rotational speed from the X value of the target in the camera frame.
@@ -133,7 +133,7 @@ class FROGLimeLightVision:
         Returns:
             Float: Rotational velocity with CCW (left, robot oriented) positive.
         """
-        return -(targetX / 40)
+        return -(targetX / 30)
 
     def getVelocities(self):
         """Get calculated velocities from vision target data
