@@ -47,7 +47,7 @@ class ArmControl(StateMachine):
 
     @feedback
     def isAtHome(self) -> bool:
-        return self.arm.getArmPosition == 'home' and self.arm.atPosition == True
+        return self.arm.getArmPosition() == 'home'
 
     # state moving to Home
     # need to clear mid post move boom until X
@@ -60,7 +60,7 @@ class ArmControl(StateMachine):
         else:
             self.arm.runToPosition('home')
             block = False
-        if self.arm.atPosition and not block:
+        if self.arm.getArmPosition() == 'home' and not block:
             self.next_state("atHome")
 
     @state()
@@ -75,14 +75,14 @@ class ArmControl(StateMachine):
     def moveToFloor(self):
         # If the boom is too far forward, the stick might hit the floor,
         # so make sure it's back to the "mid" position before completing.
-        self.checkFromHome()
+        self.dropPlateIfHome()
         if self.arm.boomExtended():
             self.arm.retractBoom()
             block = True
         else:
             self.arm.runToPosition('floor')
             block = False
-        if self.arm.atPosition and not block:
+        if self.arm.getArmPosition == 'floor' and not block:
             self.next_state("atFloor")
 
     # state at floor
@@ -93,7 +93,7 @@ class ArmControl(StateMachine):
 
     @state()
     def moveToManipulate(self):
-        self.checkFromHome()
+        self.dropPlateIfHome()
         if self.arm.boomExtended():
             self.arm.retractBoom()
             block = True
@@ -102,7 +102,7 @@ class ArmControl(StateMachine):
                 'manipulate'
             )
             block = False
-        if self.arm.atPosition and not block:
+        if self.arm.getArmPosition() == 'manipulate' and not block:
             self.next_state("atManipulate")
 
     @state()
@@ -112,9 +112,9 @@ class ArmControl(StateMachine):
 
     @state()
     def moveToMid(self, initial_call):
-        self.checkFromHome()
+        self.dropPlateIfHome()
         self.arm.runToPosition('shelf')
-        if self.arm.atPosition():
+        if self.arm.getArmPosition() == 'shelf':
             self.next_state("atMid")
 
     @state()
@@ -124,9 +124,9 @@ class ArmControl(StateMachine):
 
     @state()
     def moveToShelf(self, initial_call):
-        self.checkFromHome()
+        self.dropPlateIfHome()
         self.arm.runToPosition('shelf')
-        if self.arm.atPosition():
+        if self.arm.getArmPosition() == 'shelf':
             self.next_state("atShelf")
 
     @state()
@@ -136,14 +136,14 @@ class ArmControl(StateMachine):
 
     @state()
     def moveToUpper(self):
-        self.checkFromHome()
+        self.dropPlateIfHome()
         if not self.arm.stickRaised():
             self.arm.runToPosition('shelf')
             block = True
         else:
             self.arm.runToPosition('upper')
             block = False
-        if self.arm.atPosition and not block:
+        if self.arm.getArmPosition() == 'upper' and not block:
             self.next_state("atUpper")
 
     @state()
@@ -151,9 +151,14 @@ class ArmControl(StateMachine):
         self.last_state = 'atUpper'
         pass
 
-    def checkFromHome(self):
-        if self.last_state == 'atHome':
+    def dropPlateIfHome(self):
+        if self.arm.getArmPosition() == 'home':
             self.grabber.plateDown()
+
+    def getArmPosition(self):
+        return self.arm.getArmPosition()
+
+    
 
 
 class GrabberControl(StateMachine):
@@ -173,7 +178,7 @@ class GrabberControl(StateMachine):
     @state(first=True)
     def holding(self):
         self.grabber.closeJaws()
-        self.checkHeldObject()
+        self.setLedsToHeldObject()
         self.last_state = 'holding'
 
     @state()
@@ -265,8 +270,8 @@ class GrabberControl(StateMachine):
         # remove block when setting to floor position
         # maybe have block occur UNLESS it's at floor for pickup
         # have a pickup boolean?
-        self.checkHeldObject()
-        if initial_call and self.armControl.last_state == 'atFloor':
+        self.setLedsToHeldObject()
+        if initial_call and self.armControl.getArmPosition() == 'floor':
         #if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
             self.last_state = 'lifting'
             self.armControl.next_state('moveToHome')
@@ -277,16 +282,14 @@ class GrabberControl(StateMachine):
             block = True
         if not block:
             self.armControl.engage()
-            if self.armControl.last_state == 'atHome':
+            if self.armControl.getArmPosition() == 'home':
                 self.last_state = 'lifting'
                 self.next_state("stoppingIntake")
 
     @state()
     def stoppingIntake(self):
-        self.checkHeldObject()
+        self.setLedsToHeldObject()
         if self.grabber.getProximity() > 1000:
-            self.logger.info(f'stoppingIntake: Checking object: isCube = {self.grabber.sensor.isCube()}')
-            self.logger.info("stoppingIntake: Shutting down intake wheels")
             self.grabber.wheelsOff()
             self.last_state = 'stoppingIntake'
             self.targetPresent = False
@@ -303,7 +306,7 @@ class GrabberControl(StateMachine):
         self.grabber.plateUp()
         self.next_state('releaseCone')
 
-    @timed_state(duration=0.5, next_state = 'holding')
+    @timed_state(duration=0.25, next_state = 'holding')
     def releaseCone(self):
         self.grabber.openJaws()
 
@@ -321,7 +324,7 @@ class GrabberControl(StateMachine):
         #now we need to keep getting the change from the startPose and once it's good enough
         # drop arm
         
-    def checkHeldObject(self):
+    def setLedsToHeldObject(self):
         if self.grabber.sensor.isCube():
             self.leds.purple()
         else:
