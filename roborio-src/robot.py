@@ -263,8 +263,8 @@ class FROGbot(MagicRobot):
         else:
             self.grabber.plateDown()
 
-        SmartDashboard.putNumber('Boom Position', self.arm.boom.getPosition())
-        SmartDashboard.putNumber('Stick Position', self.arm.stick.getPosition())
+        SmartDashboard.putNumber('Boom Position', self.arm.boom.getEncoderPosition())
+        SmartDashboard.putNumber('Stick Position', self.arm.stick.getEncoderPosition())
         # self.leds.yellowPocketFast()
 
 if __name__ == "__main__":
