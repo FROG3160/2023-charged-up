@@ -147,7 +147,7 @@ class FROGdar:
 class FROGColor:
     def __init__(self):
         self.enabled = False
-        self.colorSensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
+        self.colorSensor = ColorSensorV3(wpilib.I2C.Port.kMXP)
 
     def enable(self):
         self.enabled = True
@@ -164,6 +164,7 @@ class FROGColor:
     def getGreen(self):
         return self.colorSensor.getColor().green
 
+    @feedback
     def getProximity(self):
         return self.colorSensor.getProximity()
     
