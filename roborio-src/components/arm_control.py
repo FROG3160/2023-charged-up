@@ -31,6 +31,21 @@ class ArmControl(StateMachine):
     def stop(self):
         self.arm.manual(0, 0)
 
+    def moveToHome(self):
+        self.next_state('movingToHome')
+    
+    def moveToShelf(self):
+        self.next_state('movingToShelf')
+
+    def moveToUpper(self):
+        self.next_state('movingToUpper')
+
+    def moveToFloor(self):
+        self.next_state('movingToFloor')
+
+    def moveToManipulate(self):
+        self.next_state('movingToManipulate')
+
     # @state(must_finish=True)
     # def leaveZero(self):
     #     self.arm.leaveZero()
@@ -53,7 +68,7 @@ class ArmControl(StateMachine):
     # need to clear mid post move boom until X
     # then allow stick to move down
     @state(first=True)
-    def moveToHome(self, initial_call):
+    def movingToHome(self, initial_call):
         if self.arm.boomExtended():
             self.arm.retractBoom()
             block = True
@@ -72,7 +87,7 @@ class ArmControl(StateMachine):
 
 
     @state()
-    def moveToFloor(self):
+    def movingToFloor(self):
         # If the boom is too far forward, the stick might hit the floor,
         # so make sure it's back to the "mid" position before completing.
         self.dropPlateIfHome()
@@ -92,7 +107,7 @@ class ArmControl(StateMachine):
         pass
 
     @state()
-    def moveToManipulate(self):
+    def movingToManipulate(self):
         self.dropPlateIfHome()
         if self.arm.boomExtended():
             self.arm.retractBoom()
@@ -111,7 +126,7 @@ class ArmControl(StateMachine):
         pass
 
     @state()
-    def moveToMid(self, initial_call):
+    def movingToMid(self, initial_call):
         self.dropPlateIfHome()
         self.arm.runToPosition('shelf')
         if self.arm.getArmPosition() == 'shelf':
@@ -123,7 +138,7 @@ class ArmControl(StateMachine):
         pass
 
     @state()
-    def moveToShelf(self, initial_call):
+    def movingToShelf(self, initial_call):
         self.dropPlateIfHome()
         self.arm.runToPosition('shelf')
         if self.arm.getArmPosition() == 'shelf':
@@ -135,7 +150,7 @@ class ArmControl(StateMachine):
         pass
 
     @state()
-    def moveToUpper(self):
+    def movingToUpper(self):
         self.dropPlateIfHome()
         if not self.arm.stickRaised():
             self.arm.runToPosition('shelf')
@@ -274,7 +289,7 @@ class GrabberControl(StateMachine):
         if initial_call and self.armControl.getArmPosition() == 'floor':
         #if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
             self.last_state = 'lifting'
-            self.armControl.next_state('moveToHome')
+            self.armControl.moveToHome()
             block = False
         else:
             self.last_state = 'lifting'

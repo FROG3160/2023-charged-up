@@ -68,8 +68,8 @@ class FROGbot(MagicRobot):
         self.btnUnlockChassis = self.driverController.getLeftBumper
         self.btnResetEstimator = self.driverController.getBackButtonPressed
         self.btnResetGyro = self.driverController.getStartButtonPressed
-        self.btnGoToPositionB = self.driverController.getBButton
-        self.btnGoToPositionA = self.driverController.getAButton
+        self.btnDrivePath = self.driverController.getBButton
+        self.btnGoToGridPosition = self.driverController.getAButton
         self.btnDriveToCube = self.driverController.getXButton
         self.btnDriveToCone = self.driverController.getYButton
         self.btnDriveToCharging = self.driverController.getLeftTriggerAxis
@@ -178,23 +178,23 @@ class FROGbot(MagicRobot):
         # self.arm.boom.run(self.operatorController.getRightY())
         # self.arm.stick.run(-self.operatorController.getLeftY())
         if self.btnFloorPickup():
-            self.armControl.setNextState('moveToFloor')
+            self.armControl.moveToFloor()
             # self.arm.boom.toPosition(config.BOOM_FLOOR_PICKUP)
             # self.arm.stick.toPosition(config.STICK_FLOOR_PICKUP)
         elif self.btnFloorManipulate():
-            self.armControl.setNextState('moveToManipulate')
+            self.armControl.moveToManipulate()
             # self.arm.boom.toPosition(config.BOOM_FLOOR_MANIPULATE)
             # self.arm.stick.toPosition(config.STICK_FLOOR_MANIPULATE)
         elif self.btnHome():
-            self.armControl.setNextState('moveToHome')
+            self.armControl.moveToHome()
             # self.arm.boom.toPosition(config.BOOM_HOME)
             # self.arm.stick.toPosition(config.STICK_HOME)
         elif self.btnMidPlace():
-            self.armControl.setNextState('moveToShelf')
+            self.armControl.moveToShelf()
             # self.arm.boom.toPosition(config.BOOM_SHELF)
             # self.arm.stick.toPosition(config.STICK_SHELF)
         elif self.btnUpperPlace():
-            self.armControl.setNextState('moveToUpper')
+            self.armControl.moveToUpper()
             # self.arm.boom.toPosition(config.BOOM_GRID_UPPER)
             # self.arm.stick.toPosition(config.STICK_GRID_UPPER)
 
@@ -228,13 +228,13 @@ class FROGbot(MagicRobot):
         if self.btnUnlockChassis():
             self.swerveChassis.enable()
 
-        if self.btnGoToPositionA():
+        if self.btnGoToGridPosition():
             self.logger.info(f'Driving to position {self.gridPosition}')
             self.driveControl.holonomicDriveToWaypoint(
                 self.fieldLayout.getPosition(self.gridPosition).toPose2d()
             )
 
-        elif self.btnGoToPositionB():
+        elif self.btnDrivePath():
             self.driveControl.holonomicDrivePath()
             
         elif self.btnDriveToCone():

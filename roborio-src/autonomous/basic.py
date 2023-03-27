@@ -28,7 +28,7 @@ class placeCone(AutonomousStateMachine):
     def raiseArm(self, initial_call):
         if initial_call:
             self.logger.info(f'Raising arm to upper')
-            self.armControl.next_state('moveToUpper')
+            self.armControl.moveToUpper()
         self.armControl.engage()
         if self.armControl.last_state == 'atUpper':
             self.next_state('moveBack')
@@ -62,7 +62,7 @@ class placeConeDriveForward(AutonomousStateMachine):
     @state(first=True)
     def raiseArm(self, initial_call):
         if initial_call:
-            self.armControl.next_state('moveToUpper')
+            self.armControl.moveToUpper()
         self.armControl.engage()
         if self.armControl.last_state == 'atUpper':
             self.next_state('moveBack')
@@ -91,7 +91,7 @@ class placeConeDriveForward(AutonomousStateMachine):
     def dropArm(self, initial_call):
         if initial_call:
             self.swerveChassis.fieldOrientedDrive(0, 0, 0)
-            self.armControl.next_state('moveToHome')
+            self.armControl.moveToHome()
         self.armControl.engage()
         if self.armControl.last_state == 'atHome':
             self.next_state('end')
@@ -114,7 +114,7 @@ class placeConeDriveToCharge(AutonomousStateMachine):
     def raiseArm(self, initial_call):
         if initial_call:
             self.logger.info(f'Raising arm to upper')
-            self.armControl.next_state('moveToUpper')
+            self.armControl.moveToUpper()
         self.armControl.engage()
         if self.armControl.last_state == 'atUpper':
             self.next_state('moveBack')
@@ -143,7 +143,7 @@ class placeConeDriveToCharge(AutonomousStateMachine):
     @timed_state(duration=4, next_state='speedUp')
     def dropArm(self, initial_call):
         if initial_call:
-            self.armControl.next_state('moveToHome')
+            self.armControl.moveToHome()
             self.swerveChassis.fieldOrientedDrive(0,0,0)
         self.armControl.engage()
 
