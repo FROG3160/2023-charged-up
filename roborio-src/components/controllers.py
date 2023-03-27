@@ -372,6 +372,8 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         # SmartDashboard.putNumber("RotationControllerP", config.ppRotationPIDController.getP())
 
     def initialize(self, trajectoryType):
+        self.timer.stop()
+        self.timer.reset()
         self.firstCall = True
         self.trajectoryType = trajectoryType
 
@@ -433,3 +435,6 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
             # get the pose of the trajectory at the current time
             referenceState = self.trajectory.sample(self.timer.get())
             return self.calculate(currentPose, referenceState)
+        if self.atReference():
+            self.timer.stop()
+            self.trajectoryType = None
