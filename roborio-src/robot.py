@@ -15,7 +15,7 @@ from components.grabber import FROGGrabber
 from components.arm import Arm
 from components.sensors import FROGColor, FROGGyro
 from wpimath.units import degreesToRadians
-from components.arm_control import GrabberControl, ArmControl
+from components.arm_control import GrabberControl, ArmControl, ArmStates
 from ctre import ControlMode
 from wpilib import SmartDashboard
 from wpilib.shuffleboard import  Shuffleboard
@@ -178,23 +178,28 @@ class FROGbot(MagicRobot):
         # self.arm.boom.run(self.operatorController.getRightY())
         # self.arm.stick.run(-self.operatorController.getLeftY())
         if self.btnFloorPickup():
-            self.armControl.moveToFloor()
+            #self.armControl.moveToFloor()
+            self.armControl.next_state(ArmStates.MOVING_TO_FLOOR)
             # self.arm.boom.toPosition(config.BOOM_FLOOR_PICKUP)
             # self.arm.stick.toPosition(config.STICK_FLOOR_PICKUP)
         elif self.btnFloorManipulate():
-            self.armControl.moveToManipulate()
+            #self.armControl.moveToManipulate()
+            self.armControl.next_state(ArmStates.MOVING_TO_MANIPULATE)
             # self.arm.boom.toPosition(config.BOOM_FLOOR_MANIPULATE)
             # self.arm.stick.toPosition(config.STICK_FLOOR_MANIPULATE)
         elif self.btnHome():
-            self.armControl.moveToHome()
+            self.armControl.next_state(ArmStates.MOVING_TO_HOME)
+            #self.armControl.moveToHome()
             # self.arm.boom.toPosition(config.BOOM_HOME)
             # self.arm.stick.toPosition(config.STICK_HOME)
         elif self.btnMidPlace():
-            self.armControl.moveToShelf()
+            self.armControl.next_state(ArmStates.MOVING_TO_SHELF)
+            #self.armControl.moveToShelf()
             # self.arm.boom.toPosition(config.BOOM_SHELF)
             # self.arm.stick.toPosition(config.STICK_SHELF)
         elif self.btnUpperPlace():
-            self.armControl.moveToUpper()
+            self.armControl.next_state(ArmStates.MOVING_TO_UPPER)
+            #self.armControl.moveToUpper()
             # self.arm.boom.toPosition(config.BOOM_GRID_UPPER)
             # self.arm.stick.toPosition(config.STICK_GRID_UPPER)
 

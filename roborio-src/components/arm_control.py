@@ -9,6 +9,15 @@ from components.led import FROGLED
 # from components.led_control import LedControl
 import config
 from wpilib.shuffleboard import Shuffleboard
+from enum import StrEnum
+
+class ArmStates(StrEnum):
+    MOVING_TO_HOME = 'movingToHome'
+    MOVING_TO_SHELF = 'movingToShelf'
+    MOVING_TO_UPPER = 'movingToUpper'
+    MOVING_TO_FLOOR = 'movingToFloor'
+    MOVING_TO_MANIPULATE = 'movingToManipulate'
+
 
 
 class ArmControl(StateMachine):
@@ -32,19 +41,19 @@ class ArmControl(StateMachine):
         self.arm.manual(0, 0)
 
     def moveToHome(self):
-        self.next_state('movingToHome')
+        self.engage(initial_state=ArmStates.MOVING_TO_HOME)
     
     def moveToShelf(self):
-        self.next_state('movingToShelf')
+        self.engage(initial_state=ArmStates.MOVING_TO_SHELF)
 
     def moveToUpper(self):
-        self.next_state('movingToUpper')
+        self.engage(initial_state=ArmStates.MOVING_TO_UPPER)
 
     def moveToFloor(self):
-        self.next_state('movingToFloor')
+        self.engage(initial_state=ArmStates.MOVING_TO_FLOOR)
 
     def moveToManipulate(self):
-        self.next_state('movingToManipulate')
+        self.engage(initial_state=ArmStates.MOVING_TO_MANIPULATE)
 
     # @state(must_finish=True)
     # def leaveZero(self):
@@ -193,7 +202,6 @@ class GrabberControl(StateMachine):
     @state(first=True)
     def holding(self):
         self.grabber.closeJaws()
-        self.setLedsToHeldObject()
         self.last_state = 'holding'
 
     @state()
@@ -277,44 +285,51 @@ class GrabberControl(StateMachine):
             self.grabber.closeJaws()
             self.last_state = 'grabbing'
             self.hasObject = True
+            self.next_state("retracting")
+
+    @state()
+    def retracting(self):
+        self.setLedsToHeldObject()
+        if self.armControl.getArmPosition() == 'floor':
             self.next_state("lifting")
+        else:
+            self.next_state('waitForPullback')
+
+    @state()
+    def waitForPullback(self, initial_call):
+        if initial_call:
+            self.xPosition = self.swerveChassis.estimator.getEstimatedPosition().X()
+        if self.grabber.getProximity() > 1000:
+            self.grabber.wheelsOff()
+        if self.xPosition - self.swerveChassis.estimator.getEstimatedPosition().X() > 0.5:
+            self.armControl.moveToHome()
+        if self.armControl.getArmPosition() == 'home':
+            self.next_state('stoppingIntake')
+
 
     @state()
     def lifting(self, initial_call):
-        # TODO:  set a block when moving the arm to shelf position
-        # remove block when setting to floor position
-        # maybe have block occur UNLESS it's at floor for pickup
-        # have a pickup boolean?
-        self.setLedsToHeldObject()
-        if initial_call and self.armControl.getArmPosition() == 'floor':
-        #if initial_call and not self.armControl.arm.stick.getPosition() > config.STICK_FLOOR_PICKUP+ 20480:
-            self.last_state = 'lifting'
-            self.armControl.moveToHome()
-            block = False
-        else:
+        if self.grabber.getProximity() > 1000:
+            self.grabber.wheelsOff()
+        self.armControl.moveToHome()
+        if self.armControl.getArmPosition() == 'home':
             self.last_state = 'lifting'
             self.next_state("stoppingIntake")
-            block = True
-        if not block:
-            self.armControl.engage()
-            if self.armControl.getArmPosition() == 'home':
-                self.last_state = 'lifting'
-                self.next_state("stoppingIntake")
 
     @state()
     def stoppingIntake(self):
         self.setLedsToHeldObject()
         if self.grabber.getProximity() > 1000:
             self.grabber.wheelsOff()
-            self.last_state = 'stoppingIntake'
-            self.targetPresent = False
-            # self.next_state("holding")
-            if self.grabber.sensor.isCube():
-                self.next_state("holding")
-                self.logger.info('stoppingIntake: Cube found')
-            elif self.armControl.isAtHome():
-                self.next_state('supportCone')
-                self.logger.info('stoppingIntake: Cone found, arm at home')
+        self.last_state = 'stoppingIntake'
+        self.targetPresent = False
+        # self.next_state("holding")
+        if self.grabber.sensor.isCube():
+            self.next_state("holding")
+            self.logger.info('stoppingIntake: Cube found')
+        elif self.armControl.isAtHome():
+            self.next_state('supportCone')
+            self.logger.info('stoppingIntake: Cone found, arm at home')
     
     @state()
     def supportCone(self):
@@ -344,4 +359,7 @@ class GrabberControl(StateMachine):
             self.leds.purple()
         else:
             self.leds.yellow()
+
+    def intake(self):
+        self.engage(initial_state='intaking')
         
