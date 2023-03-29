@@ -82,8 +82,11 @@ class DriveControl(StateMachine):
         self._endPose = waypoint
         self.engage(initial_state='driveToWayPoint')
 
-    def holonomicDrivePath(self):
-        self._pathName = self.pathChooser.getSelected()
+    def holonomicDrivePath(self, pathName = None):
+        if pathName:
+            self._pathName = pathName
+        else:
+            self._pathName = self.pathChooser.getSelected()
         self.engage(initial_state='drivePath')
         
 
