@@ -30,6 +30,7 @@ from wpilib import SmartDashboard
 import os
 from wpimath.units import inchesToMeters
 from wpilib import Timer
+from wpimath.filter import SlewRateLimiter
 
 MAX_TRAJECTORY_SPEED = feetToMeters(5)
 MAX_TRAJECTORY_ACCEL = feetToMeters(5)
@@ -184,15 +185,33 @@ class FROGXboxDriver(XboxController):
         super().__init__(channel)
         self.button_latest = {}
         self.timer = Timer()
+        self.xSlew = SlewRateLimiter(0.5)
+        self.ySlew = SlewRateLimiter(0.5)
+        self.rotSlew = SlewRateLimiter(0.5)
 
     def getFieldRotation(self):
         return wpimath.applyDeadband(-self.getRightX(), self.DEADBAND)
+    
+    def getSlewLimitedFieldRotation(self):
+        return self.rotSlew.calculate(
+            self.getFieldRotation()
+        )
 
     def getFieldForward(self):
         return wpimath.applyDeadband(-self.getLeftY(), self.DEADBAND)
+    
+    def getSlewLimitedFieldForward(self):
+        return self.xSlew.calculate(
+            self.getFieldForward()
+        )
 
     def getFieldLeft(self):
         return wpimath.applyDeadband(-self.getLeftX(), self.DEADBAND)
+    
+    def getSlewLimitedFieldLeft(self):
+        return self.ySlew.calculate(
+            self.getFieldLeft()
+        )
 
     def getFieldThrottle(self):
         return wpimath.applyDeadband(self.getRightTriggerAxis(), 0)
@@ -211,7 +230,6 @@ class FROGXboxDriver(XboxController):
             self.setRumble(RIGHT_RUMBLE, 0)
         # self.update_nt("button_pov", val)
         return val
-
 
 class FROGXboxOperator(XboxController):
     DEBOUNCE_PERIOD = 0.5
@@ -366,10 +384,12 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.trajectoryType = False
         self.kinematics = kinematics
         self.setTolerance(
-            Pose2d(inchesToMeters(0.5), inchesToMeters(0.5), Rotation2d.fromDegrees(5))
+            Pose2d(inchesToMeters(0.5), inchesToMeters(0.5), Rotation2d.fromDegrees(2))
         )
-        # SmartDashboard.putNumber('TranslationControllerP', config.ppTranslationPIDController.getP())
-        # SmartDashboard.putNumber("RotationControllerP", config.ppRotationPIDController.getP())
+        SmartDashboard.putNumber('TranslationControllerP', config.ppTranslationPIDController.getP())
+        SmartDashboard.putNumber('TranslationControllerI', config.ppTranslationPIDController.getI())
+        SmartDashboard.putNumber('TranslationControllerD', config.ppTranslationPIDController.getD())
+        SmartDashboard.putNumber("RotationControllerP", config.ppRotationPIDController.getP())
 
     def initialize(self, trajectoryType):
         self.timer.stop()
@@ -377,16 +397,28 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.firstCall = True
         self.trajectoryType = trajectoryType
 
-    # def loadPID(self):
-    #     self.xController.setP(
-    #         SmartDashboard.getNumber("TranslationControllerP", self.xController.getP())
-    #     )
-    #     self.yController.setP(
-    #         SmartDashboard.getNumber("TranslationControllerP", self.yController.getP())
-    #     )
-    #     self.rotationController.setP(
-    #         SmartDashboard.getNumber("RotationControllerP", self.rotationController.getP())
-    #     )
+    def loadPID(self):
+        self.xController.setP(
+            SmartDashboard.getNumber("TranslationControllerP", self.xController.getP())
+        )
+        self.yController.setP(
+            SmartDashboard.getNumber("TranslationControllerP", self.yController.getP())
+        )
+        self.xController.setI(
+            SmartDashboard.getNumber("TranslationControllerP", self.xController.getI())
+        )
+        self.yController.setI(
+            SmartDashboard.getNumber("TranslationControllerP", self.yController.getI())
+        )
+        self.xController.setD(
+            SmartDashboard.getNumber("TranslationControllerP", self.xController.getD())
+        )
+        self.yController.setD(
+            SmartDashboard.getNumber("TranslationControllerP", self.yController.getD())
+        )
+        self.rotationController.setP(
+            SmartDashboard.getNumber("RotationControllerP", self.rotationController.getP())
+        )
 
     def initPoseToPose(self, startPose, endPose):
         startPoint = PathPoint(startPose.translation(), startPose.rotation())
@@ -416,6 +448,15 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.trajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(
             self.trajectory, DriverStation.getAlliance()
         )
+        # list of event markers pathplannerlib._pathplannerlib.EventMarker
+        # each marker has names, position, and time.  e.g.
+        # marker.names
+        # > ['DropArm']
+        # marker.time
+        # > 1.1736999735993974
+        # marker.position
+        # > Translation2d(x=2.210424, y=4.428544)
+        self.eventMarkers = self.trajectory.getMarkers()
         self.initialize("pathPlanner")
 
     def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
