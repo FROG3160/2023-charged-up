@@ -28,8 +28,8 @@ MAX_CHASSIS_RADIANS_SEC = MAX_CHASSIS_REV_SEC * math.tau
 MODULE_DRIVE_GEARING = [(14.0 / 50.0), (28.0 / 16.0), (15.0 / 45.0)]  # Mk4 L3
 MODULE_WHEEL_DIAMETER = 0.1000125  # 3 15/16 inches in meters
 
-MAX_TRAJECTORY_SPEED = feetToMeters(8)
-MAX_TRAJECTORY_ACCEL = feetToMeters(8)
+MAX_TRAJECTORY_SPEED = 4
+MAX_TRAJECTORY_ACCEL = 2
 
 MODULE_FRONT_LEFT = {
     "name": "FrontLeft",
@@ -72,7 +72,7 @@ holonomicTranslationPIDController = PIDController(1.5, 0, 0)
 holonomicAnglePIDController = ProfiledPIDControllerRadians(
     2.5, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
 )
-ppTranslationPIDController = PIDController(1.2,0,0)
+ppTranslationPIDController = PIDController(4,0,0.04)
 ppRotationPIDController = PIDController(2,0,0)
 #
 # **Swerve Module Drive Motor Config
