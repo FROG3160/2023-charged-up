@@ -5,6 +5,7 @@ import wpilib
 from components.field import FROGFieldLayout
 from ntcore import NetworkTableInstance
 from wpimath.geometry import Pose3d, Rotation3d, Translation3d
+from wpimath.filter import MedianFilter
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
 BLUE_ALLIANCE = wpilib.DriverStation.Alliance.kBlue
@@ -13,11 +14,11 @@ LL_CUBE = 1
 LL_CONE = 0
 
 
-def arrayToPose3d(poseArray) -> Pose3d:
-    return Pose3d(
-        Translation3d(poseArray[0], poseArray[1], poseArray[2]),
-        Rotation3d.fromDegrees(poseArray[3], poseArray[4], poseArray[5]),
-    )
+# def arrayToPose3d(poseArray) -> Pose3d:
+#     return Pose3d(
+#         Translation3d(poseArray[0], poseArray[1], poseArray[2]),
+#         Rotation3d.fromDegrees(poseArray[3], poseArray[4], poseArray[5]),
+#     )
 
 
 class FROGLimeLightVision:
@@ -54,6 +55,14 @@ class FROGLimeLightVision:
         self.upperPipe = self.ll_upperTable.getIntegerTopic("getpipe").subscribe(-1)
         # create the timer that we can use to the the FPGA timestamp
         self.timer = wpilib.Timer()
+        self.txFilter = MedianFilter(5)
+        self.taFilter = MedianFilter(5)
+        self.poseXFilter = MedianFilter(5)
+        self.poseYFilter = MedianFilter(5)
+        self.poseZFilter = MedianFilter(5)
+        self.poseRollFilter = MedianFilter(5)
+        self.posePitchFilter = MedianFilter(5)
+        self.poseYawFilter = MedianFilter(5)
 
     def getLatency(self):
         return (self.grabberCl.get() + self.grabberTl.get()) / 1000
@@ -86,10 +95,10 @@ class FROGLimeLightVision:
         return arrayToPose3d(self.upperPose.get())
 
     def getBotPoseBlue(self) -> Pose3d:
-        return arrayToPose3d(self.upperPoseBlue.get())
+        return self.arrayToPose3d(self.upperPoseBlue.get())
 
     def getBotPoseRed(self) -> Pose3d:
-        return arrayToPose3d(self.upperPoseRed.get())
+        return self.arrayToPose3d(self.upperPoseRed.get())
 
     def getTID(self) -> float:
         return self.ll_grabberTable.getNumber("tid", -1.0)
@@ -100,12 +109,14 @@ class FROGLimeLightVision:
             self.ta = self.grabberTa.get()
             self.tx = self.grabberTx.get()
             self.tv = self.grabberTv.get()
-            self.drive_vRotate = self.calculateRotation(self.tx)
-            self.drive_vX = self.calculateX(self.ta)
+            self.drive_vRotate = self.calculateRotation(self.txFilter.calculate(self.tx))
+            self.drive_vX = self.calculateX(self.taFilter.calculate(self.ta))
             self.drive_vY = 0
         else:
             self.tClass = self.ta = self.tx = self.tv = None
             self.drive_vRotate = self.drive_vX = self.drive_vY = 0
+            self.txFilter.reset()
+            self.taFilter.reset()
 
     def calculateX(self, targetArea):
         """Calculate X robot-oriented speed from the size of the target.  Return is inverted
@@ -117,7 +128,7 @@ class FROGLimeLightVision:
         Returns:
             Float: Velocity in the X direction (robot oriented)
         """
-        return min(-0.2, -(targetArea * -0.0098 + 1.0293))
+        return min(-0.25, -(targetArea * -0.0125 + 1.3125))
         # calcX = -(-0.0002*(targetArea**2) + 0.0093*targetArea+1)
         # return max(-1, calcX)
 
@@ -133,7 +144,7 @@ class FROGLimeLightVision:
         Returns:
             Float: Rotational velocity with CCW (left, robot oriented) positive.
         """
-        return -(targetX / 30)
+        return -(targetX / 25)
 
     def getVelocities(self):
         """Get calculated velocities from vision target data
@@ -154,3 +165,15 @@ class FROGLimeLightVision:
 
     def setUpperPipeline(self, pipeNum: int):
         self.ll_upperTable.putNumber("pipeline", pipeNum)
+
+    def arrayToPose3d(self, poseArray) -> Pose3d:
+        pX = self.poseXFilter.calculate(poseArray[0])
+        pY = self.poseYFilter.calculate(poseArray[1])
+        pZ = self.poseZFilter.calculate(poseArray[2])
+        pRoll = self.poseRollFilter.calculate(poseArray[3])
+        pPitch = self.posePitchFilter.calculate(poseArray[4])
+        pYaw = self.poseYawFilter.calculate(poseArray[5])
+        return Pose3d(
+            Translation3d(pX, pY, pZ),
+            Rotation3d.fromDegrees(pRoll, pPitch, pYaw),
+    )
