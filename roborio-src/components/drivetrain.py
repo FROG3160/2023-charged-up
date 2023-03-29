@@ -552,43 +552,30 @@ class SwerveChassis:
         )
         visionPose, visionTime = self.limelight.getBotPoseEstimateForAlliance()
         if visionPose:
-            if (
-                abs(visionPose.x - self.estimatorPose.x) < 0.5
-                and abs(visionPose.y - self.estimatorPose.y) < 0.5
-            ):
-                
-                self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
-
-
-        SmartDashboard.putNumber(
-            "Estimator_X_Inches", metersToInches(self.estimatorPose.X())
-        )
-        SmartDashboard.putNumber(
-            "Estimator_Y_Inches", metersToInches(self.estimatorPose.Y())
-        )
-        SmartDashboard.putNumber(
-            "Estimator_T_Degrees", self.estimatorPose.rotation().degrees()
-        )
-        # SmartDashboard.putNumber("Gyro_Angle_CCW", self.gyro.getYawCCW())
-        # SmartDashboard.putNumber(
-        #     "Odometry_X_Inches", metersToInches(self.odometryPose.X())
-        # )
-        # SmartDashboard.putNumber(
-        #     "Odometry_Y_Inches", metersToInches(self.odometryPose.Y())
-        # )
-        # SmartDashboard.putNumber(
-        #     "Odometry_T_Degrees", self.odometryPose.rotation().degrees()
-        # )
-        if visionPose:
             SmartDashboard.putNumber(
-                "Vision_X_Inches", metersToInches(visionPose.X())
+                "Vision_X_Inches", visionPose.X()
             )
             SmartDashboard.putNumber(
-                "Vision_Y_Inches", metersToInches(visionPose.Y())
+                "Vision_Y_Inches", visionPose.Y()
             )
             SmartDashboard.putNumber(
-                "Vision_Z_Inches", metersToInches(visionPose.Z())
+                "Vision_Z_Inches", visionPose.Z()
             )
             SmartDashboard.putNumber(
                 "Vision_T_Degrees", visionPose.rotation().toRotation2d().degrees()
             )
+            # if (
+            #     abs(visionPose.x - self.estimatorPose.x) < 0.5
+            #     and abs(visionPose.y - self.estimatorPose.y) < 0.5
+            # ):
+                
+            #     self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
+
+
+        SmartDashboard.putNumber(
+            "Estimator_X_Inches", self.estimatorPose.X())
+        SmartDashboard.putNumber(
+            "Estimator_Y_Inches", self.estimatorPose.Y())
+        SmartDashboard.putNumber(
+            "Estimator_T_Degrees", self.estimatorPose.rotation().degrees()
+        )
