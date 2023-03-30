@@ -55,14 +55,14 @@ class FROGLimeLightVision:
         self.upperPipe = self.ll_upperTable.getIntegerTopic("getpipe").subscribe(-1)
         # create the timer that we can use to the the FPGA timestamp
         self.timer = wpilib.Timer()
-        self.txFilter = MedianFilter(5)
-        self.taFilter = MedianFilter(5)
-        self.poseXFilter = MedianFilter(5)
-        self.poseYFilter = MedianFilter(5)
-        self.poseZFilter = MedianFilter(5)
-        self.poseRollFilter = MedianFilter(5)
-        self.posePitchFilter = MedianFilter(5)
-        self.poseYawFilter = MedianFilter(5)
+        # self.txFilter = MedianFilter(5)
+        # self.taFilter = MedianFilter(5)
+        # self.poseXFilter = MedianFilter(5)
+        # self.poseYFilter = MedianFilter(5)
+        # self.poseZFilter = MedianFilter(5)
+        # self.poseRollFilter = MedianFilter(5)
+        # self.posePitchFilter = MedianFilter(5)
+        # self.poseYawFilter = MedianFilter(5)
 
     def getLatency(self):
         return (self.grabberCl.get() + self.grabberTl.get()) / 1000
@@ -92,7 +92,7 @@ class FROGLimeLightVision:
             )
 
     def getBotPose(self) -> Pose3d:
-        return arrayToPose3d(self.upperPose.get())
+        return self.arrayToPose3d(self.upperPose.get())
 
     def getBotPoseBlue(self) -> Pose3d:
         return self.arrayToPose3d(self.upperPoseBlue.get())
@@ -109,14 +109,14 @@ class FROGLimeLightVision:
             self.ta = self.grabberTa.get()
             self.tx = self.grabberTx.get()
             self.tv = self.grabberTv.get()
-            self.drive_vRotate = self.calculateRotation(self.txFilter.calculate(self.tx))
-            self.drive_vX = self.calculateX(self.taFilter.calculate(self.ta))
+            self.drive_vRotate = self.calculateRotation(self.tx)
+            self.drive_vX = self.calculateX(self.ta)
             self.drive_vY = 0
         else:
             self.tClass = self.ta = self.tx = self.tv = None
             self.drive_vRotate = self.drive_vX = self.drive_vY = 0
-            self.txFilter.reset()
-            self.taFilter.reset()
+            # self.txFilter.reset()
+            # self.taFilter.reset()
 
     def calculateX(self, targetArea):
         """Calculate X robot-oriented speed from the size of the target.  Return is inverted
@@ -128,7 +128,7 @@ class FROGLimeLightVision:
         Returns:
             Float: Velocity in the X direction (robot oriented)
         """
-        return min(-0.25, -(targetArea * -0.0125 + 1.3125))
+        return min(-0.20, -(targetArea * -0.0125 + 1.3125))
         # calcX = -(-0.0002*(targetArea**2) + 0.0093*targetArea+1)
         # return max(-1, calcX)
 
@@ -167,13 +167,14 @@ class FROGLimeLightVision:
         self.ll_upperTable.putNumber("pipeline", pipeNum)
 
     def arrayToPose3d(self, poseArray) -> Pose3d:
-        pX = self.poseXFilter.calculate(poseArray[0])
-        pY = self.poseYFilter.calculate(poseArray[1])
-        pZ = self.poseZFilter.calculate(poseArray[2])
-        pRoll = self.poseRollFilter.calculate(poseArray[3])
-        pPitch = self.posePitchFilter.calculate(poseArray[4])
-        pYaw = self.poseYawFilter.calculate(poseArray[5])
+        pX, pY, pZ, pRoll, pPitch, pYaw = poseArray
+        # pX = self.poseXFilter.calculate(poseArray[0])
+        # pY = self.poseYFilter.calculate(poseArray[1])
+        # pZ = self.poseZFilter.calculate(poseArray[2])
+        # pRoll = self.poseRollFilter.calculate(poseArray[3])
+        # pPitch = self.posePitchFilter.calculate(poseArray[4])
+        # pYaw = self.poseYawFilter.calculate(poseArray[5])
         return Pose3d(
             Translation3d(pX, pY, pZ),
             Rotation3d.fromDegrees(pRoll, pPitch, pYaw),
-    )
+        )
