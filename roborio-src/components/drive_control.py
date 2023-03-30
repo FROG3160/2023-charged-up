@@ -130,13 +130,13 @@ class DriveControl(StateMachine):
             # set to true so the first time the other if conditionals evaluate true
             # the controller will be reset
             self.resetController = True
-            vT = self.driverController.getFieldRotation()
+            vT = self.driverController.getSlewLimitedFieldRotation()
         pov = self.driverController.getPOV()
         if pov != -1:
             vX, vY = povSpeeds[pov]
         else:
-            vX = self.driverController.getFieldForward()
-            vY = self.driverController.getFieldLeft()
+            vX = self.driverController.getSlewLimitedFieldForward()
+            vY = self.driverController.getSlewLimitedFieldLeft()
 
         
 
