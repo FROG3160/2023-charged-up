@@ -415,7 +415,7 @@ class SwerveChassis:
             self.startingPose2d,
         )
         # TODO: Adjust the stdDevs
-        self.estimator.setVisionMeasurementStdDevs((0.05, 0.05, math.pi/2))
+        self.estimator.setVisionMeasurementStdDevs((0.5, 0.5, math.pi/2))
         self.field = Field2d()
 
     def disable(self):
@@ -564,12 +564,12 @@ class SwerveChassis:
             SmartDashboard.putNumber(
                 "Vision_T_Degrees", visionPose.rotation().toRotation2d().degrees()
             )
-            # if (
-            #     abs(visionPose.x - self.estimatorPose.x) < 0.5
-            #     and abs(visionPose.y - self.estimatorPose.y) < 0.5
-            # ):
+            if (
+                abs(visionPose.x - self.estimatorPose.x) < 0.5
+                and abs(visionPose.y - self.estimatorPose.y) < 0.5
+            ):
                 
-            #     self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
+                self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
 
 
         SmartDashboard.putNumber(
