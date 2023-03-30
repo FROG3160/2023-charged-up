@@ -185,9 +185,9 @@ class FROGXboxDriver(XboxController):
         super().__init__(channel)
         self.button_latest = {}
         self.timer = Timer()
-        self.xSlew = SlewRateLimiter(0.5)
-        self.ySlew = SlewRateLimiter(0.5)
-        self.rotSlew = SlewRateLimiter(0.5)
+        self.xSlew = SlewRateLimiter(1.5)
+        self.ySlew = SlewRateLimiter(1.5)
+        self.rotSlew = SlewRateLimiter(1.5)
 
     def getFieldRotation(self):
         return wpimath.applyDeadband(-self.getRightX(), self.DEADBAND)
@@ -386,6 +386,7 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.setTolerance(
             Pose2d(inchesToMeters(0.5), inchesToMeters(0.5), Rotation2d.fromDegrees(2))
         )
+        self.nextMarker = []
         SmartDashboard.putNumber('TranslationControllerP', config.ppTranslationPIDController.getP())
         SmartDashboard.putNumber('TranslationControllerI', config.ppTranslationPIDController.getI())
         SmartDashboard.putNumber('TranslationControllerD', config.ppTranslationPIDController.getD())
@@ -459,6 +460,9 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.eventMarkers = self.trajectory.getMarkers()
         self.initialize("pathPlanner")
 
+    def getNextMarker(self):
+        return self.nextMarker
+
     def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
         """Calculates the chassis speeds of the trajectory at the current time.
 
@@ -473,6 +477,13 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
             if self.firstCall:
                 self.timer.start()
                 self.firstCall = False
+            currentTime = self.timer.get()
+            if self.eventMarkers:
+                if currentTime >= self.nextMarker.time:
+                        self.nextMarker = self.eventMarkers.pop(0)
+                
+
+
             # get the pose of the trajectory at the current time
             referenceState = self.trajectory.sample(self.timer.get())
             return self.calculate(currentPose, referenceState)
