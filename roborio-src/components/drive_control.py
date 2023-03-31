@@ -102,7 +102,9 @@ class DriveControl(StateMachine):
 
     # State fieldOriented (as the default state) This will be the first state.
     @default_state
-    def fieldOriented(self):
+    def fieldOriented(self, initial_call):
+        if initial_call:
+            self.swerveChassis.enableMinSpeed()
         rightStickY = self.driverController.getRightY()
         if rightStickY > 0.5:
             if self.resetController:
@@ -150,13 +152,16 @@ class DriveControl(StateMachine):
 
     # State robotOriented (for driving to cones, cubes and posts).
     @state()
-    def robotOriented(self):
+    def robotOriented(self, initial_call):
+        if initial_call:
+            self.swerveChassis.enableMinSpeed()
         self.swerveChassis.robotOrientedDrive(self._vX, self._vY, self._vT)
 
     @state()
     def driveToObject(self, initial_call):
         if initial_call:
             self.limelight.setGrabberPipeline(self._object)
+            self.swerveChassis.enableMinSpeed()
         velocities = self.limelight.getVelocities()
         self.swerveChassis.robotOrientedDrive(*velocities)
 
@@ -164,6 +169,7 @@ class DriveControl(StateMachine):
     def drivePath(self, initial_call):
         if initial_call:
             self.holonomic.loadPathPlanner(self._pathName)
+            self.swerveChassis.disableMinSpeed()
         self.swerveChassis.holonomicDrive(
             self.holonomic.getChassisSpeeds(
                 self.swerveChassis.estimator.getEstimatedPosition()
@@ -178,6 +184,7 @@ class DriveControl(StateMachine):
     @state(first=True)
     def driveToWayPoint(self, initial_call):
         if initial_call:
+            self.swerveChassis.disableMinSpeed
             # init the trajectory
             self.logger.info(f"Initializing trajectory to {self._endPose}")
             startPoint = self.createPathPoint(

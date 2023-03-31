@@ -171,6 +171,7 @@ class SwerveModule:
             config.FALCON_TICKS_PER_ROTATION,
         )
         self.configModuleComponents()
+        self.useMinSpeed = True
 
         # self.velocity = 0
         # self.angle = 0
@@ -290,6 +291,12 @@ class SwerveModule:
         # self.current_states = None
         # self.current_speeds = None
 
+    def enableMinSpeed(self):
+        self.useMinSpeed = True
+    
+    def disableMinSpeed(self):
+        self.useMinSpeed = False
+
     def setState(self, state: SwerveModuleState):
         # TODO: Remove the following config change once tuning is done
         self.requestedState = FROGSwerveModuleState(state.speed, state.angle)
@@ -308,10 +315,13 @@ class SwerveModule:
             )
 
             # constrain speed within min and max speeds
-            driveSpeed = math.copysign(
-                remap(abs(self.requestedState.speed), 0, config.MAX_METERS_PER_SEC, config.MIN_METERS_PER_SEC, config.MAX_METERS_PER_SEC),
-                self.requestedState.speed
-            )
+            if self.useMinSpeed:
+                driveSpeed = math.copysign(
+                    remap(abs(self.requestedState.speed), 0, config.MAX_METERS_PER_SEC, config.MIN_METERS_PER_SEC, config.MAX_METERS_PER_SEC),
+                    self.requestedState.speed
+                )
+            else:
+                driveSpeed = self.requestedState.speed
             self.drive.set(
                 VELOCITY_MODE,
                 self.drive_unit.speedToVelocity(driveSpeed * self.requestedState.invert_speed),
@@ -422,6 +432,14 @@ class SwerveChassis:
         self.enabled = False
         for module in self.modules:
             module.disable()
+
+    def disableMinSpeed(self):
+        for module in self.modules:
+            module.disableMinSpeed()
+
+    def enableMinSpeed(self):
+        for module in self.modules:
+            module.enableMinSpeed()
 
     def enable(self):
         self.enabled = True
@@ -568,8 +586,9 @@ class SwerveChassis:
                 abs(visionPose.x - self.estimatorPose.x) < 0.5
                 and abs(visionPose.y - self.estimatorPose.y) < 0.5
             ):
-                
-                self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime)
+                stddevupdate = remap(visionPose.x,2.0, 8.0, 0.3, 2.0)
+                self.logger.info('Adding vision measuerment with StdDev of {stdevupdate} and distance of {visionPose.x} ')
+                self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime, (stddevupdate, stddevupdate, math.pi/2))
 
 
         SmartDashboard.putNumber(
