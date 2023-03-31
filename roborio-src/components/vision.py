@@ -55,14 +55,14 @@ class FROGLimeLightVision:
         self.upperPipe = self.ll_upperTable.getIntegerTopic("getpipe").subscribe(-1)
         # create the timer that we can use to the the FPGA timestamp
         self.timer = wpilib.Timer()
-        # self.txFilter = MedianFilter(5)
-        # self.taFilter = MedianFilter(5)
-        # self.poseXFilter = MedianFilter(5)
-        # self.poseYFilter = MedianFilter(5)
-        # self.poseZFilter = MedianFilter(5)
-        # self.poseRollFilter = MedianFilter(5)
-        # self.posePitchFilter = MedianFilter(5)
-        # self.poseYawFilter = MedianFilter(5)
+        # self.txFilter = MedianFilter(8)
+        # self.taFilter = MedianFilter(8)
+        # self.poseXFilter = MedianFilter(8)
+        # self.poseYFilter = MedianFilter(8)
+        # self.poseZFilter = MedianFilter(8)
+        # self.poseRollFilter = MedianFilter(8)
+        # self.posePitchFilter = MedianFilter(8)
+        # self.poseYawFilter = MedianFilter(8)
 
     def getLatency(self):
         return (self.grabberCl.get() + self.grabberTl.get()) / 1000
@@ -167,7 +167,7 @@ class FROGLimeLightVision:
         self.ll_upperTable.putNumber("pipeline", pipeNum)
 
     def arrayToPose3d(self, poseArray) -> Pose3d:
-        pX, pY, pZ, pRoll, pPitch, pYaw = poseArray
+        pX, pY, pZ, pRoll, pPitch, pYaw, time = poseArray
         # pX = self.poseXFilter.calculate(poseArray[0])
         # pY = self.poseYFilter.calculate(poseArray[1])
         # pZ = self.poseZFilter.calculate(poseArray[2])
