@@ -386,7 +386,9 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.setTolerance(
             Pose2d(inchesToMeters(0.5), inchesToMeters(0.5), Rotation2d.fromDegrees(2))
         )
-        self.nextMarker = []
+        self.nextMarker = PathPlannerTrajectory.EventMarker
+        self.nextMarker.names = ['Start']
+        self.nextMarker.time = 0
         SmartDashboard.putNumber('TranslationControllerP', config.ppTranslationPIDController.getP())
         SmartDashboard.putNumber('TranslationControllerI', config.ppTranslationPIDController.getI())
         SmartDashboard.putNumber('TranslationControllerD', config.ppTranslationPIDController.getD())
@@ -406,16 +408,16 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
             SmartDashboard.getNumber("TranslationControllerP", self.yController.getP())
         )
         self.xController.setI(
-            SmartDashboard.getNumber("TranslationControllerP", self.xController.getI())
+            SmartDashboard.getNumber("TranslationControllerI", self.xController.getI())
         )
         self.yController.setI(
-            SmartDashboard.getNumber("TranslationControllerP", self.yController.getI())
+            SmartDashboard.getNumber("TranslationControllerI", self.yController.getI())
         )
         self.xController.setD(
-            SmartDashboard.getNumber("TranslationControllerP", self.xController.getD())
+            SmartDashboard.getNumber("TranslationControllerD", self.xController.getD())
         )
         self.yController.setD(
-            SmartDashboard.getNumber("TranslationControllerP", self.yController.getD())
+            SmartDashboard.getNumber("TranslationControllerD", self.yController.getD())
         )
         self.rotationController.setP(
             SmartDashboard.getNumber("RotationControllerP", self.rotationController.getP())
