@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Any
 
 import config
 import wpilib
@@ -44,14 +44,14 @@ class FROGLimeLightVision:
         self.grabberTl = self.ll_grabberTable.getFloatTopic("tl").subscribe(0)
 
         self.upperPose = self.ll_upperTable.getFloatArrayTopic("botpose").subscribe(
-            [-99, -99, -99, 0, 0, 0]
+            [-99, -99, -99, 0, 0, 0, -1]
         )
         self.upperPoseBlue = self.ll_upperTable.getFloatArrayTopic(
             "botpose_wpiblue"
-        ).subscribe([-99, -99, -99, 0, 0, 0])
+        ).subscribe([-99, -99, -99, 0, 0, 0, -1])
         self.upperPoseRed = self.ll_upperTable.getFloatArrayTopic(
             "botpose_wpired"
-        ).subscribe([-99, -99, -99, 0, 0, 0])
+        ).subscribe([-99, -99, -99, 0, 0, 0, -1])
         self.upperPipe = self.ll_upperTable.getIntegerTopic("getpipe").subscribe(-1)
         # create the timer that we can use to the the FPGA timestamp
         self.timer = wpilib.Timer()
@@ -79,26 +79,20 @@ class FROGLimeLightVision:
     def getUpperPipeline(self):
         return self.upperPipe.get()
 
-    def getBotPoseEstimateForAlliance(self) -> Tuple[Pose3d, float]:
+    def getBotPoseEstimateForAlliance(self) -> Tuple[Pose3d, Any]:
         if self.fieldLayout.alliance == RED_ALLIANCE:
-            return (
-                self.getBotPoseRed(),
-                self.timer.getFPGATimestamp() - self.getLatency(),
-            )
+            return *self.getBotPoseEstimateRed(),
         elif self.fieldLayout.alliance == BLUE_ALLIANCE:
-            return (
-                self.getBotPoseBlue(),
-                self.timer.getFPGATimestamp() - self.getLatency(),
-            )
+            return *self.getBotPoseEstimateBlue(),
+        
+    def getBotPoseEstimate(self) -> Tuple[Pose3d, Any]:
+        return *self.arrayToBotPoseEstimate(self.upperPose.get()),
 
-    def getBotPose(self) -> Pose3d:
-        return self.arrayToPose3d(self.upperPose.get())
+    def getBotPoseEstimateBlue(self) -> Tuple[Pose3d, Any]:
+        return *self.arrayToBotPoseEstimate(self.upperPoseBlue.get()),
 
-    def getBotPoseBlue(self) -> Pose3d:
-        return self.arrayToPose3d(self.upperPoseBlue.get())
-
-    def getBotPoseRed(self) -> Pose3d:
-        return self.arrayToPose3d(self.upperPoseRed.get())
+    def getBotPoseEstimateRed(self) ->Tuple[Pose3d, Any] :
+        return *self.arrayToBotPoseEstimate(self.upperPoseRed.get()),
 
     def getTID(self) -> float:
         return self.ll_grabberTable.getNumber("tid", -1.0)
@@ -166,15 +160,28 @@ class FROGLimeLightVision:
     def setUpperPipeline(self, pipeNum: int):
         self.ll_upperTable.putNumber("pipeline", pipeNum)
 
-    def arrayToPose3d(self, poseArray) -> Pose3d:
-        pX, pY, pZ, pRoll, pPitch, pYaw, time = poseArray
+    def arrayToBotPoseEstimate(self, poseArray) -> Tuple[Pose3d, Any]:
+        """Takes limelight array data and creates a Pose3d object for 
+           robot position and a timestamp reprepresenting the time
+           the position was observed.
+
+        Args:
+            poseArray (_type_): An array from the limelight network tables.
+
+        Returns:
+            Tuple[Pose3d, Any]: Returns vision Pose3d and timestamp.
+        """
+        pX, pY, pZ, pRoll, pPitch, pYaw, msLatency = poseArray
         # pX = self.poseXFilter.calculate(poseArray[0])
         # pY = self.poseYFilter.calculate(poseArray[1])
         # pZ = self.poseZFilter.calculate(poseArray[2])
         # pRoll = self.poseRollFilter.calculate(poseArray[3])
         # pPitch = self.posePitchFilter.calculate(poseArray[4])
         # pYaw = self.poseYawFilter.calculate(poseArray[5])
-        return Pose3d(
-            Translation3d(pX, pY, pZ),
-            Rotation3d.fromDegrees(pRoll, pPitch, pYaw),
-        )
+        if msLatency == -1:
+            return None, None
+        else:
+            return Pose3d(
+                        Translation3d(pX, pY, pZ),
+                        Rotation3d.fromDegrees(pRoll, pPitch, pYaw)
+                    ), self.timer.getFPGATimestamp() - (msLatency/1000)

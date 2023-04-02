@@ -285,6 +285,8 @@ class SwerveModule:
         self.drive.setInverted(TalonFXInvertType.Clockwise)
         self.drive.setSensorPhase(False)
         self.drive.configClosedloopRamp(0.25)
+        self.drive.configVoltageCompSaturation(11)
+        self.drive.enableVoltageCompensation(True)
 
        # SmartDashboard.putNumber("Drive kF", config.cfgDriveMotor.slot0.kF)
 
@@ -447,11 +449,10 @@ class SwerveChassis:
             module.enable()
 
     def lockChassis(self):
-        self.disable()
-        self.moduleFrontLeft.steer.set(POSITION_MODE, math.pi/4)
-        self.moduleBackRight.steer.set(POSITION_MODE, math.pi/4)
-        self.moduleFrontRight.steer.set(POSITION_MODE, -math.pi/4)
-        self.moduleBackLeft.steer.set(POSITION_MODE, -math.pi/4)
+        self.moduleFrontLeft.setState(SwerveModuleState(0, Rotation2d.fromDegrees(45)))
+        self.moduleBackRight.setState(SwerveModuleState(0, Rotation2d.fromDegrees(45)))
+        self.moduleFrontRight.setState(SwerveModuleState(0, Rotation2d.fromDegrees(-45)))
+        self.moduleBackLeft.setState(SwerveModuleState(0, Rotation2d.fromDegrees(-45)))
 
     def setModuleStates(self, states):
         self.moduleStates = states
@@ -571,30 +572,30 @@ class SwerveChassis:
         visionPose, visionTime = self.limelight.getBotPoseEstimateForAlliance()
         if visionPose:
             SmartDashboard.putNumber(
-                "Vision_X_Inches", visionPose.X()
+                "Vision_X", visionPose.X()
             )
             SmartDashboard.putNumber(
-                "Vision_Y_Inches", visionPose.Y()
+                "Vision_Y", visionPose.Y()
             )
             SmartDashboard.putNumber(
-                "Vision_Z_Inches", visionPose.Z()
+                "Vision_Z", visionPose.Z()
             )
             SmartDashboard.putNumber(
-                "Vision_T_Degrees", visionPose.rotation().toRotation2d().degrees()
+                "Vision_T", visionPose.rotation().toRotation2d().degrees()
             )
             if (
                 abs(visionPose.x - self.estimatorPose.x) < 0.5
                 and abs(visionPose.y - self.estimatorPose.y) < 0.5
             ):
                 stddevupdate = remap(visionPose.x,2.0, 8.0, 0.3, 2.0)
-                self.logger.info('Adding vision measuerment with StdDev of {stdevupdate} and distance of {visionPose.x} ')
+                # self.logger.info(f'Adding vision measuerment with StdDev of {stddevupdate} and distance of {visionPose.x} ')
                 self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime, (stddevupdate, stddevupdate, math.pi/2))
 
 
         SmartDashboard.putNumber(
-            "Estimator_X_Inches", self.estimatorPose.X())
+            "Estimator_X", self.estimatorPose.X())
         SmartDashboard.putNumber(
-            "Estimator_Y_Inches", self.estimatorPose.Y())
+            "Estimator_Y", self.estimatorPose.Y())
         SmartDashboard.putNumber(
-            "Estimator_T_Degrees", self.estimatorPose.rotation().degrees()
+            "Estimator_T", self.estimatorPose.rotation().degrees()
         )

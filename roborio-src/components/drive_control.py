@@ -88,6 +88,9 @@ class DriveControl(StateMachine):
         else:
             self._pathName = self.pathChooser.getSelected()
         self.engage(initial_state='drivePath')
+
+    def lockWheels(self):
+        self.engage(initial_state='lock')
         
 
     def angleErrorToRotation(error):
@@ -99,6 +102,11 @@ class DriveControl(StateMachine):
             return 0
         else:
             return math.copysign(vT, error)
+        
+    def rollToSpeedFactor(self, gyroRoll):
+        pass
+        
+
 
     # State fieldOriented (as the default state) This will be the first state.
     @default_state
@@ -170,16 +178,18 @@ class DriveControl(StateMachine):
         if initial_call:
             self.holonomic.loadPathPlanner(self._pathName)
             self.swerveChassis.disableMinSpeed()
-        self.swerveChassis.holonomicDrive(
-            self.holonomic.getChassisSpeeds(
-                self.swerveChassis.estimator.getEstimatedPosition()
-            )
+        newspeeds = self.holonomic.getChassisSpeeds(
+            self.swerveChassis.estimator.getEstimatedPosition()
         )
+
+
+        self.swerveChassis.holonomicDrive(newspeeds)
 
     # State locked (for turning the wheels in to keep it from moving).
     @state()
-    def locked(self):
-        self.swerveChassis.lockChassis()
+    def lock(self, initial_call):
+        if initial_call:
+            self.swerveChassis.lockChassis()
 
     @state(first=True)
     def driveToWayPoint(self, initial_call):

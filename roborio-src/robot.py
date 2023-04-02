@@ -96,6 +96,8 @@ class FROGbot(MagicRobot):
         self.gridLevel = 1
         self.gridPosition = 1
 
+        self.chassisLocked = False
+
         # self.aprilTagsTab = Shuffleboard.getTab('April Tags')
         # self.aprilTagsTab.add(title='botPoseBlue', defaultValue=self.limelight_at)
     
@@ -113,7 +115,7 @@ class FROGbot(MagicRobot):
         before running Autonomous or Teleop modes should be added here"""
         super().robotInit()  #calls createObjects()
         #TODO: test if we can place the robot position setting here from AutonomousInit
-        # self.leds.fire()
+        self.leds.green()
   
     def autonomousInit(self):
         """Runs at the beginning autonomous mode.  Add anything that is needed
@@ -124,7 +126,9 @@ class FROGbot(MagicRobot):
         # TODO: Test and change this to use the initial bot post from vision?
         # this call gets the pose3d from the tuple returned by getBotPoseEstimateForAlliance
         # and then converts to a Pose2d for the setFieldPosition
-        self.startingPose2d = self.limelight.getBotPoseEstimateForAlliance()[0].toPose2d()
+        visionPose, visionTime = self.limelight.getBotPoseEstimateForAlliance()
+        if visionPose:
+            self.startingPose2d = visionPose.toPose2d()
         self.swerveChassis.setFieldPosition(self.startingPose2d)
         # self.armControl.next_state('leaveZero')
 
@@ -228,12 +232,17 @@ class FROGbot(MagicRobot):
         #         )
         #     self.swerveChassis.autoDrive()
         if self.btnLockChassis():
-            self.swerveChassis.lockChassis()
+            self.chassisLocked = True
+            self.swerveChassis.enabled = False
 
         if self.btnUnlockChassis():
-            self.swerveChassis.enable()
+            self.chassisLocked = False
+            self.swerveChassis.enabled = True
 
-        if self.btnGoToGridPosition():
+        if self.chassisLocked:
+            self.driveControl.lockWheels()
+
+        elif self.btnGoToGridPosition():
             self.logger.info(f'Driving to position {self.gridPosition}')
             self.driveControl.holonomicDriveToWaypoint(
                 self.fieldLayout.getPosition(self.gridPosition).toPose2d()
