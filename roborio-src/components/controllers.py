@@ -375,8 +375,8 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
 
     def __init__(self, kinematics):
         # the holonomic controller
-        self.xController = config.ppTranslationPIDController
-        self.yController = config.ppTranslationPIDController
+        self.xController = config.ppXPIDController
+        self.yController = config.ppYPIDController
         self.rotationController = config.ppRotationPIDController
         # self.angleController.enableContinuousInput(-1 * math.pi, math.pi)
         super().__init__(self.xController, self.yController, self.rotationController)
@@ -389,10 +389,7 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.nextMarker = PathPlannerTrajectory.EventMarker
         self.nextMarker.names = ['Start']
         self.nextMarker.time = 0
-        SmartDashboard.putNumber('TranslationControllerP', config.ppTranslationPIDController.getP())
-        SmartDashboard.putNumber('TranslationControllerI', config.ppTranslationPIDController.getI())
-        SmartDashboard.putNumber('TranslationControllerD', config.ppTranslationPIDController.getD())
-        SmartDashboard.putNumber("RotationControllerP", config.ppRotationPIDController.getP())
+
 
     def initialize(self, trajectoryType):
         self.timer.stop()
