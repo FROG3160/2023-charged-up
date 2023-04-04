@@ -1,5 +1,5 @@
 import math
-from wpimath.geometry import Translation2d, Translation3d, Transform3d, Rotation3d
+from wpimath.geometry import Translation2d, Translation3d, Transform3d, Rotation3d, Pose2d, Rotation2d
 from wpimath.units import feetToMeters, metersToInches, degreesToRadians, inchesToMeters
 from wpimath.controller import PIDController, ProfiledPIDControllerRadians
 from wpimath.trajectory import TrapezoidProfileRadians
@@ -21,6 +21,7 @@ MAX_FEET_PER_SEC = 16
 MIN_FEET_PER_SEC = 0.55
 MAX_METERS_PER_SEC = feetToMeters(MAX_FEET_PER_SEC)
 MIN_METERS_PER_SEC = feetToMeters(MIN_FEET_PER_SEC)
+VOLTAGE_COMPENSATION = 10.5
 
 MAX_CHASSIS_REV_SEC = 2
 MAX_CHASSIS_RADIANS_SEC = MAX_CHASSIS_REV_SEC * math.tau
@@ -36,7 +37,7 @@ MODULE_FRONT_LEFT = {
     "drive_motor_id": 11,
     "steer_motor_id": 21,
     "steer_sensor_id": 31,
-    "steer_sensor_offset": -5.185547,  #-4.13085938,  
+    "steer_sensor_offset": -5.537,# -5.185547,  #-4.13085938,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, TRACK_WIDTH / 2),
 }
 
@@ -45,7 +46,7 @@ MODULE_FRONT_RIGHT = {
     "drive_motor_id": 12,
     "steer_motor_id": 22,
     "steer_sensor_id": 32,
-    "steer_sensor_offset": -150.820313, #-150.292969,  
+    "steer_sensor_offset": -150.381,#-150.820313, #-150.292969,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, -TRACK_WIDTH / 2),
 }
 MODULE_BACK_LEFT = {
@@ -53,7 +54,7 @@ MODULE_BACK_LEFT = {
     "drive_motor_id": 13,
     "steer_motor_id": 23,
     "steer_sensor_id": 33,
-    "steer_sensor_offset": -179.648438,  #-179.736328,  
+    "steer_sensor_offset": 179.736,#-179.648438,  #-179.736328,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, TRACK_WIDTH / 2),
 }
 MODULE_BACK_RIGHT = {
@@ -61,7 +62,7 @@ MODULE_BACK_RIGHT = {
     "drive_motor_id": 14,
     "steer_motor_id": 24,
     "steer_sensor_id": 34,
-    "steer_sensor_offset": 45.9667969,  ##47.2851563,  
+    "steer_sensor_offset": 45,#45.9667969,  ##47.2851563,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, -TRACK_WIDTH / 2),
 }
 
@@ -72,19 +73,20 @@ holonomicTranslationPIDController = PIDController(1.5, 0, 0)
 holonomicAnglePIDController = ProfiledPIDControllerRadians(
     2.5, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
 )
-ppXPIDController = PIDController(0.42,0,0.02425)
-ppYPIDController = PIDController(0.42,0,0.0255)
-ppRotationPIDController = PIDController(2,0,0.03)
+ppXPIDController = PIDController(0.7,0,0.0)
+ppYPIDController = PIDController(0.7,0,0.0)
+ppRotationPIDController = PIDController(0.38,0,0.01)
+ppTolerance = Pose2d(0.03, 0.03, Rotation2d.fromDegrees(2))
 #
 # **Swerve Module Drive Motor Config
 #
 cfgDriveMotor = TalonFXConfiguration()
 cfgDriveMotor.initializationStrategy = SensorInitializationStrategy.BootToZero
 cfgDriveMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
-cfgDriveMotor.slot0.kP = 0.0  # TODO: Confirm PID
+cfgDriveMotor.slot0.kP = 0.02  # TODO: Confirm PID
 cfgDriveMotor.slot0.kI = 0.0
 cfgDriveMotor.slot0.kD = 0.0
-cfgDriveMotor.slot0.kF = 0.05 #0.04664  # 0.058
+cfgDriveMotor.slot0.kF = 0.050 #0.04664  # 0.058
 
 #
 # **Swerve Module Steer Motor Config
@@ -111,6 +113,7 @@ cfgSteerEncoder.absoluteSensorRange = AbsoluteSensorRange.Signed_PlusMinus180
 
 cfgProfiledMaxVelocity = math.pi*8
 cfgProfiledMaxAccel = math.pi*4
+
 cfgProfiledP = 0.4
 cfgProfiledI = 0.0
 cfgProfiledD = 0.0

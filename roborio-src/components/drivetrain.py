@@ -214,8 +214,8 @@ class SwerveModule:
     # def getCommandedVelocity(self):
     #     return self.calculated_velocity
 
-    # def getActualVelocity(self):
-    #     return self.drive.getSelectedSensorVelocity()
+    def getActualVelocity(self):
+        return self.drive.getSelectedSensorVelocity()
 
     def getCurrentDistance(self) -> float:
         return self.drive_unit.positionToDistance(
@@ -285,7 +285,7 @@ class SwerveModule:
         self.drive.setInverted(TalonFXInvertType.Clockwise)
         self.drive.setSensorPhase(False)
         self.drive.configClosedloopRamp(0.25)
-        self.drive.configVoltageCompSaturation(11)
+        self.drive.configVoltageCompSaturation(config.VOLTAGE_COMPENSATION)
         self.drive.enableVoltageCompensation(True)
 
        # SmartDashboard.putNumber("Drive kF", config.cfgDriveMotor.slot0.kF)
@@ -302,7 +302,7 @@ class SwerveModule:
     def setState(self, state: SwerveModuleState):
         # TODO: Remove the following config change once tuning is done
         self.requestedState = FROGSwerveModuleState(state.speed, state.angle)
-
+        
         if self.enabled:
             #
             # using built-in optimize method instead of our custom one from last year
@@ -340,18 +340,21 @@ class SwerveModule:
 
     def periodic(self) -> None:
         pass
-        # SmartDashboard.putNumber(
-        #     "{}_steerAngle".format(self.name), self.getCurrentRotation().degrees()
-        # )
-        # SmartDashboard.putNumber(
-        #     "{}_driveSpeed".format(self.name), self.getCurrentSpeed()
-        # )
-        # SmartDashboard.putNumber(
-        #     "{}_requestedAngle".format(self.name), self.requestedState.angle.degrees()
-        # )
-        # SmartDashboard.putNumber(
-        #     "{}_requestedSpeed".format(self.name), self.requestedState.speed
-        # )
+        SmartDashboard.putNumber(
+            "{}_steerAngle".format(self.name), self.getCurrentRotation().degrees()
+        )
+        SmartDashboard.putNumber(
+            "{}_driveSpeed".format(self.name), self.getActualVelocity()
+        )
+        SmartDashboard.putNumber(
+            "{}_requestedAngle".format(self.name), self.requestedState.angle.degrees()
+        )
+        SmartDashboard.putNumber(
+            "{}_requestedSpeed".format(self.name), self.drive_unit.speedToVelocity(self.requestedState.speed*self.requestedState.invert_speed)
+        )
+        SmartDashboard.putNumber(
+            "{}_speedError".format(self.name), abs(self.drive_unit.speedToVelocity(self.requestedState.speed)) - abs(self.getActualVelocity())
+        )
 
 
 class SwerveChassis:
