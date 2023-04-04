@@ -383,12 +383,9 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.timer = Timer()
         self.trajectoryType = False
         self.kinematics = kinematics
-        self.setTolerance(
-            Pose2d(inchesToMeters(0.5), inchesToMeters(0.5), Rotation2d.fromDegrees(2))
-        )
-        self.nextMarker = PathPlannerTrajectory.EventMarker
-        self.nextMarker.names = ['Start']
-        self.nextMarker.time = 0
+        self.setTolerance(config.ppTolerance)
+        self.pastMarker = None
+        self.nextMarker = None
 
 
     def initialize(self, trajectoryType):
@@ -396,6 +393,12 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.timer.reset()
         self.firstCall = True
         self.trajectoryType = trajectoryType
+        if trajectoryType == 'pathPlanner':
+            self.eventMarkers = self.trajectory.getMarkers()
+        else:
+            self.eventMarkers = []
+        if self.eventMarkers:
+            self._loadNextMarker()
 
     def loadPID(self):
         self.xController.setP(
@@ -419,6 +422,11 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         self.rotationController.setP(
             SmartDashboard.getNumber("RotationControllerP", self.rotationController.getP())
         )
+
+    def postError(self):
+        SmartDashboard.putNumber('PID_X_ERROR', self.xController.getVelocityError())
+        SmartDashboard.putNumber('PID_Y_ERROR', self.yController.getVelocityError())
+        SmartDashboard.putNumber('PIDRotERROR', self.rotationController.getVelocityError())
 
     def initPoseToPose(self, startPose, endPose):
         startPoint = PathPoint(startPose.translation(), startPose.rotation())
@@ -456,11 +464,19 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         # > 1.1736999735993974
         # marker.position
         # > Translation2d(x=2.210424, y=4.428544)
-        self.eventMarkers = self.trajectory.getMarkers()
+        
         self.initialize("pathPlanner")
 
-    def getNextMarker(self):
-        return self.nextMarker
+    def getPastMarker(self):
+        return self.pastMarker
+    
+    def _loadNextMarker(self):
+        if self.nextMarker:
+            self.pastMarker = self.nextMarker
+        if self.eventMarkers:
+            self.nextMarker = self.eventMarkers.pop(0)
+        else:
+            self.nextMarker = None
 
     def getChassisSpeeds(self, currentPose: Pose2d) -> ChassisSpeeds:
         """Calculates the chassis speeds of the trajectory at the current time.
@@ -471,20 +487,20 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         Returns:
             ChassisSpeeds: translation and rotational vectors desired
         """
+        self.postError()
         SmartDashboard.putBoolean("AT TARGET", self.atReference())
         if not self.trajectoryType is None:
             if self.firstCall:
                 self.timer.start()
                 self.firstCall = False
             currentTime = self.timer.get()
-            if self.eventMarkers:
+            if self.nextMarker:
                 if currentTime >= self.nextMarker.time:
-                        self.nextMarker = self.eventMarkers.pop(0)
+                        self.pastMarker = self.nextMarker
+                        self._loadNextMarker()
                 
-
-
             # get the pose of the trajectory at the current time
-            referenceState = self.trajectory.sample(self.timer.get())
+            referenceState = self.trajectory.sample(currentTime)
             return self.calculate(currentPose, referenceState)
         if self.atReference():
             self.timer.stop()
