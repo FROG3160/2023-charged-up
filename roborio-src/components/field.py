@@ -7,8 +7,8 @@ apriltagsFilename = r"apriltags_layout.json"
 # get the dir of THIS file (vision.py), go up one level (..), and use the specified filename
 apriltagsLayoutPath = os.path.join(os.path.dirname(__file__), r"..", apriltagsFilename)
 
-X_CHANGE = inchesToMeters(31)
-Y_CHANGE = inchesToMeters(22.25)
+X_CHANGE = 1.27257
+Y_CHANGE = inchesToMeters(22)
 Z_CHANGE = 0.462788
 
 RED_ALLIANCE = wpilib.DriverStation.Alliance.kRed
