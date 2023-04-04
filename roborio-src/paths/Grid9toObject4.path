@@ -32,7 +32,7 @@
         "y": 4.799026221429067
       },
       "nextControl": null,
-      "holonomicAngle": 175.86532862626356,
+      "holonomicAngle": 178.23444011402975,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -45,5 +45,27 @@
       }
     }
   ],
-  "markers": []
+  "maxVelocity": 3.0,
+  "maxAcceleration": 3.0,
+  "isReversed": null,
+  "markers": [
+    {
+      "position": 0.09350649350657644,
+      "names": [
+        "dropArm"
+      ]
+    },
+    {
+      "position": 1.0,
+      "names": [
+        "driveToObject"
+      ]
+    },
+    {
+      "position": 0.8606060606060655,
+      "names": [
+        "armToFloor"
+      ]
+    }
+  ]
 }

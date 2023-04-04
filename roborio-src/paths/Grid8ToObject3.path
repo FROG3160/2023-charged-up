@@ -45,5 +45,27 @@
       }
     }
   ],
-  "markers": []
+  "maxVelocity": 3.0,
+  "maxAcceleration": 3.0,
+  "isReversed": null,
+  "markers": [
+    {
+      "position": 0.11515151515151792,
+      "names": [
+        "armToHome"
+      ]
+    },
+    {
+      "position": 0.8999999999999999,
+      "names": [
+        "driveToCone"
+      ]
+    },
+    {
+      "position": 1.0,
+      "names": [
+        "driveToCone"
+      ]
+    }
+  ]
 }

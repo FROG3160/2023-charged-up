@@ -243,7 +243,6 @@ class GrabberControl(StateMachine):
     def looking(self, initial_call):
         if initial_call:
             self.grabber.openJaws()
-        self.logger.info(f'Looking -- pipeline is: {self.limelight.getGrabberPipeline()}')
         if self.limelight.getGrabberPipeline() == LL_CONE:
             self.leds.yellowPocketSlow()
         else:
@@ -260,8 +259,6 @@ class GrabberControl(StateMachine):
 
         # self.logger.info(f"Intaking, area = {self.limelight.ta}")
         if self.limelight.ta is not None:
-            self.logger.info(f'Intaking -- pipeline is: {self.limelight.getGrabberPipeline()}')
-       
             if self.limelight.getGrabberPipeline() == LL_CONE:
                 self.leds.yellowPocketFast()
             else:
@@ -269,7 +266,6 @@ class GrabberControl(StateMachine):
             self.targetPresent = True
             if self.limelight.ta >= 30:
                 if self.grabber.getProximity() < 1000:
-                    self.logger.info("Turning intake wheels on")
                     self.grabber.wheelsOn(1)
                 self.last_state = 'intaking'
                 self.next_state("grabbing")
@@ -281,7 +277,6 @@ class GrabberControl(StateMachine):
     @state()
     def grabbing(self):
         if self.grabber.getProximity() > 230:
-            self.logger.info("Closing grabber")
             self.grabber.closeJaws()
             self.last_state = 'grabbing'
             self.hasObject = True
@@ -291,6 +286,7 @@ class GrabberControl(StateMachine):
     def retracting(self):
         self.setLedsToHeldObject()
         if self.armControl.getArmPosition() == 'floor':
+            self.armControl.done()# resetting state machine mostly for autonomous 
             self.next_state("lifting")
         else:
             self.next_state('waitForPullback')
@@ -313,6 +309,7 @@ class GrabberControl(StateMachine):
             self.grabber.wheelsOff()
         self.armControl.moveToHome()
         if self.armControl.getArmPosition() == 'home':
+            self.armControl.done()
             self.last_state = 'lifting'
             self.next_state("stoppingIntake")
 
@@ -326,10 +323,8 @@ class GrabberControl(StateMachine):
         # self.next_state("holding")
         if self.grabber.sensor.isCube():
             self.next_state("holding")
-            self.logger.info('stoppingIntake: Cube found')
         elif self.armControl.isAtHome():
             self.next_state('supportCone')
-            self.logger.info('stoppingIntake: Cone found, arm at home')
     
     @state()
     def supportCone(self):
@@ -360,6 +355,6 @@ class GrabberControl(StateMachine):
         else:
             self.leds.yellow()
 
-    def intake(self):
-        self.engage(initial_state='intaking')
+    def look(self):
+        self.engage(initial_state='looking')
         

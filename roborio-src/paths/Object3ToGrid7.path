@@ -24,12 +24,62 @@
     },
     {
       "anchorPoint": {
-        "x": 1.8210187069724793,
-        "y": 3.856783297982181
+        "x": 5.35768793276717,
+        "y": 4.673344303210346
       },
       "prevControl": {
-        "x": 3.300291275907228,
-        "y": 5.5996886019746075
+        "x": 6.020680437753201,
+        "y": 4.608178373233086
+      },
+      "nextControl": {
+        "x": 4.305927046636703,
+        "y": 4.776722509966761
+      },
+      "holonomicAngle": 0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 2.96650506344491,
+        "y": 4.7587436914004275
+      },
+      "prevControl": {
+        "x": 3.519925943860456,
+        "y": 4.768452829653332
+      },
+      "nextControl": {
+        "x": 2.197910569734183,
+        "y": 4.745259577475678
+      },
+      "holonomicAngle": 0.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 1.8158606751996111,
+        "y": 3.8642974677253714
+      },
+      "prevControl": {
+        "x": 2.1349847047520183,
+        "y": 4.228368543693611
       },
       "nextControl": null,
       "holonomicAngle": 0,
@@ -45,5 +95,27 @@
       }
     }
   ],
-  "markers": []
+  "maxVelocity": 3.0,
+  "maxAcceleration": 3.0,
+  "isReversed": null,
+  "markers": [
+    {
+      "position": 1.2909090909091512,
+      "names": [
+        "armToShelf"
+      ]
+    },
+    {
+      "position": 3.0,
+      "names": [
+        "dropObject"
+      ]
+    },
+    {
+      "position": 1.1727272727272728,
+      "names": [
+        "resetArm"
+      ]
+    }
+  ]
 }
