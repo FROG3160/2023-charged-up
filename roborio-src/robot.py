@@ -114,7 +114,12 @@ class FROGbot(MagicRobot):
         """Runs at the startup of the robot code.  Anything that needs to be set
         before running Autonomous or Teleop modes should be added here"""
         super().robotInit()  #calls createObjects()
+        self.setAlliance()
         #TODO: test if we can place the robot position setting here from AutonomousInit
+        visionPose, visionTime = self.limelight.getBotPoseEstimateForAlliance()
+        if visionPose:
+            self.startingPose2d = visionPose.toPose2d()
+        self.swerveChassis.setFieldPosition(self.startingPose2d)
         self.leds.green()
   
     def autonomousInit(self):
