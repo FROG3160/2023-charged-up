@@ -84,8 +84,10 @@ class DriveControl(StateMachine):
 
     def holonomicDrivePath(self, pathName = None):
         if pathName:
+            self.logger.info(f'Setting path to {pathName}')
             self._pathName = pathName
         else:
+            self.logger.info(f'Getting path from chooser.')
             self._pathName = self.pathChooser.getSelected()
         self.engage(initial_state='drivePath')
 
