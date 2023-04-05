@@ -8,8 +8,8 @@ from pathplannerlib import PathPoint
 from components.field import FROGFieldLayout
 from wpilib import Timer
 
-class ThreePieceLoadSide(AutonomousStateMachine):
-    MODE_NAME = "3 Piece Load Side"
+class ConeFirstThreePieceLoadSide(AutonomousStateMachine):
+    MODE_NAME = "Cone First 3 Piece Load Side"
 
     driveControl: DriveControl
     armControl: ArmControl
@@ -37,7 +37,6 @@ class ThreePieceLoadSide(AutonomousStateMachine):
         if marker := self.driveControl.holonomic.getPastMarker():
             if 'dropObject' in marker.names:
         #if self.driveControl.holonomic.atReference():
-                self.logger.info('hit marker')
                 self.next_state('droppingObject1')
 
     @state()
@@ -73,6 +72,7 @@ class ThreePieceLoadSide(AutonomousStateMachine):
 
         if self.grabberControl.current_state == 'lifting':
             self.driveControl.done()
+            self.armControl.moveToHome()
             self.next_state('movingToGrid8')
     
     @state()
@@ -121,10 +121,156 @@ class ThreePieceLoadSide(AutonomousStateMachine):
 
         if self.grabberControl.current_state == 'lifting':
             self.driveControl.done()
+            self.armControl.moveToHome()
             self.next_state('movingToGrid7')  
 
     @state()
     def movingToGrid7(self, initial_call):
+        self.driveControl.holonomicDrivePath(
+            'Object3ToGrid7'
+        )
+        if marker := self.driveControl.holonomic.getPastMarker():
+            if 'resetArm' in marker.names:
+                self.armControl.done()
+            if 'armToShelf' in marker.names:
+                self.armControl.moveToShelf()
+            if 'dropObject' in marker.names:
+                self.driveControl.done()
+                self.next_state('droppingCone2')
+
+    @state()
+    def droppingCone2(self, initial_call):
+        if initial_call:
+            self.grabberControl.next_state('dropping')
+        self.grabberControl.engage()
+        if not self.grabberControl.hasObject:
+            self.done()
+
+
+class CubeFirstThreePieceLoadSide(AutonomousStateMachine):
+    MODE_NAME = "Cube First 3 Piece Load Side"
+
+    driveControl: DriveControl
+    armControl: ArmControl
+    grabberControl: GrabberControl
+    fieldLayout: FROGFieldLayout
+    #timer: Timer
+
+    def __init__(self):
+        super().__init__()
+        self.stateTimer = Timer()
+
+
+    @timed_state(duration = 1.2, first=True, next_state='movingToGrid8')
+    def raisingArm(self, initial_call):
+        self.armControl.moveToShelf()
+    
+    @state()
+    def movingToGrid8(self, initial_call):
+        self.driveControl.holonomicDrivePath(
+            'ChargeToGrid8'
+        )
+        if marker := self.driveControl.holonomic.getPastMarker():
+            if 'dropObject' in marker.names:
+        #if self.driveControl.holonomic.atReference():
+                self.next_state('droppingObject1')
+
+    @state()
+    def droppingObject1(self, initial_call):
+        if initial_call:
+            self.grabberControl.next_state('dropping')
+        self.grabberControl.engage()
+        if not self.grabberControl.hasObject:
+            self.next_state('movingToObject4')
+
+    @state()
+    def movingToObject4(self, initial_call):
+        self.driveControl.holonomicDrivePath(
+            'Grid8ToObject4'
+        )
+        firstLoop = True
+        if marker := self.driveControl.holonomic.getPastMarker():
+            if 'armToHome' in marker.names:
+                self.armControl.moveToHome()
+            if 'armToFloor' in marker.names:
+                if firstLoop:
+                    self.armControl.done()
+                    firstLoop = False
+                self.armControl.moveToFloor()
+            if 'driveToObject' in marker.names:
+                self.driveControl.done()
+                self.armControl.done()
+                self.next_state('gettingCone1')
+    
+    @state()
+    def gettingCone1(self, initial_call):
+        if initial_call:
+            self.grabberControl.next_state('looking')
+        self.armControl.done()
+        self.driveControl.autoDriveToCone()
+        self.grabberControl.engage()
+
+        if self.grabberControl.current_state == 'lifting':
+            self.driveControl.done()
+            self.next_state('movingToGrid9')
+    
+    @state()
+    def movingToGrid9(self, initial_call):
+        self.grabberControl.engage()
+        self.driveControl.holonomicDrivePath(
+            'Object4ToGrid9'
+        )
+        if marker := self.driveControl.holonomic.getPastMarker():
+            if 'resetArm' in marker.names:
+                self.armControl.done()
+            if 'armToShelf' in marker.names:
+                self.armControl.moveToShelf()
+            if 'dropObject' in marker.names:
+                self.driveControl.done()
+                self.next_state('droppingCone1')
+
+    @state()
+    def droppingCone1(self, initial_call):
+        if initial_call:
+            self.grabberControl.next_state('dropping')
+        self.grabberControl.engage()
+        if not self.grabberControl.hasObject:
+            self.next_state('movingToObject3')
+
+    @state()
+    def movingToObject3(self, initial_call):
+        self.driveControl.holonomicDrivePath(
+            'Grid9ToObject3'
+        )
+        firstLoop = True
+        if marker := self.driveControl.holonomic.getPastMarker():
+            if 'armToHome' in marker.names:
+                self.armControl.moveToHome()
+            if 'armToFloor' in marker.names:
+                if firstLoop:
+                    self.armControl.done()
+                    firstLoop = False
+                self.armControl.moveToFloor()
+            if 'driveToCone' in marker.names:
+                self.driveControl.done()
+                self.armControl.done()
+                self.next_state('gettingCone2')
+
+    @state()
+    def gettingCone2(self, initial_call):
+        if initial_call:
+            self.grabberControl.next_state('looking')
+        self.armControl.done()
+        self.driveControl.autoDriveToCone()
+        self.grabberControl.engage()
+
+        if self.grabberControl.current_state == 'lifting':
+            self.driveControl.done()
+            self.next_state('movingToGrid7')
+
+    @state()
+    def movingToGrid7(self, initial_call):
+        self.grabberControl.engage()
         self.driveControl.holonomicDrivePath(
             'Object3ToGrid7'
         )

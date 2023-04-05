@@ -2,13 +2,13 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.8161366192862258,
-        "y": 4.427987557273816
+        "x": 2.4902739968012013,
+        "y": 4.42
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.0182272413226374,
-        "y": 4.634143953886285
+        "x": 2.1362590224052016,
+        "y": 4.42
       },
       "holonomicAngle": 0,
       "isReversal": false,
@@ -24,15 +24,15 @@
     },
     {
       "anchorPoint": {
-        "x": 5.321475578016091,
-        "y": 4.554921837116402
+        "x": 1.8111083613099648,
+        "y": 4.42
       },
       "prevControl": {
-        "x": 4.349940128451687,
-        "y": 5.379994656093209
+        "x": 2.047236131333321,
+        "y": 4.42
       },
       "nextControl": null,
-      "holonomicAngle": 148.43102887068167,
+      "holonomicAngle": 0.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -46,25 +46,13 @@
     }
   ],
   "maxVelocity": 3.0,
-  "maxAcceleration": 3.0,
+  "maxAcceleration": 4.5,
   "isReversed": null,
   "markers": [
     {
-      "position": 0.11515151515151792,
+      "position": 0.9454545454545443,
       "names": [
-        "armToHome"
-      ]
-    },
-    {
-      "position": 0.8999999999999999,
-      "names": [
-        "driveToCone"
-      ]
-    },
-    {
-      "position": 1.0,
-      "names": [
-        "driveToCone"
+        "dropObject"
       ]
     }
   ]
