@@ -487,7 +487,7 @@ class PPHolonomic(controllers.PPHolonomicDriveController):
         Returns:
             ChassisSpeeds: translation and rotational vectors desired
         """
-        self.postError()
+        #self.postError()
         SmartDashboard.putBoolean("AT TARGET", self.atReference())
         if not self.trajectoryType is None:
             if self.firstCall:

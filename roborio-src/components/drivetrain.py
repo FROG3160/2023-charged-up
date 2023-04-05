@@ -574,18 +574,18 @@ class SwerveChassis:
         )
         visionPose, visionTime = self.limelight.getBotPoseEstimateForAlliance()
         if visionPose:
-            SmartDashboard.putNumber(
-                "Vision_X", visionPose.X()
-            )
-            SmartDashboard.putNumber(
-                "Vision_Y", visionPose.Y()
-            )
-            SmartDashboard.putNumber(
-                "Vision_Z", visionPose.Z()
-            )
-            SmartDashboard.putNumber(
-                "Vision_T", visionPose.rotation().toRotation2d().degrees()
-            )
+            # SmartDashboard.putNumber(
+            #     "Vision_X", visionPose.X()
+            # )
+            # SmartDashboard.putNumber(
+            #     "Vision_Y", visionPose.Y()
+            # )
+            # SmartDashboard.putNumber(
+            #     "Vision_Z", visionPose.Z()
+            # )
+            # SmartDashboard.putNumber(
+            #     "Vision_T", visionPose.rotation().toRotation2d().degrees()
+            # )
             if (
                 abs(visionPose.x - self.estimatorPose.x) < 0.5
                 and abs(visionPose.y - self.estimatorPose.y) < 0.5
@@ -595,10 +595,10 @@ class SwerveChassis:
                 self.estimator.addVisionMeasurement(visionPose.toPose2d(), visionTime, (stddevupdate, stddevupdate, math.pi/2))
 
 
-        SmartDashboard.putNumber(
-            "Estimator_X", self.estimatorPose.X())
-        SmartDashboard.putNumber(
-            "Estimator_Y", self.estimatorPose.Y())
-        SmartDashboard.putNumber(
-            "Estimator_T", self.estimatorPose.rotation().degrees()
-        )
+        # SmartDashboard.putNumber(
+        #     "Estimator_X", self.estimatorPose.X())
+        # SmartDashboard.putNumber(
+        #     "Estimator_Y", self.estimatorPose.Y())
+        # SmartDashboard.putNumber(
+        #     "Estimator_T", self.estimatorPose.rotation().degrees()
+        # )
