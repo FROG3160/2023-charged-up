@@ -135,11 +135,13 @@ class FROGbot(MagicRobot):
         if visionPose:
             self.startingPose2d = visionPose.toPose2d()
         self.swerveChassis.setFieldPosition(self.startingPose2d)
+        self.grabberControl.disableConeSupport()
         # self.armControl.next_state('leaveZero')
 
     def teleopInit(self):
         self.setAlliance()
         self.swerveChassis.enable()
+        self.grabberControl.enableConeSupport()
 
     def teleopPeriodic(self):
         SmartDashboard.putNumber('Grid Position', self.gridPosition)
