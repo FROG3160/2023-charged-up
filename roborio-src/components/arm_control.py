@@ -197,7 +197,13 @@ class GrabberControl(StateMachine):
     deploySize = tunable(20.0)
 
     def __init__(self):
-        pass
+        self.coneSupport = True
+
+    def disableConeSupport(self):
+        self.coneSupport = False
+
+    def enableConeSupport(self):
+        self.coneSupport = True
 
     @state(first=True)
     def holding(self):
@@ -328,8 +334,11 @@ class GrabberControl(StateMachine):
     
     @state()
     def supportCone(self):
-        self.grabber.plateUp()
-        self.next_state('releaseCone')
+        if self.coneSupport:
+            self.grabber.plateUp()
+            self.next_state('releaseCone')
+        else:
+            self.next_state('holding')
 
     @timed_state(duration=0.25, next_state = 'holding')
     def releaseCone(self):
