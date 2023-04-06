@@ -84,17 +84,21 @@ class DriveControl(StateMachine):
 
     def holonomicDrivePath(self, pathName = None):
         if pathName:
-            self.logger.info(f'Setting path to {pathName}')
             self._pathName = pathName
         else:
             self.logger.info(f'Getting path from chooser.')
             self._pathName = self.pathChooser.getSelected()
         self.engage(initial_state='drivePath')
 
+    def driveToChargingReverse(self):
+        self.engage(initial_state='balanceOnChargingReverse')
+
+    def driveToChargingForward(self):
+        self.engage(initial_state='balanceOnChargingForward')
+
     def lockWheels(self):
         self.engage(initial_state='lock')
         
-
     def angleErrorToRotation(error):
     #return math.copysign(math.exp(0.0352*abs(error))*0.0496, error)
     # 0.0001*(B2^2) + 0.0024 *B2 - 0.0039
@@ -174,6 +178,56 @@ class DriveControl(StateMachine):
             self.swerveChassis.enableMinSpeed()
         velocities = self.limelight.getVelocities()
         self.swerveChassis.robotOrientedDrive(*velocities)
+
+    @state()
+    def balanceOnChargingForward(self, initial_call):
+        if initial_call:
+            self.swerveChassis.enableMinSpeed()
+        rollAngle = 8
+        goalHeading = 0
+        
+        vT = self.profiledRotationController.calculate(
+                math.radians(self.gyro.getYawCCW()), math.radians(goalHeading)
+            )
+        
+        if self.limelight.getBotPoseEstimateForAlliance()[0].X() > 3.89 + 0.04:
+            vX = 0
+        elif self.gyro.getRoll() > rollAngle:
+            vX = 0.2
+        else:
+            vX = 0.75
+        
+        self.logger.info(f"Roll angle: {self.gyro.getRoll()}")
+        self.logger.info(f'X position: {self.limelight.getBotPoseEstimateForAlliance()[0].X()}')
+        self.logger.info(f"Speeds: {vX}, 0, {vT}")
+
+        self.swerveChassis.fieldOrientedDrive(vX, 0, vT)
+
+    @state()
+    def balanceOnChargingReverse(self, initial_call):
+        if initial_call:
+            self.swerveChassis.enableMinSpeed()
+        rollAngle = 8
+        goalHeading = 0
+        
+        vT = self.profiledRotationController.calculate(
+                math.radians(self.gyro.getYawCCW()), math.radians(goalHeading)
+            )
+        
+        if self.limelight.getBotPoseEstimateForAlliance()[0].X() < 3.89 + 0.04:
+            vX = 0
+        elif self.gyro.getRoll() > rollAngle:
+            vX = -0.2
+        else:
+            vX = -0.75
+        
+        self.logger.info(f"Roll angle: {self.gyro.getRoll()}")
+        self.logger.info(f'X position: {self.limelight.getBotPoseEstimateForAlliance()[0].X()}')
+        self.logger.info(f"Speeds: {vX}, 0, {vT}")
+
+        self.swerveChassis.fieldOrientedDrive(vX, 0, vT)
+        
+
 
     @state()
     def drivePath(self, initial_call):
