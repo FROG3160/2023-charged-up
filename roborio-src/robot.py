@@ -266,7 +266,7 @@ class FROGbot(MagicRobot):
             self.driveControl.autoDriveToCube()
 
         elif self.btnDriveToCharging() > 0.5:
-            self.driveControl.holonomicDriveToWaypoint(self.positionGrid)
+            self.driveControl.driveToChargingReverse()
 
         else:
             pass
