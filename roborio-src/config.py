@@ -29,16 +29,49 @@ MAX_CHASSIS_RADIANS_SEC = MAX_CHASSIS_REV_SEC * math.tau
 MODULE_DRIVE_GEARING = [(14.0 / 50.0), (28.0 / 16.0), (15.0 / 45.0)]  # Mk4 L3
 MODULE_WHEEL_DIAMETER = 0.1000125  # 3 15/16 inches in meters
 
-MAX_TRAJECTORY_SPEED = 3
-MAX_TRAJECTORY_ACCEL = 3
+#
+# **Swerve Module Drive Motor Config
+#
+frDriveMotorPID = TalonFXConfiguration()
+frDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
+frDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
+frDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
+frDriveMotorPID.slot0.kI = 0.0
+frDriveMotorPID.slot0.kD = 0.0
+frDriveMotorPID.slot0.kF = 0.04541 #0.04664  # 0.058
+
+flDriveMotorPID = TalonFXConfiguration()
+flDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
+flDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
+flDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
+flDriveMotorPID.slot0.kI = 0.0
+flDriveMotorPID.slot0.kD = 0.0
+flDriveMotorPID.slot0.kF = 0.04543 #0.04664  # 0.058
+
+blDriveMotorPID = TalonFXConfiguration()
+blDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
+blDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
+blDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
+blDriveMotorPID.slot0.kI = 0.0
+blDriveMotorPID.slot0.kD = 0.0
+blDriveMotorPID.slot0.kF = 0.0447 #0.04664  # 0.058
+
+brDriveMotorPID = TalonFXConfiguration()
+brDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
+brDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
+brDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
+brDriveMotorPID.slot0.kI = 0.0
+brDriveMotorPID.slot0.kD = 0.0
+brDriveMotorPID.slot0.kF = 0.04455 #0.04664  # 0.058
 
 MODULE_FRONT_LEFT = {
     "name": "FrontLeft",
     "drive_motor_id": 11,
     "steer_motor_id": 21,
     "steer_sensor_id": 31,
-    "steer_sensor_offset": -5.537,# -5.185547,  #-4.13085938,  
+    "steer_sensor_offset": -5.186, #-5.537,# -5.185547,  #-4.13085938,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, TRACK_WIDTH / 2),
+    "driveMotorPID": flDriveMotorPID
 }
 
 MODULE_FRONT_RIGHT = {
@@ -46,48 +79,42 @@ MODULE_FRONT_RIGHT = {
     "drive_motor_id": 12,
     "steer_motor_id": 22,
     "steer_sensor_id": 32,
-    "steer_sensor_offset": -150.381,#-150.820313, #-150.292969,  
+    "steer_sensor_offset": -150.46875, #-150.381,#-150.820313, #-150.292969,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, -TRACK_WIDTH / 2),
+    "driveMotorPID": frDriveMotorPID
 }
 MODULE_BACK_LEFT = {
     "name": "BackLeft",
     "drive_motor_id": 13,
     "steer_motor_id": 23,
     "steer_sensor_id": 33,
-    "steer_sensor_offset": 179.736,#-179.648438,  #-179.736328,  
+    "steer_sensor_offset": 179.912109, #179.736,#-179.648438,  #-179.736328,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, TRACK_WIDTH / 2),
+    "driveMotorPID": blDriveMotorPID
 }
 MODULE_BACK_RIGHT = {
     "name": "BackRight",
     "drive_motor_id": 14,
     "steer_motor_id": 24,
     "steer_sensor_id": 34,
-    "steer_sensor_offset": 45,#45.9667969,  ##47.2851563,  
+    "steer_sensor_offset": 44.91211, #45,#45.9667969,  ##47.2851563,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, -TRACK_WIDTH / 2),
+    "driveMotorPID": brDriveMotorPID
 }
 
 #
 # Holonomic PID values
 #
-holonomicTranslationPIDController = PIDController(1.5, 0, 0)
-holonomicAnglePIDController = ProfiledPIDControllerRadians(
-    2.5, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
-)
-ppXPIDController = PIDController(0.7,0,0.0)
-ppYPIDController = PIDController(0.7,0,0.0)
-ppRotationPIDController = PIDController(0.38,0,0.01)
+# holonomicTranslationPIDController = PIDController(1.5, 0, 0)
+# holonomicAnglePIDController = ProfiledPIDControllerRadians(
+#     2.5, 0, 0, TrapezoidProfileRadians.Constraints(math.pi, math.pi)
+# )
+MAX_TRAJECTORY_SPEED = 3
+MAX_TRAJECTORY_ACCEL = 3
+ppXPIDController = PIDController(1,0,0)
+ppYPIDController = PIDController(1,0,0)
+ppRotationPIDController = PIDController(1,0,0)
 ppTolerance = Pose2d(0.03, 0.03, Rotation2d.fromDegrees(2))
-#
-# **Swerve Module Drive Motor Config
-#
-cfgDriveMotor = TalonFXConfiguration()
-cfgDriveMotor.initializationStrategy = SensorInitializationStrategy.BootToZero
-cfgDriveMotor.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.IntegratedSensor)
-cfgDriveMotor.slot0.kP = 0.02  # TODO: Confirm PID
-cfgDriveMotor.slot0.kI = 0.0
-cfgDriveMotor.slot0.kD = 0.0
-cfgDriveMotor.slot0.kF = 0.050 #0.04664  # 0.058
-
 #
 # **Swerve Module Steer Motor Config
 #
