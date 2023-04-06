@@ -21,6 +21,8 @@ RAINBOW = RainbowAnimation(1, 0.9, NUM_TOTAL_LEDS)
 TWINKLE = TwinkleAnimation(0, 225, 0, 225, 0.5, NUM_TOTAL_LEDS)
 COLORFLOWFORWARD = ColorFlowAnimation(125, 235, 0, 0, 0.5, NUM_TOTAL_LEDS, FORWARD)
 COLORFLOWBACKWARD = ColorFlowAnimation(125, 235, 3, 0, 0.5, NUM_TOTAL_LEDS, BACKWARD)
+REDALLIANCE = StrobeAnimation(255, 0, 0, 0, 0.05, NUM_STRIP_LEDS, NUM_CANDLE_LEDS)
+BLUEALLIANCE = StrobeAnimation(0, 0, 255, 0, 0.05, NUM_STRIP_LEDS, NUM_CANDLE_LEDS)
 FIRE = FireAnimation(1, 0.5, NUM_TOTAL_LEDS + 15, 0.7, 0.3, False, NUM_CANDLE_LEDS)
 
 
@@ -39,6 +41,12 @@ class FROGLED:
         )
     def yellow(self):
         self.candle.setLEDs(250, 129, 7)
+
+    def redAlliance(self):
+        self.candle.animate(REDALLIANCE)
+
+    def blueAlliance(self):
+        self.candle.animate(BLUEALLIANCE)
 
     def yellowPocketSlow(self):
         self.larsonAnimation(
