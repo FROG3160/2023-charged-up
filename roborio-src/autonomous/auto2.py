@@ -45,6 +45,7 @@ class ConeCubeConeChargeLoadSide(AutonomousStateMachine):
 
     @state()
     def movingToObject4(self, initial_call):
+        self.grabberControl.engage()
         self.driveControl.holonomicDrivePath(
             'Grid9ToObject4'
         )
