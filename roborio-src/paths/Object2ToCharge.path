@@ -2,13 +2,13 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 6.351596079815538,
-        "y": 4.623271064723948
+        "x": 6.416598958958567,
+        "y": 2.15447043470152
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.620333041613952,
-        "y": 4.748966843905253
+        "x": 5.300881014571786,
+        "y": 2.15447043470152
       },
       "holonomicAngle": 180.0,
       "isReversal": false,
@@ -24,20 +24,20 @@
     },
     {
       "anchorPoint": {
-        "x": 4.472890313302101,
-        "y": 4.752357068195101
+        "x": 5.806843175552476,
+        "y": 2.3333321311673054
       },
       "prevControl": {
-        "x": 5.280270545031072,
-        "y": 4.752357068195101
+        "x": 6.806843175552476,
+        "y": 2.3333321311673054
       },
       "nextControl": {
-        "x": 3.717309587198588,
-        "y": 4.752357068195101
+        "x": 4.806843175552476,
+        "y": 2.3333321311673054
       },
-      "holonomicAngle": 57.36570124741369,
+      "holonomicAngle": 0.996347896504862,
       "isReversal": false,
-      "velOverride": null,
+      "velOverride": 2.0,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
@@ -49,48 +49,29 @@
     },
     {
       "anchorPoint": {
-        "x": 1.81,
-        "y": 4.98
+        "x": 3.8881449771013137,
+        "y": 2.33
       },
       "prevControl": {
-        "x": 2.0698103961017966,
-        "y": 5.0196696255202795
+        "x": 5.107717775561656,
+        "y": 2.33
       },
       "nextControl": null,
-      "holonomicAngle": 0,
+      "holonomicAngle": 0.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
         "names": [],
-        "executionBehavior": "sequential",
+        "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
       }
     }
   ],
-  "maxVelocity": 2.5,
-  "maxAcceleration": 2.5,
+  "maxVelocity": 2.0,
+  "maxAcceleration": 4.0,
   "isReversed": null,
-  "markers": [
-    {
-      "position": 0.6961038961038949,
-      "names": [
-        "resetArm"
-      ]
-    },
-    {
-      "position": 0.7999999999999751,
-      "names": [
-        "armToShelf"
-      ]
-    },
-    {
-      "position": 1.9545454545454546,
-      "names": [
-        "dropObject"
-      ]
-    }
-  ]
+  "markers": []
 }

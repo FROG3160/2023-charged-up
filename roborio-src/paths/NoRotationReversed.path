@@ -2,13 +2,13 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.8161366192862258,
-        "y": 4.427987557273816
+        "x": 7.03,
+        "y": 4.42
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.0182272413226374,
-        "y": 4.634143953886285
+        "x": 4.192498260745557,
+        "y": 4.42
       },
       "holonomicAngle": 0,
       "isReversal": false,
@@ -24,15 +24,15 @@
     },
     {
       "anchorPoint": {
-        "x": 6.0,
-        "y": 3.9727548060741977
+        "x": 3.03,
+        "y": 4.42
       },
       "prevControl": {
-        "x": 5.10789155025701,
-        "y": 5.203742520402065
+        "x": 4.2869083126723915,
+        "y": 4.422684064069953
       },
       "nextControl": null,
-      "holonomicAngle": 146.87160996597115,
+      "holonomicAngle": 0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
@@ -45,33 +45,5 @@
       }
     }
   ],
-  "maxVelocity": 3.0,
-  "maxAcceleration": 3.0,
-  "isReversed": null,
-  "markers": [
-    {
-      "position": 0.11515151515151792,
-      "names": [
-        "armToHome"
-      ]
-    },
-    {
-      "position": 0.9909090909090909,
-      "names": [
-        "driveToCone"
-      ]
-    },
-    {
-      "position": 0.9506493506493433,
-      "names": [
-        "driveToCone"
-      ]
-    },
-    {
-      "position": 0.531818181818182,
-      "names": [
-        "armToFloor"
-      ]
-    }
-  ]
+  "markers": []
 }
