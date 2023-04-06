@@ -104,6 +104,12 @@ class FROGbot(MagicRobot):
     def setAlliance(self):
         self.alliance = wpilib.DriverStation.getAlliance()
         self.fieldLayout.setAlliance(self.alliance)
+        if self.fieldLayout.alliance == RED_ALLIANCE:
+            self.leds.redAlliance()
+        elif self.fieldLayout.alliance == BLUE_ALLIANCE:
+            self.leds.blueAlliance()
+        else:
+            self.leds.green()
         self.logger.info(f"FROGBot.fieldLayout alliance is {self.fieldLayout.alliance}")
         self.logger.info(f"SwerveChassis.fieldLayout alliance is {self.swerveChassis.fieldLayout.alliance}")
         self.logger.info(f"FROGLimeLight.fieldlayout alliance is {self.swerveChassis.limelight.fieldLayout.alliance}")
