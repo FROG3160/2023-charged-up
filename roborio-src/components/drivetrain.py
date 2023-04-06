@@ -9,7 +9,7 @@ from components.vision import FROGLimeLightVision
 from ctre import (AbsoluteSensorRange, ControlMode, FeedbackDevice,
                   NeutralMode, RemoteSensorSource,
                   SensorInitializationStrategy, StatusFrameEnhanced,
-                  TalonFXInvertType, WPI_CANCoder, WPI_TalonFX)
+                  TalonFXInvertType, WPI_CANCoder, WPI_TalonFX, TalonFXConfiguration)
 from magicbot import feedback
 from utils.utils import DriveUnit, remap
 from wpilib import Field2d, SmartDashboard
@@ -155,6 +155,7 @@ class SwerveModule:
         steer_sensor_id: int,
         steer_sensor_offset: float,
         location: Translation2d,
+        driveMotorPID: TalonFXConfiguration
     ):
         super().__init__()
         # set initial states for the component
@@ -164,6 +165,7 @@ class SwerveModule:
         self.encoder = WPI_CANCoder(steer_sensor_id)
         self.steerOffset = steer_sensor_offset
         self.location = location
+        self.driveMotorPID = driveMotorPID
         self.drive_unit = DriveUnit(
             config.MODULE_DRIVE_GEARING,
             config.FALCON_MAX_RPM,
@@ -280,13 +282,14 @@ class SwerveModule:
         self.steer.setNeutralMode(NeutralMode.Brake)
 
         # configure drive motor
-        self.drive.configAllSettings(config.cfgDriveMotor)
+        self.drive.configAllSettings(self.driveMotorPID)
         self.drive.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 250)
         self.drive.setInverted(TalonFXInvertType.Clockwise)
         self.drive.setSensorPhase(False)
         self.drive.configClosedloopRamp(0.25)
         self.drive.configVoltageCompSaturation(config.VOLTAGE_COMPENSATION)
         self.drive.enableVoltageCompensation(True)
+        self.drive.setNeutralMode(NeutralMode.Brake)
 
        # SmartDashboard.putNumber("Drive kF", config.cfgDriveMotor.slot0.kF)
 
