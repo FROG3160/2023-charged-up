@@ -9,7 +9,7 @@ from components.field import FROGFieldLayout
 from wpilib import Timer
 
 class ConeCubeChargeLoadSide(AutonomousStateMachine):
-    MODE_NAME = "Cone-Cube-Charge-LoadSide"
+    MODE_NAME = "LoadSide-Cone,Cube,Charge"
 
     driveControl: DriveControl
     armControl: ArmControl
