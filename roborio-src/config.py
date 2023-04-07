@@ -88,7 +88,7 @@ MODULE_BACK_LEFT = {
     "drive_motor_id": 13,
     "steer_motor_id": 23,
     "steer_sensor_id": 33,
-    "steer_sensor_offset": 179.912109, #179.736,#-179.648438,  #-179.736328,  
+    "steer_sensor_offset": -179.561, #179.912109, #179.736,#-179.648438,  #-179.736328,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, TRACK_WIDTH / 2),
     "driveMotorPID": blDriveMotorPID
 }
@@ -97,7 +97,7 @@ MODULE_BACK_RIGHT = {
     "drive_motor_id": 14,
     "steer_motor_id": 24,
     "steer_sensor_id": 34,
-    "steer_sensor_offset": 44.91211, #45,#45.9667969,  ##47.2851563,  
+    "steer_sensor_offset": 45.703, #44.91211, #45,#45.9667969,  ##47.2851563,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, -TRACK_WIDTH / 2),
     "driveMotorPID": brDriveMotorPID
 }
