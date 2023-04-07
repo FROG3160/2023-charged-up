@@ -201,9 +201,9 @@ class DriveControl(StateMachine):
         if self.limelight.getBotPoseEstimateForAlliance()[0].X() > 3.89 + 0.04:
             vX = 0
         elif self.gyro.getRoll() > rollAngle:
-            vX = 0.2
+            vX = 0.3
         else:
-            vX = 0.75
+            vX = 0.8
         
         self.logger.info(f"Roll angle: {self.gyro.getRoll()}")
         self.logger.info(f'X position: {self.limelight.getBotPoseEstimateForAlliance()[0].X()}')
@@ -225,9 +225,9 @@ class DriveControl(StateMachine):
         if self.limelight.getBotPoseEstimateForAlliance()[0].X() < 3.89 + 0.04:
             vX = 0
         elif self.gyro.getRoll() > rollAngle:
-            vX = -0.2
+            vX = -0.3
         else:
-            vX = -0.75
+            vX = -0.8
         
         self.logger.info(f"Roll angle: {self.gyro.getRoll()}")
         self.logger.info(f'X position: {self.limelight.getBotPoseEstimateForAlliance()[0].X()}')
