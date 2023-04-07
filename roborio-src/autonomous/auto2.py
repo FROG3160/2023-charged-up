@@ -8,8 +8,8 @@ from pathplannerlib import PathPoint
 from components.field import FROGFieldLayout
 from wpilib import Timer
 
-class ConeCubeConeChargeLoadSide(AutonomousStateMachine):
-    MODE_NAME = "Cone-Cube-Cone-Charge-LoadSide"
+class ConeCubeConeLoadSide(AutonomousStateMachine):
+    MODE_NAME = "LoadSide-Cone,Cube,Cone"
 
     driveControl: DriveControl
     armControl: ArmControl
@@ -20,7 +20,6 @@ class ConeCubeConeChargeLoadSide(AutonomousStateMachine):
     def __init__(self):
         super().__init__()
         self.stateTimer = Timer()
-
 
     @timed_state(duration = 1, first=True, next_state='movingToGrid9')
     def raisingArm(self, initial_call):
@@ -130,21 +129,14 @@ class ConeCubeConeChargeLoadSide(AutonomousStateMachine):
 
         if self.grabberControl.current_state == 'lifting':
             self.driveControl.done()
-            self.next_state('movingToCharging')  
+            self.next_state('movingToLoadSide')  
 
     @state()
-    def movingToCharging(self, initial_call):
+    def movingToLoadSide(self, initial_call):
         self.grabberControl.engage()
         self.driveControl.holonomicDrivePath(
-            'Object3ToCharge'
+            'Object3ToLoadSide'
         )
         if marker := self.driveControl.holonomic.getPastMarker():
-            if 'driveToCharging' in marker.names:
-                self.next_state('driveToCharging')
-
-    @state()
-    def driveToCharging(self, initial_call):
-        self.grabberControl.engage()
-        if initial_call:
-            self.driveControl.done()
-        self.driveControl.driveToChargingReverse()
+            if 'done' in marker.names:
+                self.done()
