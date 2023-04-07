@@ -303,7 +303,7 @@ class GrabberControl(StateMachine):
             self.xPosition = self.swerveChassis.estimator.getEstimatedPosition().X()
         if self.grabber.getProximity() > 1000:
             self.grabber.wheelsOff()
-        if self.xPosition - self.swerveChassis.estimator.getEstimatedPosition().X() > 0.5:
+        if self.xPosition - self.swerveChassis.estimator.getEstimatedPosition().X() > 0.25:
             self.armControl.moveToHome()
         if self.armControl.getArmPosition() == 'home':
             self.next_state('stoppingIntake')
@@ -340,7 +340,7 @@ class GrabberControl(StateMachine):
         else:
             self.next_state('holding')
 
-    @timed_state(duration=0.25, next_state = 'holding')
+    @timed_state(duration=0.12, next_state = 'holding')
     def releaseCone(self):
         self.grabber.openJaws()
 
