@@ -176,7 +176,15 @@ class DriveControl(StateMachine):
         if initial_call:
             self.limelight.setGrabberPipeline(self._object)
             self.swerveChassis.enableMinSpeed()
+            # self.hadTarget = False
         velocities = self.limelight.getVelocities()
+        # if velocities[0] != self.hadTarget:
+        #     #we swithced states, so toggle hadTarget
+        #     self.hadTarget = [True, False][self.hadTarget]
+        #     if self.hadTarget:
+        #         self.logger.info('Acquired Target')
+        #     else:
+        #         self.logger.info('Lost Target')
         self.swerveChassis.robotOrientedDrive(*velocities)
 
     @state()
