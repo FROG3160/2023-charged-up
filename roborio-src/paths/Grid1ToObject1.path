@@ -1,0 +1,96 @@
+{
+  "waypoints": [
+    {
+      "anchorPoint": {
+        "x": 1.8113659705580283,
+        "y": 0.48427957725480836
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.128314430541905,
+        "y": 0.6415942397102199
+      },
+      "holonomicAngle": 0.0,
+      "isReversal": false,
+      "velOverride": 0.5,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 3.919382447460548,
+        "y": 0.7314883325418836
+      },
+      "prevControl": {
+        "x": 3.1281995174627313,
+        "y": 0.7314883325418836
+      },
+      "nextControl": {
+        "x": 5.555454936996823,
+        "y": 0.7314883325418836
+      },
+      "holonomicAngle": 0.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 6.0,
+        "y": 0.7764353789577154
+      },
+      "prevControl": {
+        "x": 5.510507890580999,
+        "y": 0.7629512650329661
+      },
+      "nextControl": null,
+      "holonomicAngle": -167.3944226456154,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    }
+  ],
+  "maxVelocity": 3.0,
+  "maxAcceleration": 3.0,
+  "isReversed": null,
+  "markers": [
+    {
+      "position": 0.09350649350657644,
+      "names": [
+        "dropArm"
+      ]
+    },
+    {
+      "position": 1.9844155844154505,
+      "names": [
+        "driveToObject"
+      ]
+    },
+    {
+      "position": 0.5227272727272727,
+      "names": [
+        "armToFloor"
+      ]
+    }
+  ]
+}

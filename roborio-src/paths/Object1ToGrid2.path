@@ -1,0 +1,96 @@
+{
+  "waypoints": [
+    {
+      "anchorPoint": {
+        "x": 6.346522953915473,
+        "y": 0.9472341553378775
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.5644443462799975,
+        "y": 0.807898311448798
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 4.256485295579287,
+        "y": 0.7584565603913822
+      },
+      "prevControl": {
+        "x": 5.063809659043181,
+        "y": 0.7679544940791934
+      },
+      "nextControl": {
+        "x": 3.4770393622324067,
+        "y": 0.7492866082343597
+      },
+      "holonomicAngle": 1.0,
+      "isReversal": false,
+      "velOverride": 1.0,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 1.8203553798411949,
+        "y": 1.0685911806606236
+      },
+      "prevControl": {
+        "x": 2.093206698705761,
+        "y": 1.0896829048334828
+      },
+      "nextControl": null,
+      "holonomicAngle": 0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "sequential",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    }
+  ],
+  "maxVelocity": 3.0,
+  "maxAcceleration": 3.0,
+  "isReversed": null,
+  "markers": [
+    {
+      "position": 0.9818181818181821,
+      "names": [
+        "armToShelf"
+      ]
+    },
+    {
+      "position": 2.0,
+      "names": [
+        "dropObject"
+      ]
+    },
+    {
+      "position": 0.8909090909090911,
+      "names": [
+        "resetArm"
+      ]
+    }
+  ]
+}
