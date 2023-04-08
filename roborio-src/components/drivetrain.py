@@ -550,17 +550,18 @@ class SwerveChassis:
         self.chassisSpeeds = chassisSpeeds
 
     def robotOrientedDrive(self, vX, vY, vT):
+        self.logger.info(f'Velocities: {vX}, {vY}, {vT}')
         self.chassisSpeeds = ChassisSpeeds(vX, vY, vT)
 
-    def driveToObject(self):
-        if self.limelight.hasGrabberTarget():
-            self.robotOrientedDrive(
-                self.limelight.drive_vX,
-                self.limelight.drive_vY,
-                self.limelight.drive_vRotate
-            )
-        else:
-            self.robotOrientedDrive(0,0,0)
+    # def driveToObject(self):
+    #     if self.limelight.hasGrabberTarget():
+    #         self.robotOrientedDrive(
+    #             self.limelight.drive_vX,
+    #             self.limelight.drive_vY,
+    #             self.limelight.drive_vRotate
+    #         )
+    #     else:
+    #         self.robotOrientedDrive(0,0,0)
 
     def execute(self):
         if self.enabled:
