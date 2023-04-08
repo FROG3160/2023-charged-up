@@ -38,7 +38,7 @@ frDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.Integra
 frDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
 frDriveMotorPID.slot0.kI = 0.0
 frDriveMotorPID.slot0.kD = 0.0
-frDriveMotorPID.slot0.kF = 0.04541 #0.04664  # 0.058
+frDriveMotorPID.slot0.kF = 0.04548 #0.04664  # 0.058
 
 flDriveMotorPID = TalonFXConfiguration()
 flDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
@@ -46,7 +46,7 @@ flDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.Integra
 flDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
 flDriveMotorPID.slot0.kI = 0.0
 flDriveMotorPID.slot0.kD = 0.0
-flDriveMotorPID.slot0.kF = 0.04543 #0.04664  # 0.058
+flDriveMotorPID.slot0.kF = 0.0455 #0.04664  # 0.058
 
 blDriveMotorPID = TalonFXConfiguration()
 blDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
@@ -54,7 +54,7 @@ blDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.Integra
 blDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
 blDriveMotorPID.slot0.kI = 0.0
 blDriveMotorPID.slot0.kD = 0.0
-blDriveMotorPID.slot0.kF = 0.0447 #0.04664  # 0.058
+blDriveMotorPID.slot0.kF = 0.04489 #0.0447 #0.04664  # 0.058
 
 brDriveMotorPID = TalonFXConfiguration()
 brDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
@@ -62,14 +62,14 @@ brDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.Integra
 brDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
 brDriveMotorPID.slot0.kI = 0.0
 brDriveMotorPID.slot0.kD = 0.0
-brDriveMotorPID.slot0.kF = 0.04455 #0.04664  # 0.058
+brDriveMotorPID.slot0.kF = 0.044752, #0.04455 #0.04664  # 0.058
 
 MODULE_FRONT_LEFT = {
     "name": "FrontLeft",
     "drive_motor_id": 11,
     "steer_motor_id": 21,
     "steer_sensor_id": 31,
-    "steer_sensor_offset": -5.186, #-5.537,# -5.185547,  #-4.13085938,  
+    "steer_sensor_offset": -5.625, #-5.186, #-5.537,# -5.185547,  #-4.13085938,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, TRACK_WIDTH / 2),
     "driveMotorPID": flDriveMotorPID
 }
@@ -79,7 +79,7 @@ MODULE_FRONT_RIGHT = {
     "drive_motor_id": 12,
     "steer_motor_id": 22,
     "steer_sensor_id": 32,
-    "steer_sensor_offset": -150.46875, #-150.381,#-150.820313, #-150.292969,  
+    "steer_sensor_offset": -150.293, #-150.908, #-150.46875, #-150.381,#-150.820313, #-150.292969,  
     "location": Translation2d.fromFeet(WHEELBASE / 2, -TRACK_WIDTH / 2),
     "driveMotorPID": frDriveMotorPID
 }
@@ -88,7 +88,7 @@ MODULE_BACK_LEFT = {
     "drive_motor_id": 13,
     "steer_motor_id": 23,
     "steer_sensor_id": 33,
-    "steer_sensor_offset": -179.561, #179.912109, #179.736,#-179.648438,  #-179.736328,  
+    "steer_sensor_offset": 179.825, #-179.561, #179.912109, #179.736,#-179.648438,  #-179.736328,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, TRACK_WIDTH / 2),
     "driveMotorPID": blDriveMotorPID
 }
@@ -97,7 +97,7 @@ MODULE_BACK_RIGHT = {
     "drive_motor_id": 14,
     "steer_motor_id": 24,
     "steer_sensor_id": 34,
-    "steer_sensor_offset": 45.703, #44.91211, #45,#45.9667969,  ##47.2851563,  
+    "steer_sensor_offset": 46.230, #45.703, #44.91211, #45,#45.9667969,  ##47.2851563,  
     "location": Translation2d.fromFeet(-WHEELBASE / 2, -TRACK_WIDTH / 2),
     "driveMotorPID": brDriveMotorPID
 }
