@@ -196,6 +196,8 @@ class GrabberControl(StateMachine):
     hasObject = False
     deploySize = tunable(20.0)
 
+    VERBOSE_LOGGING = True
+
     def __init__(self):
         self.coneSupport = True
 
