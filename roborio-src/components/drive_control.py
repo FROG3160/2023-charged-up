@@ -78,6 +78,12 @@ class DriveControl(StateMachine):
         self._object = LL_CUBE
         self.engage(initial_state="driveToObject")
 
+    def rotateSlowCCW(self):
+        self._vT = 0.1
+        self._vX = 0
+        self._vY = 0
+        self.engage(initial_state='robotOriented')
+        
     def holonomicDriveToWaypoint(self, waypoint:Pose2d):
         self._endPose = waypoint
         self.engage(initial_state='driveToWayPoint')
@@ -177,14 +183,11 @@ class DriveControl(StateMachine):
             self.limelight.setGrabberPipeline(self._object)
             self.swerveChassis.enableMinSpeed()
             # self.hadTarget = False
-        velocities = self.limelight.getVelocities()
-        # if velocities[0] != self.hadTarget:
-        #     #we swithced states, so toggle hadTarget
-        #     self.hadTarget = [True, False][self.hadTarget]
-        #     if self.hadTarget:
-        #         self.logger.info('Acquired Target')
-        #     else:
-        #         self.logger.info('Lost Target')
+        velocities = (0,0,0)
+        if self.limelight.ta:
+            if self.limelight.ta > 4:
+                velocities = self.limelight.getVelocities()
+
         self.swerveChassis.robotOrientedDrive(*velocities)
 
     @state()
@@ -200,10 +203,10 @@ class DriveControl(StateMachine):
         
         if self.limelight.getBotPoseEstimateForAlliance()[0].X() > 3.89 + 0.04:
             vX = 0
-        elif self.gyro.getRoll() > rollAngle:
-            vX = 0.3
+        elif self.gyro.getRoll() < -rollAngle:
+            vX = 0.2
         else:
-            vX = 0.8
+            vX = 0.5
         
         self.logger.info(f"Roll angle: {self.gyro.getRoll()}")
         self.logger.info(f'X position: {self.limelight.getBotPoseEstimateForAlliance()[0].X()}')
@@ -225,9 +228,10 @@ class DriveControl(StateMachine):
         if self.limelight.getBotPoseEstimateForAlliance()[0].X() < 3.89 + 0.04:
             vX = 0
         elif self.gyro.getRoll() > rollAngle:
-            vX = -0.3
+            vX = -0.2
+
         else:
-            vX = -0.8
+            vX = -0.5
         
         self.logger.info(f"Roll angle: {self.gyro.getRoll()}")
         self.logger.info(f'X position: {self.limelight.getBotPoseEstimateForAlliance()[0].X()}')
