@@ -38,7 +38,7 @@ frDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.Integra
 frDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
 frDriveMotorPID.slot0.kI = 0.0
 frDriveMotorPID.slot0.kD = 0.0
-frDriveMotorPID.slot0.kF = 0.04548 #0.04664  # 0.058
+frDriveMotorPID.slot0.kF = 0.04425 #0.04664  # 0.058
 
 flDriveMotorPID = TalonFXConfiguration()
 flDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
@@ -54,7 +54,7 @@ blDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.Integra
 blDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
 blDriveMotorPID.slot0.kI = 0.0
 blDriveMotorPID.slot0.kD = 0.0
-blDriveMotorPID.slot0.kF = 0.04489 #0.0447 #0.04664  # 0.058
+blDriveMotorPID.slot0.kF = 0.0439 #0.04489 #0.0447 #0.04664  # 0.058
 
 brDriveMotorPID = TalonFXConfiguration()
 brDriveMotorPID.initializationStrategy = SensorInitializationStrategy.BootToZero
@@ -62,7 +62,7 @@ brDriveMotorPID.primaryPID = BaseTalonPIDSetConfiguration(FeedbackDevice.Integra
 brDriveMotorPID.slot0.kP = 0.0  # TODO: Confirm PID
 brDriveMotorPID.slot0.kI = 0.0
 brDriveMotorPID.slot0.kD = 0.0
-brDriveMotorPID.slot0.kF = 0.044752, #0.04455 #0.04664  # 0.058
+brDriveMotorPID.slot0.kF = 0.0438 # 0.044752 #0.04455 #0.04664  # 0.058
 
 MODULE_FRONT_LEFT = {
     "name": "FrontLeft",
