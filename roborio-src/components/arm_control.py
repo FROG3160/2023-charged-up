@@ -284,6 +284,8 @@ class GrabberControl(StateMachine):
 
     @state()
     def grabbing(self):
+        if self.grabber.getProximity() < 1000:
+            self.grabber.wheelsOn(1)
         if self.grabber.getProximity() > 230:
             self.grabber.closeJaws()
             self.last_state = 'grabbing'
