@@ -162,8 +162,8 @@ class FROGbot(MagicRobot):
             self.logger.info(f"Toggle Grabber (LB) pressed, current state is {self.grabberControl.current_state}")
             if self.grabberControl.current_state in ["holding", "stoppingIntake"]:
                 self.grabberControl.next_state('dropping')
-            elif self.grabberControl.current_state == "empty":
-                self.grabberControl.next_state('looking')
+            else: #self.grabberControl.current_state == "empty":
+                self.grabberControl.next_state('grabbing')
         pov = self.btnGridSelect()
         if pov > -1:
             if pov == 0:
