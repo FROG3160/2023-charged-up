@@ -67,8 +67,12 @@ class ConeCubeConeLoadSide(AutonomousStateMachine):
     def gettingCube(self, initial_call):
         if initial_call:
             self.grabberControl.next_state('looking')
-        self.armControl.done()
-        self.driveControl.autoDriveToCube()
+            self.armControl.done()
+        if self.driveControl.swerveChassis.estimator.getEstimatedPosition().X() > 7.5:
+            self.armControl.moveToHome()
+            self.driveControl.rotateSlowCCW()
+        else:
+            self.driveControl.autoDriveToCube()
         self.grabberControl.engage()
 
         if self.grabberControl.current_state == 'lifting':
