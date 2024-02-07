@@ -4,6 +4,10 @@ from components.sensors import FROGsonic, FROGColor
 from components.vision import FROGLimeLightVision
 from logging import Logger
 
+# installed module type
+# original robot used a new REV Power distribution hub
+# PCMTYPE = PneumaticsModuleType.REVPH
+PCMTYPE = PneumaticsModuleType.CTREPCM
 
 class FROGGrabber:
 
@@ -18,9 +22,10 @@ class FROGGrabber:
             motorID (int): Motor ID for the motor
             solenoidID (int): Solenoid ID for the grabber pneumatics.
         """
+
         self.motor = WPI_TalonSRX(43)
-        self.jaws = Solenoid(PneumaticsModuleType.REVPH, 0)
-        self.plate = Solenoid(PneumaticsModuleType.REVPH, 1)
+        self.jaws = Solenoid(PCMTYPE, 0)
+        self.plate = Solenoid(PCMTYPE, 1)
         self.grabberOpen = False
         self.speed = 0
         # motors and stuff
