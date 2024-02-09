@@ -24,8 +24,8 @@ class FROGGrabber:
         """
 
         self.motor = WPI_TalonSRX(43)
-        self.jaws = Solenoid(PCMTYPE, 0)
-        self.plate = Solenoid(PCMTYPE, 1)
+        self.jaws = Solenoid(1, PCMTYPE, 0)
+        self.plate = Solenoid(1, PCMTYPE, 1)
         self.grabberOpen = False
         self.speed = 0
         # motors and stuff
