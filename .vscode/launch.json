@@ -5,37 +5,34 @@
     "version": "0.2.0",
     "configurations": [
 
-        {
-            "name": "Python: Current File",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
+
+
         {
             "name": "Robot Sim",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "program": "roborio-src\\robot.py",
+            "module": "robotpy",
+            "cwd": "${workspaceFolder}/roborio",
             "args": ["sim"],
             "console": "integratedTerminal",
             "justMyCode": false
         },
         {
-            "name": "Robot Deploy",
-            "type": "python",
+            "name": "Robot Test",
+            "type": "debugpy",
             "request": "launch",
-            "program": "roborio-src\\robot.py",
-            "args": ["deploy"],
-            "console": "integratedTerminal"
+            "module": "robotpy",
+            "cwd": "${workspaceFolder}/roborio",
+            "args": ["test"],
+            "console": "integratedTerminal",
+            "justMyCode": false
         },
         {
-            "name": "Robot Create Physics",
-            "type": "python",
+            "name": "Python: Current File",
+            "type": "debugpy",
             "request": "launch",
-            "program": "roborio-src\\robot.py",
-            "args": ["create-physics"],
+            "program": "${file}",
             "console": "integratedTerminal"
-        }
+        },
     ]
 }
